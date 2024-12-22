@@ -1,0 +1,6 @@
+node_modules
+dest
+venv
+.venv
+*.pyc
+python_
