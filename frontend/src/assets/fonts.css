@@ -1,0 +1,73 @@
+@font-face {
+    font-family: 'Source Code Pro';
+    font-style: normal;
+    font-weight: bold;
+    src: url('src/assets/fonts/SourceCodePro-Bold.ttf'),
+  }
+@font-face {
+    font-family: 'Source Code Pro';
+    font-style: italic;
+    font-weight: bold;
+    src: url('src/assets/fonts/SourceCodePro-BoldItalic.ttf'),
+    }
+@font-face {
+    font-family: 'Source Code Pro';
+    font-style: italic;
+    font-weight: normal;
+    src: url('src/assets/fonts/SourceCodePro-Italic.ttf'),
+    }
+@font-face {
+    font-family: 'Source Code Pro';
+    font-style: normal;
+    font-weight: normal;
+    src: url('src/assets/fonts/SourceCodePro-Regular.ttf'),
+    }
+
+@font-face {
+    font-family: 'Barlow';
+    font-style: normal;
+    font-weight: bold;
+    src: url('src/assets/fonts/Barlow-Bold.ttf'),
+    }
+@font-face {
+    font-family: 'Barlow';
+    font-style: italic;
+    font-weight: bold;
+    src: url('src/assets/fonts/Barlow-BoldItalic.ttf'),
+    }
+@font-face {
+    font-family: 'Barlow';
+    font-style: italic;
+    font-weight: normal;
+    src: url('src/assets/fonts/Barlow-Italic.ttf'),
+    }
+@font-face {
+    font-family: 'Barlow';
+    font-style: normal;
+    font-weight: normal;
+    src: url('src/assets/fonts/Barlow-Regular.ttf'),
+    }
+@font-face {
+    font-family: 'Doto';
+    font-style: normal;
+    font-weight: bold;
+    src: url('src/assets/fonts/Doto-Bold.ttf'),
+    }
+@font-face {
+    font-family: 'Doto';
+    font-style: normal;
+    font-weight: bold;
+    src: url('src/assets/fonts/Doto-Bold.ttf'),
+    }
+@font-face {
+    font-family: 'Doto';
+    font-style: normal;
+    font-weight: normal;
+    src: url('src/assets/fonts/Doto-Regular.ttf'),
+    }
+@font-face {
+    font-family: 'Doto';
+    font-style: normal;
+    font-weight: lighter;
+    src: url('src/assets/fonts/Doto-Thin.ttf'),
+    }
