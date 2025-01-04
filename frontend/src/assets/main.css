@@ -7,3 +7,16 @@
 main {
     @apply min-h-[96vh]
 }
+
+.selectable-menu-entry {
+    @apply cursor-pointer p-1 text-2xl h-full shrink-0 px-2 hover:text-success hover:bg-panel-sub/20;
+    /* For some reason tailwind fails with the borders*/
+    border-top: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+    border-left: 2px solid theme('colors.text-sub');
+    border-right: 2px solid theme('colors.text-sub');
+}
+.selectable-menu-entry:hover {
+    border-bottom: 2px dashed theme('colors.success');
+}
+

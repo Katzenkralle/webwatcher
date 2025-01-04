@@ -1,45 +1,52 @@
 <script setup lang="ts">
 import "@/assets/slight_l_r.css";
-import { ref, onMounted, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { useLoadingAnimation, useStatusMessage } from "@/composable/AppState";
 import DropDownSelector from "@/components/DropDownSelection.vue";
-
+import { useTableMetaData } from "@/composable/ApIHandler";
+import router from "@/router";
 
 const activeDropDown = ref(-1);
-// Test Options for DropDownSelector
-const options = [
-  ['The', (n, a) => { console.log(n, a); }],
-  ['First', (n, a) => { console.log(n, a); }],
-  ['Test', (n, a) => { console.log(n, a); }]
-];
+
+const changeUrl = (_: number, a: number) => {
+    router.push('/tables/' + a)
+}
+
+const computeTableOptions = computed(() => {
+    return useTableMetaData().localTableMetaData.value.map((element) => {
+        return [element.label, changeUrl, element.id]
+    })
+})
+
+watch(() => useTableMetaData().localTableMetaData.value, () => {
+    console.log(useTableMetaData().localTableMetaData.value)
+})
 
 </script>
 
 <template>
     <header class="w-full sticky top-0  flex flex-col">
         <div class="flex flex-row items-center bg-panel">
-            <nav class="flex flex-row h-12 ">
+            <nav class="flex flex-row h-12">
                 <router-link to="/" class="flex">
-                    <img class="p-1" src="@/assets/img/placeholder.png" alt="HOME"/>
+                    <img class="selectable-menu-entry" src="@/assets/img/placeholder.png" alt="HOME"/>
                 </router-link>
                 <div class="relative flex flex-col min-w-32"
                     @mouseleave="activeDropDown = -1">
                     <button 
-                        class="text-2xl h-full shrink-0 px-2 border-x-2 border-text-sub" 
-                        :class="{ 'text-success border-success': activeDropDown === 0 }" 
+                        class="selectable-menu-entry" 
                         @mouseover="activeDropDown = 0" 
                         @click="() => { 
                             if (activeDropDown === 0) { 
                                 $router.push('/tables'); 
                             } 
-                            activeDropDown = activeDropDown === 0 ? null : 0;
                         }">
                         Tables
                     </button>                    
                     <DropDownSelector 
                     :multiSelect="false"
                     :isActive="activeDropDown == 0 ? true : false"
-                    :options="options"
+                    :options="computeTableOptions"
                     @close="activeDropDown = -1"
                     />
                 </div>

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, watch, defineProps, defineEmits } from 'vue'
+import { ref, computed, watch, defineProps, defineEmits, type Ref } from 'vue'
 
 const props = defineProps<{ 
-    options: Array<[string, (number, string) => null]>,
+    options: Array<[string, (arg0: number, arg1: any) => null, any]>,
     multiSelect: boolean,
     selected?: Array<number>,
-    isActive: Ref<boolean>
+    isActive: boolean
 }>()
 const emit = defineEmits();
 
@@ -27,7 +27,7 @@ const addToSelected = (index: number) => {
 }
 const handelSelection = () => {
     selected.value.forEach(index => {
-        props.options[index][1](index, props.options[index][0])
+        props.options[index][1](index, props.options[index][2])
     });
     emit('close');
     selected.value = []
@@ -40,14 +40,18 @@ const handelSelection = () => {
         'absolut': true,
         'w-auto': true,
         'h-auto': true,
-        'p-2': true,
         'z-50': true,
-        'border-2': true,
-        'border-success': true,
+        'border-x-2': true,
+        'border-b-2': true,
+        'border-info': true,
      }">
-        <div v-for="element in computeIndex" :key="element.index">
-            <button @click="() => (addToSelected(element.index))" class="dropdown-item">{{ element.text }}</button>
-        </div>
+     <div class="flex flex-col w-full h-full">
+        <template v-for="element in computeIndex" :key="element.index">
+            <button class="border-b-2 border-dashed border-b-[transparent] hover:border-success hover:bg-panel-sub/20 
+                    dropdown-item align-middle min-h-8 py-2"
+                @click="() => (addToSelected(element.index))">{{ element.text }}</button>
+        </template>
+    </div>
         <div v-if="multiSelect">
             <button @click="handelSelection()">Ok</button>
         </div>
