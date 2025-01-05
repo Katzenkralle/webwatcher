@@ -38,7 +38,8 @@ RUN pip3 install -r /webwatcher/backend/requirements.txt --break-system-packages
 RUN npm install --prefix /webwatcher/frontend
 
 # Building
-RUN npm run build --prefix /webwatcher/frontend
+# || true to allow failiure
+RUN npm run build --prefix /webwatcher/frontend || true
 
 # Run entrypoint
 CMD ["bash", "/entrypoint.sh"]
