@@ -28,10 +28,13 @@ RUN chmod +x /entrypoint.sh
 
 
 RUN mkdir /webwatcher
+COPY . /webwatcher
 
 # ToDo: Add sql/mongodb config
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY . /webwatcher
+RUN rm -rf /etc/mongod.conf /etc/nginx/nginx.conf /etc/mysql/my.cnf
+RUN ln /webwatcher/conf/mongod.conf /etc/mongod.conf
+RUN ln /webwatcher/conf/nginx.conf /etc/nginx/nginx.conf
+RUN ln /webwatcher/conf/my.cnf /etc/mysql/my.cnf
 
 # Install app dependencies
 RUN pip3 install -r /webwatcher/backend/requirements.txt --break-system-packages

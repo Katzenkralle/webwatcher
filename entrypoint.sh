@@ -2,7 +2,8 @@
 
 # Consider using "supervisor"
 service mongodb start
-service mysql start
+service mariadb start
+service nginx start
 
 if [ "$DEV" = 'true' ]; then
     echo "Development mode, installing additional packages and reposetorys"
