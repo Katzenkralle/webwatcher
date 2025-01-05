@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import HelloWorld from '../components/HelloWorld.vue'
 </script>
 
 <template>
   <main>
-    <HelloWorld />
+    <h1>404 Page not found!</h1>
   </main>
 </template>

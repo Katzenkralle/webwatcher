@@ -9,17 +9,13 @@ import router from "@/router";
 const activeDropDown = ref(-1);
 
 const changeUrl = (_: number, a: number) => {
-    router.push('/tables/' + a)
+    router.push('/table/' + a)
 }
 
 const computeTableOptions = computed(() => {
     return useTableMetaData().localTableMetaData.value.map((element) => {
         return [element.label, changeUrl, element.id]
     })
-})
-
-watch(() => useTableMetaData().localTableMetaData.value, () => {
-    console.log(useTableMetaData().localTableMetaData.value)
 })
 
 </script>

@@ -8,8 +8,12 @@ main {
     @apply min-h-[96vh]
 }
 
+.selectable {
+    @apply hover:bg-panel-sub/15 cursor-pointer;
+}
+
 .selectable-menu-entry {
-    @apply cursor-pointer p-1 text-2xl h-full shrink-0 px-2 hover:text-success hover:bg-panel-sub/20;
+    @apply p-1 text-2xl h-full shrink-0 px-2 selectable hover:text-success ;
     /* For some reason tailwind fails with the borders*/
     border-top: 2px solid transparent;
     border-bottom: 2px solid transparent;
@@ -20,3 +24,21 @@ main {
     border-bottom: 2px dashed theme('colors.success');
 }
 
+h1 {
+    @apply text-4xl font-bold;
+}
+h2 {
+    @apply text-3xl font-bold;
+}
+h3 {
+    @apply text-2xl font-bold;
+}
+h4 {
+    @apply text-xl font-bold;
+}
+h5 {
+    @apply text-lg font-bold;
+}
+h6 {
+    @apply text-base font-bold;
+}

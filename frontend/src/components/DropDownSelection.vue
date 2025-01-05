@@ -47,7 +47,7 @@ const handelSelection = () => {
      }">
      <div class="flex flex-col w-full h-full">
         <template v-for="element in computeIndex" :key="element.index">
-            <button class="border-b-2 border-dashed border-b-[transparent] hover:border-success hover:bg-panel-sub/20 
+            <button class="border-b-2 border-dashed border-b-[transparent] hover:border-success selectable
                     dropdown-item align-middle min-h-8 py-2"
                 @click="() => (addToSelected(element.index))">{{ element.text }}</button>
         </template>
