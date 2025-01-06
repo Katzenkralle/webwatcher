@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 main {
-    @apply min-h-[96vh]
+    @apply min-h-[96vh] relative z-0;
 }
 
 .selectable {
@@ -22,6 +22,14 @@ main {
 }
 .selectable-menu-entry:hover {
     border-bottom: 2px dashed theme('colors.success');
+}
+
+.input-box {
+    @apply my-2 flex flex-col bg-panel px-4 py-2 rounded-lg
+}
+
+.input-box label {
+    @apply text-xl mb-2 underline decoration-1 underline-offset-4
 }
 
 h1 {

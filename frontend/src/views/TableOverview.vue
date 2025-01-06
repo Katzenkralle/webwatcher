@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTableMetaData } from "@/composable/ApIHandler";
+import { useTableMetaData } from "@/composable/TableAPI";
 
 import { onMounted } from "vue";
 
@@ -10,7 +10,7 @@ import { onMounted } from "vue";
   <main>
     <h1>Tables:</h1>
     <div v-for="element in useTableMetaData().localTableMetaData.value" :key="element.id"
-        class="border-2 border-info rounded-lg p-2 m-2 w-20v h-20v bg-panel selectable hover:border-success"> 
+        class="border-2 border-info rounded-lg p-2 m-2 w-20v h-20v w-min-fit h-min-fit bg-panel selectable hover:border-success overflow-scroll"> 
       <router-link :to="'/table/' + element.id"
         class="flex flex-col h-full">
         <h3>{{ element.label }}</h3>

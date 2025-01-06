@@ -3,6 +3,8 @@ import HomeView from '../views/HomeView.vue'
 import TableOverview from '../views/TableOverview.vue'
 import TableView from '@/views/TableView.vue'
 import NotFound from '@/views/NotFound.vue'
+import ScriptUpload from '@/views/UploadScript.vue'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -20,7 +22,12 @@ const router = createRouter({
       path: '/table/:id(\\d+)',
       name: 'table',
       component: TableView,
-    },    
+    },
+    {
+      path: '/scriptUpload',
+      name: 'scriptUpload',
+      component: ScriptUpload,
+    },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',

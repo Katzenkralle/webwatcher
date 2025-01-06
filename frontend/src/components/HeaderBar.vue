@@ -3,7 +3,7 @@ import "@/assets/slight_l_r.css";
 import { ref, computed, watch } from "vue";
 import { useLoadingAnimation, useStatusMessage } from "@/composable/AppState";
 import DropDownSelector from "@/components/DropDownSelection.vue";
-import { useTableMetaData } from "@/composable/ApIHandler";
+import { useTableMetaData } from "@/composable/TableAPI";
 import router from "@/router";
 
 const activeDropDown = ref(-1);
@@ -21,7 +21,7 @@ const computeTableOptions = computed(() => {
 </script>
 
 <template>
-    <header class="w-full sticky top-0  flex flex-col">
+    <header class="w-full sticky top-0 flex flex-col z-10">
         <div class="flex flex-row items-center bg-panel">
             <nav class="flex flex-row h-12">
                 <router-link to="/" class="flex">
@@ -46,6 +46,9 @@ const computeTableOptions = computed(() => {
                     @close="activeDropDown = -1"
                     />
                 </div>
+                <router-link to="/scriptUpload" class="flex">
+                    <p>Add Script</p>
+                </router-link>
 
             </nav>
             <div class="flex flex-row ml-auto mr-1">

@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}"
@@ -36,6 +36,7 @@ module.exports = {
         '144': '36rem',
         '20v': '20vh',
         "20h": "20vw",
+        "95h": "95vw",
       },
       borderRadius: {
         '4xl': '2rem',
