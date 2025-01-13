@@ -1,26 +1,9 @@
-from flask import Flask
-from strawberry.flask.views import GraphQLView
 from strawberry import Schema, type, field
 
 from db_handler import MongoDbHandler, MariaDbHandler
 from dotenv import dotenv_values
 import os 
-"""
-@type
-class Query:
-    @field
-    def hello(self) -> str:
-        return "Hello, world!"
 
-schema = Schema(query=Query)
-
-app = Flask(__name__)
-app.add_url_rule("/graphql", view_func=GraphQLView.as_view("graphql_view", schema=schema))
-
-if __name__ == "__main__":
-    print(example_handler())
-    app.run(debug=True)
-    """
 if __name__ == "__main__":
     # Setup everything
     dotenv = dotenv_values(".env")

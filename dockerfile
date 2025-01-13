@@ -30,16 +30,6 @@ RUN chmod +x /entrypoint.sh
 RUN mkdir /webwatcher
 COPY . /webwatcher
 
-# Setup database and nginx
-RUN rm -rf /etc/mongod.conf /etc/nginx/nginx.conf /etc/mysql/my.cnf
-RUN ln /webwatcher/conf/mongod.conf /etc/mongod.conf
-RUN ln /webwatcher/conf/nginx.conf /etc/nginx/nginx.conf
-RUN mkdir -p /data/mongodb/data /data/mariadb/data
-RUN chown -R mongodb:mongodb /data/mongodb
-RUN chown -R mysql:mysql /data/mariadb
-RUN mysql_install_db --user=mysql --ldata=/data/mariadb/data/
-
-RUN ln /webwatcher/conf/my.cnf /etc/mysql/my.cnf
 
 # Install app dependencies
 RUN pip3 install -r /webwatcher/backend/requirements.txt --break-system-packages
@@ -48,6 +38,18 @@ RUN npm install --prefix /webwatcher/frontend
 # Building
 # || true to allow failiure
 RUN npm run build --prefix /webwatcher/frontend || true
+
+
+# Setup database and nginx
+RUN rm -rf /etc/mongod.conf /etc/nginx/nginx.conf /etc/mysql/my.cnf
+RUN ln /webwatcher/conf/mongod.conf /etc/mongod.conf
+RUN ln /webwatcher/conf/nginx.conf /etc/nginx/nginx.conf
+RUN ln /webwatcher/conf/my.cnf /etc/mysql/my.cnf
+
+RUN mkdir -p /data/mongodb/data /data/mariadb/data
+RUN chown -R mongodb:mongodb /data/mongodb
+RUN chown -R mysql:mysql /data/mariadb
+RUN mysql_install_db --user=mysql --ldata=/data/mariadb/data/
 
 
 # Misc

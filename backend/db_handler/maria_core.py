@@ -18,7 +18,7 @@ class MariaDbHandler:
         )
         cursor = conn.cursor()
         if not conn.database: 
-            cursor.execute("CREATE DATABASE IF NOT EXISTS {db}")
-            cursor.execute("USE {db}")
+            cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db}")
+            cursor.execute(f"USE {db}")
         return [conn, cursor]
     

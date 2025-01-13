@@ -1,11 +1,28 @@
 #!/bin/bash
 
 # Consider using "supervisor"
-mariadbd &
-mongod --config /etc/mongod.conf &
-nginx &
+if ss --tcp -4 | grep -q ":27017 "; then
+    echo "MongoDB is already running"
+else
+    echo "MongoDB is not running, starting it"
+    mongod --config /etc/mongod.conf &
+fi
 
-mysql -u root  --socket=/data/mariadb/maria_sockert.sock -e 'SET PASSWORD FOR "root"@"localhost" = PASSWORD("webwatcher");'
+if ss --tcp -4 | grep -qE ":3306 |mysql"; then
+    echo "MariaDB/MySQL is already running"
+else
+    echo "MariaDB/MySQL is not running, starting it"
+    mariadbd &
+fi
+
+if ss --tcp -4 | grep -q ":80 "; then
+    echo "Nginx is already running"
+else
+    echo "Nginx is not running, starting it"
+    nginx &
+fi
+
+mysql -u root --socket=/data/mariadb/maria_sockert.sock -e 'SET PASSWORD FOR "root"@"localhost" = PASSWORD("webwatcher");' > /dev/null 2>&1
 
 if [ "$DEV" = 'true' ]; then
     echo "Development mode, installing additional packages and reposetorys"
