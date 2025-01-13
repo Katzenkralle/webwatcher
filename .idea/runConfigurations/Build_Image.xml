@@ -1,0 +1,23 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Build Image" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
+    <deployment type="dockerfile">
+      <settings>
+        <option name="imageTag" value="someone/webwatcher:latest" />
+        <option name="containerName" value="webwatcher" />
+        <option name="envVars">
+          <list>
+            <DockerEnvVarImpl>
+              <option name="name" value="DEV" />
+              <option name="value" value="true" />
+            </DockerEnvVarImpl>
+          </list>
+        </option>
+        <option name="commandLineOptions" value="--network host" />
+        <option name="sourceFilePath" value="dockerfile" />
+      </settings>
+    </deployment>
+    <method v="2">
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_dos2unix" />
+    </method>
+  </configuration>
+</component>
