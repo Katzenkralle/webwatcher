@@ -1,9 +1,11 @@
 #!/bin/bash
 
 # Consider using "supervisor"
-service mongodb start
-service mariadb start
-service nginx start
+mariadbd &
+mongod --config /etc/mongod.conf &
+nginx &
+
+mysql -u root  --socket=/data/mariadb/maria_sockert.sock -e 'SET PASSWORD FOR "root"@"localhost" = PASSWORD("webwatcher");'
 
 if [ "$DEV" = 'true' ]; then
     echo "Development mode, installing additional packages and reposetorys"
@@ -14,7 +16,7 @@ if [ "$DEV" = 'true' ]; then
             tee /etc/apt/sources.list.d/mongodb-org-6.0.list
 
     apt-get update
-    apt-get install build-essential git mongocli mariadb-client libmariadb-dev -y
+    apt-get install build-essential git mongocli -y
 else
     echo "Production mode, not implemented"
 fi

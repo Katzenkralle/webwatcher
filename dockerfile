@@ -15,7 +15,7 @@ RUN echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] http://re
 
 # Install dependencies
 RUN apt-get update
-RUN apt-get install -y mongodb-org mariadb-server \
+RUN apt-get install -y mongodb-org mariadb-server mariadb-client libmariadb-dev \
     nginx npm \
     python3 python3-pip
 
@@ -30,10 +30,15 @@ RUN chmod +x /entrypoint.sh
 RUN mkdir /webwatcher
 COPY . /webwatcher
 
-# ToDo: Add sql/mongodb config
+# Setup database and nginx
 RUN rm -rf /etc/mongod.conf /etc/nginx/nginx.conf /etc/mysql/my.cnf
 RUN ln /webwatcher/conf/mongod.conf /etc/mongod.conf
 RUN ln /webwatcher/conf/nginx.conf /etc/nginx/nginx.conf
+RUN mkdir -p /data/mongodb/data /data/mariadb/data
+RUN chown -R mongodb:mongodb /data/mongodb
+RUN chown -R mysql:mysql /data/mariadb
+RUN mysql_install_db --user=mysql --ldata=/data/mariadb/data/
+
 RUN ln /webwatcher/conf/my.cnf /etc/mysql/my.cnf
 
 # Install app dependencies
@@ -43,6 +48,10 @@ RUN npm install --prefix /webwatcher/frontend
 # Building
 # || true to allow failiure
 RUN npm run build --prefix /webwatcher/frontend || true
+
+
+# Misc
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # Run entrypoint
 CMD ["bash", "/entrypoint.sh"]

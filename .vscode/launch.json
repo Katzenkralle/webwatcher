@@ -12,6 +12,13 @@
         ],
         "cwd": "${workspaceFolder}/frontend",
         "console": "integratedTerminal"
+      },
+      {
+        "type": "debugpy",
+        "request": "launch",
+        "name": "Python: Webapi",
+        "cwd": "${workspaceFolder}/backend",
+        "program": "${workspaceFolder}/backend/main.py",
       }
     ]
   }
