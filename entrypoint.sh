@@ -5,13 +5,14 @@ if ss --tcp -4 | grep -q ":27017 "; then
     echo "MongoDB is already running"
 else
     echo "MongoDB is not running, starting it"
-    mongod --config /etc/mongod.conf &
+    su mongo_starter -c 'mongod --config /webwatcher/conf/mongod.conf' &
 fi
 
 if ss --tcp -4 | grep -qE ":3306 |mysql"; then
     echo "MariaDB/MySQL is already running"
 else
     echo "MariaDB/MySQL is not running, starting it"
+    rm /data/mariadb/data/aria_log_control
     mariadbd &
 fi
 

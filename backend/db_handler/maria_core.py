@@ -1,13 +1,27 @@
 import mariadb
+import os
 
+from .misc import libroot
+from .misc import read_sql_blocks
 class MariaDbHandler:
+    SQL_DIR = f"{libroot}/sql/"
+    EXPECTED_TABLES = ['cron_list', 'job_input_settings', 'job_list', 'script_input_info', 'script_list', 'web_users']
+
     def __init__(self, host, user, password, db):
         [self.__conn, self.__cursor] = self.__establish_connection(host, user, password, db)
     
+            
 
-    def check_schema(self):
+    def check_and_build_schema(self):
         self.__cursor.execute("SHOW TABLES")
-        print(self.__cursor.fetchall())
+        existing_tables = list(map(lambda x: x[0], self.__cursor.fetchall()))
+        missing_tables = list(filter(lambda x: x not in existing_tables, self.EXPECTED_TABLES))
+        if len(missing_tables) == 0:
+            return
+        for block in read_sql_blocks(f"{self.SQL_DIR}/create.sql"):
+                self.__cursor.execute(block)
+        self.__conn.commit()
+        
 
     def __establish_connection(self, host, user, password, db):
         conn = mariadb.connect(

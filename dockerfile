@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM debian:trixie-slim
 ENV DEBIAN_FRONTEND=noninteractive
 # Install sys utils
 RUN apt-get update
@@ -46,8 +46,10 @@ RUN ln /webwatcher/conf/mongod.conf /etc/mongod.conf
 RUN ln /webwatcher/conf/nginx.conf /etc/nginx/nginx.conf
 RUN ln /webwatcher/conf/my.cnf /etc/mysql/my.cnf
 
+
+RUN useradd mongo_starter
 RUN mkdir -p /data/mongodb/data /data/mariadb/data
-RUN chown -R mongodb:mongodb /data/mongodb
+RUN chown -R mongo_starter:mongo_starter /data/mongodb
 RUN chown -R mysql:mysql /data/mariadb
 RUN mysql_install_db --user=mysql --ldata=/data/mariadb/data/
 

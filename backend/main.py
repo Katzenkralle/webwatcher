@@ -21,4 +21,4 @@ if __name__ == "__main__":
 
     mongo_handler = MongoDbHandler(mongo_con_string)
     maria_handler = MariaDbHandler(*maria_con_details)
-    maria_handler.check_schema()
+    maria_handler.check_and_build_schema()
