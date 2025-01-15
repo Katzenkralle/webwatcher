@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS web_users (
     username VARCHAR(255) PRIMARY KEY,
-    password VARCHAR(255) NOT NULL,
-    isAdmin BOOLEAN DEFAULT FALSE
+    password VARCHAR(256) NOT NULL,
+    is_admin BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS script_list (

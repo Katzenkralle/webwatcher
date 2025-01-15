@@ -19,6 +19,7 @@
         "name": "Python: Webapi",
         "cwd": "${workspaceFolder}/backend",
         "program": "${workspaceFolder}/backend/main.py",
+        "justMyCode": false
       }
     ]
   }

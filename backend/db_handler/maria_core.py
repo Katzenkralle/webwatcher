@@ -3,12 +3,20 @@ import os
 
 from .misc import libroot
 from .misc import read_sql_blocks
+from .maria_schemas import DbUser
+
+from utility import default_logger as logger
+
+
+
+
 class MariaDbHandler:
     SQL_DIR = f"{libroot}/sql/"
     EXPECTED_TABLES = ['cron_list', 'job_input_settings', 'job_list', 'script_input_info', 'script_list', 'web_users']
 
     def __init__(self, host, user, password, db):
         [self.__conn, self.__cursor] = self.__establish_connection(host, user, password, db)
+        self.check_and_build_schema()
     
             
 
@@ -18,6 +26,7 @@ class MariaDbHandler:
         missing_tables = list(filter(lambda x: x not in existing_tables, self.EXPECTED_TABLES))
         if len(missing_tables) == 0:
             return
+        logger.warning(f"MARIA: Missing tables: {missing_tables}, creating them")
         for block in read_sql_blocks(f"{self.SQL_DIR}/create.sql"):
                 self.__cursor.execute(block)
         self.__conn.commit()
@@ -36,3 +45,15 @@ class MariaDbHandler:
             cursor.execute(f"USE {db}")
         return [conn, cursor]
     
+    async def create_user(self, username: str, password: str, is_admin: bool):
+        self.__cursor.execute("INSERT INTO web_users (username, password, is_admin) VALUES (?, ?, ?)", (username, password, is_admin))
+        self.__conn.commit()
+        return
+    
+    async def get_user(self, username: str) -> DbUser | None:
+        self.__cursor.execute("SELECT * FROM web_users WHERE username = ?", (username,))
+        try:
+            user = self.__cursor.fetchone()
+            return DbUser(*user)
+        except Exception as e:
+            return None

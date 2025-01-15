@@ -46,6 +46,7 @@ class CustomLogger:
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
 
+default_logger = CustomLogger('API').logger
 
 if __name__ == '__main__':
     log = CustomLogger('Test').logger
