@@ -48,7 +48,7 @@ class MariaDbHandler:
     async def create_user(self, username: str, password: str, is_admin: bool):
         self.__cursor.execute("INSERT INTO web_users (username, password, is_admin) VALUES (?, ?, ?)", (username, password, is_admin))
         self.__conn.commit()
-        return
+        return DbUser(username, password, is_admin)
     
     async def get_user(self, username: str) -> DbUser | None:
         self.__cursor.execute("SELECT * FROM web_users WHERE username = ?", (username,))

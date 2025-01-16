@@ -2,8 +2,8 @@ FROM debian:trixie-slim
 ENV DEBIAN_FRONTEND=noninteractive
 # Install sys utils
 RUN apt-get update
-RUN apt upgrade
-RUN apt-get install -y curl gnupg 
+RUN apt upgrade -yq
+RUN apt-get install -yq curl gnupg 
 
 # Add repository
 RUN curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | \
