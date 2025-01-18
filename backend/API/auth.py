@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, APIRouter, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security.utils import get_authorization_scheme_param
 
 from passlib.context import CryptContext
 import bcrypt
@@ -30,13 +31,18 @@ def get_hashed(password: str):
 def generate_token(data: dict):
     return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
 
-async def get_oauth_or_none(request: Request) -> str:
-    try:
-        return await oauth2_scheme(request)
-    except:
-        return ""
+async def retrieve_oauth_token(request: Request) -> str:
+    # 
+    # 
+    token = request.headers.get("Authorization", "")
+    if not token and "oauth2" in request.cookies:
+        token = request.cookies.get("oauth2")
+    scheme, param = get_authorization_scheme_param(token) 
+    # This is a helper function from fastapi that is also called by OAuth2PasswordBearer https://github.com/fastapi/fastapi/blob/master/fastapi/security/oauth2.py
+    # Using this method we can get the token from the Authorization header or the cookie
+    return param
 
-async def get_current_user_or_none(token: Annotated[str, Depends(get_oauth_or_none)], request: Request) -> DbUser | None:
+async def get_current_user_or_none(token: Annotated[str, Depends(retrieve_oauth_token)], request: Request) -> DbUser | None:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         data = json.loads(payload.get("sub", {}))
@@ -74,7 +80,7 @@ def user_guard(reject_unauth: any = None, use_http_exception: bool = False):
 
 def admin_guard(reject_unauth: any = None, reject_user: any = None, use_http_exception: bool = False):
     if not reject_user:
-        reject_user = ErrorMessage(message="Insufficient permissions.", status="auth_error")
+        reject_user = ErrorMessage(message="Insufficient permissions.", status="premission_error")
     def admin_guard_decorator(fn: callable):
         @wraps(fn)
         @user_guard(reject_unauth, use_http_exception)
@@ -99,10 +105,8 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], requ
     # username and password fields (and optionaly scope, grant_type, client_id, client_secret)
     # The endpoint however, must recieve JSON containing the access_token and token_type
     user = await request.state.maria.get_user(form_data.username)
-    if not user:
-        return HTTPException(400)
-    if not hash_context.verify(form_data.password, user.password):
-        return HTTPException(400)
+    if not user or not hash_context.verify(form_data.password, user.password):
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
 
     # Password includet to let token be invalidated
     token = generate_token({"sub": json.dumps({"user": user.username, "hash": user.password})})

@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import Button from "primevue/button"
-import RadioButton from 'primevue/radiobutton';
+import {useAuth} from "@/composable/Auth";
 
 const date = ref(new Date().toLocaleString());
+const user = ref<any>(null);
+
+useAuth().getUser().then((data) => {
+    user.value = data;
+});
+
 let intervalId: number;
 
 onMounted(() => {
@@ -20,6 +26,7 @@ onUnmounted(() => {
 
 <template>
     <h1>Hello World</h1>
+    <p>{{ user }}</p>
     <h3>Vue Test:</h3>
     <p>{{ date }}</p>
     <h3>PrimeVue Test:</h3>

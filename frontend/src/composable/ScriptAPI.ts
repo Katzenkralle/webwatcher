@@ -28,9 +28,15 @@ export function useScriptAPI() {
         }
         );
     }
+    async function submitScript(file: String): Promise<ScriptInfo> {
+        const formData = new FormData();
+        console.log("todo")
+        return { } as ScriptInfo;
+    }
 
     return {
-        validateFile
+        validateFile,
+        submitScript
     };
 
 }

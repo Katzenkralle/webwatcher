@@ -32,6 +32,15 @@ main {
     @apply text-xl mb-2 underline decoration-1 underline-offset-4
 }
 
+.p-password-input {
+    @apply w-full;
+}
+
+button:disabled {
+    @apply !cursor-not-allowed;
+  }
+  
+
 h1 {
     @apply text-4xl font-bold;
 }

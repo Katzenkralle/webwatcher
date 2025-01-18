@@ -8,7 +8,8 @@ import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
 import 'primeicons/primeicons.css';
 
-const GQL_ENDPOINT = 'http://localhost:7001/graphql/'
+export const GQL_ENDPOINT = '/gql'
+export const AUTH_ENDPOINT = '/auth'
 
 const app = createApp(App)
 

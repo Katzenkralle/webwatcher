@@ -7,6 +7,12 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    proxy: {
+      '/auth': 'http://localhost:7001',
+      '/gql': 'http://localhost:7001',
+    }
+  },
   plugins: [
     vue(),
     vueJsx(),

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import InputText from 'primevue/inputtext';
-import FloatLabel from 'primevue/floatlabel';
-import FileUpload from 'primevue/fileupload';
+import FileUpload, {type FileUploadSelectEvent} from 'primevue/fileupload';
 import InlineMessage from 'primevue/inlinemessage';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -16,22 +15,22 @@ import {ref, watch, reactive, computed} from 'vue';
 
 import { useLoadingAnimation} from "@/composable/AppState";
 import { useScriptAPI, type ScriptValidation } from "@/composable/ScriptAPI";
-import GoBack from "@/components/GoBack.vue";
+import "@/components/GoBack.vue";
 
 // reactive needed for deep watch
-const nameStatus = reactive({field: '', severity: 'warn', summary: 'Should be provided.', blacklist: []});
+const nameStatus = reactive<{field: string, severity: string, summary: string, blacklist: string[]}>({field: '', severity: 'warn', summary: 'Should be provided.', blacklist: []});
 const discription = ref('');
 
 const fileStatus = ref<{severity: string, summary: string, params: [string, string][]}>({severity: 'error', summary: 'A file must be provided.', params: []});
 
-const onFileSelect = (file_event) => {
+const onFileSelect = (file_event: FileUploadSelectEvent) => {
     useLoadingAnimation().setState(true);
-    fileStatus.value = {severity: 'warn', summary: 'Validating File...'};
+    fileStatus.value = {severity: 'warn', summary: 'Validating File...',  params: []};
     useScriptAPI().validateFile(file_event.files[0]).then((response: ScriptValidation) => {
         if (response.valid) {
             fileStatus.value = {severity: 'success', summary: 'File is valid.', params: response.parameters};
         } else {
-            fileStatus.value = {severity: 'error', summary: 'File is invalid.'};
+            fileStatus.value = {severity: 'error', summary: 'File is invalid.',  params: []};
         }
         useLoadingAnimation().setState(false);
     });
@@ -39,12 +38,12 @@ const onFileSelect = (file_event) => {
 
 const onSubmit = () => {
     useLoadingAnimation().setState(true);
-    useScriptAPI().uploadScript(nameStatus.field).then((response) => {
-        if (response.success) {
+    useScriptAPI().submitScript(nameStatus.field).then((response) => {
+        if (response) {
             useLoadingAnimation().setState(false);
 
         } else {
-            fileStatus.value = {severity: 'error', summary: 'An error occured.'};
+            fileStatus.value = {severity: 'error', summary: 'An error occured.', params: []};
         }
         useLoadingAnimation().setState(false);
     });
@@ -95,7 +94,6 @@ let noErrors = computed(() => {
                                     id="fileSelect"
                                     mode="basic" 
                                     name="demo[]" 
-                                    auto="false" 
                                     customUpload 
                                     chooseLabel="Select File" 
                                     @select="onFileSelect" 

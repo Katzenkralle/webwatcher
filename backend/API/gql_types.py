@@ -8,6 +8,7 @@ from db_handler.maria_schemas import *
 class ResultType(Enum):
     SUCCESS = "success"
     AUTH_ERROR = "auth_error"
+    PREMISSION_ERROR = "premission_error"
     FAILURE = "failure"
     NETWORK_ERROR = "network_error"
     WARNING = "warning"

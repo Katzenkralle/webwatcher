@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import "@/assets/slight_l_r.css";
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 import { useLoadingAnimation, useStatusMessage } from "@/composable/AppState";
 import DropDownSelector from "@/components/DropDownSelection.vue";
 import { useTableMetaData } from "@/composable/TableAPI";
 import router from "@/router";
 
 const activeDropDown = ref(-1);
+
+
+const isSlimMode = computed(() => {
+    switch (router.currentRoute.value.path) {
+        case '/login':
+            return true;
+        default:
+            return false;
+    }
+}) 
 
 const changeUrl = (_: number, a: number) => {
     router.push('/table/' + a)
@@ -27,28 +37,32 @@ const computeTableOptions = computed(() => {
                 <router-link to="/" class="flex">
                     <img class="selectable-menu-entry" src="@/assets/img/placeholder.png" alt="HOME"/>
                 </router-link>
-                <div class="relative flex flex-col min-w-32"
-                    @mouseleave="activeDropDown = -1">
-                    <button 
-                        class="selectable-menu-entry" 
-                        @mouseover="activeDropDown = 0" 
-                        @click="() => { 
-                            if (activeDropDown === 0) { 
-                                $router.push('/tables'); 
-                            } 
-                        }">
-                        Tables
-                    </button>                    
-                    <DropDownSelector 
-                    :multiSelect="false"
-                    :isActive="activeDropDown == 0 ? true : false"
-                    :options="computeTableOptions"
-                    @close="activeDropDown = -1"
-                    />
-                </div>
-                <router-link to="/scriptUpload" class="flex">
-                    <p>Add Script</p>
-                </router-link>
+                <template v-if="!isSlimMode">
+                    
+                    <div class="relative flex flex-col min-w-32"
+                        @mouseleave="activeDropDown = -1">
+                        <button 
+                            class="selectable-menu-entry" 
+                            @mouseover="activeDropDown = 0" 
+                            @click="() => { 
+                                if (activeDropDown === 0) { 
+                                    $router.push('/tables'); 
+                                } 
+                            }">
+                            Tables
+                        </button>                    
+                        <DropDownSelector 
+                        :multiSelect="false"
+                        :isActive="activeDropDown == 0 ? true : false"
+                        :options="computeTableOptions"
+                        @close="activeDropDown = -1"
+                        />
+                    </div>
+                    <router-link to="/scriptUpload" class="flex">
+                        <p>Add Script</p>
+                    </router-link>
+
+                </template>
 
             </nav>
             <div class="flex flex-row ml-auto mr-1">
