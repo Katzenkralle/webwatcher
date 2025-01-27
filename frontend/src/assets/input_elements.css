@@ -1,0 +1,5 @@
+@reference "./global.css";
+
+textarea {
+    @apply border-2 border-solid rounded-lg transition-all duration-500  hover:border-panel-deep   
+}

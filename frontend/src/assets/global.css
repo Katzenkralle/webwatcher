@@ -1,0 +1,94 @@
+@import 'tailwindcss';
+@import url("./fonts.css");
+
+@theme {
+    --color-base: #303446;
+    --color-panel: #292C3C;
+    --color-panel-deep: #232634;
+    --color-panel-sub: #737994;
+    --color-text: #c6d0f5;
+    --color-text-sub: #a5adce;
+    --color-text-dark: #232634;
+    --color-text-dark-sub: #414559;
+    --color-warning: #ef9f76;
+    --color-success: #a6d189;
+    --color-error: #e78284;
+    --color-info: #8caaee;
+
+    --breakpoint-sm: 640px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1440px;
+
+    --font-display: "Barlow", "sans-serif";
+    --font-display: "Source Code Pro", "serif";
+    --font-display: "Doto", "sans-serif";
+
+    --spacing-128: 32rem;
+    --spacing-144: 36rem;
+    --spacing-20v: 20vh;
+    --spacing-20h: 20vw;
+    --spacing-95h: 95vw;
+    
+    --radius-4xl: 2rem;
+
+}
+
+
+main {
+    @apply min-h-[96vh] relative z-0;
+}
+
+.selectable,.selectable-menu-entry {
+    /* tailwind v-4 dose not jet support @apply for utility classes https://github.com/tailwindlabs/tailwindcss/discussions/14491*/
+    @apply hover:bg-panel-sub/15 cursor-pointer;
+}
+
+.selectable-menu-entry {
+    @apply p-1 text-2xl h-full shrink-0 px-2 hover:text-success ;
+    /* For some reason tailwind fails with the borders*/
+    border-top: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+    border-left: 2px solid ;
+    border-right: 2px solid ;
+    
+}
+.selectable-menu-entry:hover {
+    border-bottom: 2px dashed;
+}
+
+.input-box {
+    @apply my-2 flex flex-col bg-panel px-4 py-2 rounded-lg
+}
+
+.input-box label {
+    @apply text-xl mb-2 underline decoration-1 underline-offset-4
+}
+
+.p-password-input {
+    @apply w-full;
+}
+
+button:disabled {
+    @apply !cursor-not-allowed;
+  }
+  
+
+h1 {
+    @apply text-4xl font-bold;
+}
+h2 {
+    @apply text-3xl font-bold;
+}
+h3 {
+    @apply text-2xl font-bold;
+}
+h4 {
+    @apply text-xl font-bold;
+}
+h5 {
+    @apply text-lg font-bold;
+}
+h6 {
+    @apply text-base font-bold;
+}

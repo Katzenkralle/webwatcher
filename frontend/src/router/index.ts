@@ -5,9 +5,10 @@ import TableView from '@/views/TableView.vue'
 import NotFound from '@/views/NotFound.vue'
 import ScriptUpload from '@/views/UploadScript.vue'
 import Login from '@/views/Login.vue'
+import ScriptOverview from '@/views/ScriptOverview.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
     {
       path: '/',
@@ -34,7 +35,15 @@ const router = createRouter({
       }
     },
     {
-      path: '/scriptUpload',
+      path: '/scripts',
+      name: 'scripts',
+      component: ScriptOverview,
+      meta: {
+        requiresAuth: true,
+      }
+    },
+    {
+      path: '/script/upload',
       name: 'scriptUpload',
       component: ScriptUpload,
       meta: {
