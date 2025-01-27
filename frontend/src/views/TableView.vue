@@ -21,7 +21,6 @@ const rangeOfVisibleData = computed(() => {
     return visibleDatarange.value[1]+1 - visibleDatarange.value[0];
 })
 const init = () => {
-    console.info("Executing init");
     tableMetadata.value = useTableMetaData()
         .localTableMetaData
         .value

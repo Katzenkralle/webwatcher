@@ -58,8 +58,8 @@ const computeTableOptions = computed(() => {
                         @close="activeDropDown = -1"
                         />
                     </div>
-                    <router-link to="/scriptUpload" class="flex">
-                        <p>Add Script</p>
+                    <router-link to="/scripts" class="selectable-menu-entry">
+                        <p>Scripts</p>
                     </router-link>
 
                 </template>
