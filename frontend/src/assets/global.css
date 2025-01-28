@@ -1,19 +1,87 @@
 @import 'tailwindcss';
 @import url("./fonts.css");
-
 @theme {
-    --color-base: #303446;
-    --color-panel: #292C3C;
-    --color-panel-deep: #232634;
-    --color-panel-sub: #737994;
+    --color-text-d: #a8b8f0;
     --color-text: #c6d0f5;
-    --color-text-sub: #a5adce;
-    --color-text-dark: #232634;
-    --color-text-dark-sub: #414559;
-    --color-warning: #ef9f76;
+    --color-text-h: #e9edfb;
+
+    --color-h-text-d: #15161e;
+    --color-h-text: #292c3c;
+    --color-h-text-h: #3e425b;
+
+    --color-base-d: #1f222e;
+    --color-base: #303446;
+    --color-base-h: #3e435b;
+
+    --color-panel-d: var(--color-h-text-d);
+    --color-panel: var(--color-h-text);
+    --color-panel-h: var(--color-h-text-h);
+
+    --color-app-d: #5fb9ad;
+    --color-app: #81c8be;
+    --color-app-h: #a6d8d1;
+
+    --color-crust-h: #33384d;
+    --color-crust: #232634;
+    --color-crust-d: #1e1e2e;
+
+    --color-warning-d: #d8ae5a;
+    --color-warning: #e5c890;
+    --color-warning-h: #ecd7ac;
+
+    --color-success-d: #82bf5a;
     --color-success: #a6d189;
+    --color-success-h: #c8e2b6;
+
+    --color-error-d: #de5456;
     --color-error: #e78284;
+    --color-error-h: #efa9aa;
+
+    --color-info-d: #648be8;
     --color-info: #8caaee;
+    --color-info-h: #bccdf5;
+
+    --color-special-d: #f4f4f4;
+    --color-special: #ca9ee6;
+    --color-special-h: #b271da;
+
+    --color-primary: var(--color-info); /* + selection */
+    --color-primary-contrast: var(--color-h-text);
+    --color-highlight: var(--color-app-d);
+    --color-highlight-emphasis: var(--color-app);
+    --color-primary-emphasis: var(--color-info-h);
+    --color-primary-emphasis-alt: var(--color-info-d);
+
+    --color-primary-0: var(--color-base); 
+    --color-primary-50: var(--color-h-text-d); 
+    --color-primary-100: var(--color-crust); 
+    --color-primary-200: var(--color-crust-d); 
+    --color-primary-300: var(--color-h-text-d); 
+    --color-primary-400: var(--color-h-text); 
+    --color-primary-500: var(--color-crust-d); 
+    --color-primary-600: var(--color-h-text-d); 
+    --color-primary-700: var(--color-base); 
+    --color-primary-800: var(--color-panel-h); 
+    --color-primary-900: var(--color-crust); 
+    --color-primary-950: var(--color-surface-500); 
+
+    --color-surface-0: var(--color-text); 
+    --color-surface-50: var(--color-info-d); 
+    --color-surface-100: var(--color-info); 
+    --color-surface-200: var(--color-info-d); 
+    --color-surface-300: var(--color-success); 
+    --color-surface-400: var(--color-info); /* success border */
+    --color-surface-500: var(--color-crust); 
+    --color-surface-600: var(--color-info); /* border hover */
+    --color-surface-700: var(--color-app); /* border inactive */ 
+    --color-surface-800: var(--color-panel-h); /* table seperator */
+    --color-surface-900: var(--color-crust); /* bg table */ 
+    --color-surface-950: var(--color-crust);  /* bg input */
+
+            
+
+
+    --inset_0_2px_0_0_theme: inset 0 2px 0 0 var(--color-primary);
 
     --breakpoint-sm: 640px;
     --breakpoint-md: 768px;
@@ -31,9 +99,11 @@
     --spacing-95h: 95vw;
     
     --radius-4xl: 2rem;
-
 }
-
+@layer utilities {
+    /* from https://github.com/primefaces/tailwindcss-primeui */
+    @import "./primevue/tailwind.css";
+}
 
 main {
     @apply min-h-[96vh] relative z-0;
@@ -41,7 +111,7 @@ main {
 
 .selectable,.selectable-menu-entry {
     /* tailwind v-4 dose not jet support @apply for utility classes https://github.com/tailwindlabs/tailwindcss/discussions/14491*/
-    @apply hover:bg-panel-sub/15 cursor-pointer;
+    @apply hover:bg-panel-h/15 cursor-pointer;
 }
 
 .selectable-menu-entry {
@@ -90,5 +160,5 @@ h5 {
     @apply text-lg font-bold;
 }
 h6 {
-    @apply text-base font-bold;
+    @apply text-text-d font-bold;
 }

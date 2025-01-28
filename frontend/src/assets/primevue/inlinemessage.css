@@ -1,0 +1,25 @@
+
+.p-inlinemessage {
+    @apply relative p-4 rounded-md border border-solid border-info flex flex-wrap justify-center items-center;
+}
+
+.p-inlinemessage-icon {
+    @apply me-2 w-5 h-5 stroke-[1.5px];
+}
+
+
+.p-inlinemessage-warn {
+    @apply bg-warning-d/50 text-text border-warning;
+}
+
+.p-inlinemessage-info {
+    @apply bg-info-d/50 text-text border-info;
+}
+
+.p-inlinemessage-error {
+    @apply bg-error-d/50 text-text border-error;
+}
+
+.p-inlinemessage-success {
+    @apply bg-success-d/50 text-text border-success;
+}
