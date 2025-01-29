@@ -30,6 +30,6 @@ onUnmounted(() => {
     <h3>Vue Test:</h3>
     <p>{{ date }}</p>
     <h3>PrimeVue Test:</h3>
-    <Button label="Click me" class="bg-panel p-1 border-2 border-info rounded-lg" />
+    <Button label="Click me"/>
     
 </template>

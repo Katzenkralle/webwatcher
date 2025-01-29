@@ -70,7 +70,7 @@ const computeTableOptions = computed(() => {
             </div>
         </div>
 
-        <div id="appStatusBar" class="w-full h-1 bg-panel-deep">
+        <div id="appStatusBar" class="w-full h-1 bg-panel-d">
             <div v-if="useLoadingAnimation().isLoading.value" class="relative w-screen h-1 overflow-hidden">
                 <div class="w-[100px] h-1 bg-info left-to-right"></div>
                 <div class="w-[100px] h-1 bg-info left-to-right" :style="{ animationDelay: '0.25s' }"></div>

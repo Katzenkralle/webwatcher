@@ -24,7 +24,6 @@ export function requireLogin() {
 
 
 export function useAuth() {
-
     const requestToken = async (username: string, password: string) => {
         const formData = new FormData();
         formData.append('username', username);
