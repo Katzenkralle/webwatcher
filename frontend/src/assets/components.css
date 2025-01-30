@@ -9,7 +9,7 @@ main {
 }
 
 .selectable-menu-entry {
-    @apply p-1 text-2xl h-full shrink-0 px-2 hover:text-success ;
+    @apply p-1 text-2xl h-full shrink-0 px-2 hover:text-success px-3;
     /* For some reason tailwind fails with the borders*/
     border-top: 2px solid transparent;
     border-bottom: 2px solid transparent;

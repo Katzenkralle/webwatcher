@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import Button from "primevue/button"
 import {useAuth} from "@/composable/Auth";
-
+import {useStatusMessage} from "@/composable/AppState";
 const date = ref(new Date().toLocaleString());
 const user = ref<any>(null);
 
@@ -21,7 +21,7 @@ onMounted(() => {
 onUnmounted(() => {
     clearInterval(intervalId);
 });
-
+const counter = ref(0);
 </script>
 
 <template>
@@ -31,5 +31,10 @@ onUnmounted(() => {
     <p>{{ date }}</p>
     <h3>PrimeVue Test:</h3>
     <Button label="Click me"/>
-    
+    <Button label="Trigger MSG"
+            @click="() => {
+                useStatusMessage().newStatusMessage(`Hello World ${counter}`, 'info');
+                counter++;
+            }"
+    />
 </template>

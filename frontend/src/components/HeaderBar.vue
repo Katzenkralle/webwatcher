@@ -5,9 +5,14 @@ import { useLoadingAnimation, useStatusMessage } from "@/composable/AppState";
 import DropDownSelector from "@/components/DropDownSelection.vue";
 import { useTableMetaData } from "@/composable/TableAPI";
 import router from "@/router";
+import Button from 'primevue/button';
+import NotificationCenter from "./NotificationCenter.vue";
 
 const activeDropDown = ref(-1);
-
+/*
+-1: none
+0: table
+*/
 
 const isSlimMode = computed(() => {
     switch (router.currentRoute.value.path) {
@@ -31,7 +36,8 @@ const computeTableOptions = computed(() => {
 </script>
 
 <template>
-    <header class="w-full sticky top-0 flex flex-col z-10">
+    <!-- -12 > size nav -->
+    <header class="w-full flex flex-col z-10 sticky" :style="{ top: `calc(var(--spacing) * -12)` }">
         <div class="flex flex-row items-center bg-panel">
             <nav class="flex flex-row h-12">
                 <router-link to="/" class="flex">
@@ -59,15 +65,17 @@ const computeTableOptions = computed(() => {
                         />
                     </div>
                     <router-link to="/scripts" class="selectable-menu-entry">
-                        <p>Scripts</p>
+                        <a>Scripts</a>
                     </router-link>
 
                 </template>
 
             </nav>
-            <div class="flex flex-row ml-auto mr-1">
-                <p class="text-info italic"> {{ useStatusMessage().statusMsg }}</p>
+            <div class="flex flex-row mr-1">
+                <p class="text-info italic"> {{ useStatusMessage().getRecentStatusMessage.value?.msg }}</p>
             </div>
+            <NotificationCenter class="ml-auto" y-expand="bottom" x-expand="left" ></NotificationCenter>
+
         </div>
 
         <div id="appStatusBar" class="w-full h-1 bg-panel-d">

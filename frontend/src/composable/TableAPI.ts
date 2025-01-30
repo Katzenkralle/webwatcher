@@ -1,4 +1,4 @@
-import { ref, type Ref, onMounted} from 'vue';
+import { ref, type Ref} from 'vue';
 import { useStatusMessage } from './AppState';
 const API_ENDPOINT = "/api/";
 
@@ -30,7 +30,7 @@ export function useTableMetaData() {
             localTableMetaData.value = data;
         }).catch(() => {
             console.error("Failed to fetch table metadata");
-            useStatusMessage().setState("Using Test Data");
+            useStatusMessage().newStatusMessage("Using test data", "danger");
             localTableMetaData.value = [
                 {
                     id: 1,
@@ -138,7 +138,7 @@ export function useTableData(activeTable: number) {
             })
             .catch((error) => {
                 console.error("Failed to fetch table data:", error);
-                useStatusMessage().setState("Using Test Data");
+                useStatusMessage().newStatusMessage("Using test data", "danger");
                 let MAX_POS = 10;
                 for (let i = 0; i < length; i++) {
                     if (start_pos + i > MAX_POS) {

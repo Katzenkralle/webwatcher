@@ -81,6 +81,13 @@
 }
 
 @layer primevue {
+  .p-message-danger {
+    /* Due to a bug in primevue the this dose not exist by default*/
+    background: var(--p-message-error-background);
+    outline-color: var(--p-message-error-border-color);
+    color: var(--p-message-error-color);
+    box-shadow: var(--p-message-error-shadow);
+  }
     :root {
         --p-text: var(--color-text) !important;
         --p-base: var(--color-panel) !important;
@@ -240,5 +247,66 @@
         --p-inlinemessage-contrast-border-color: var(--p-crust) !important;
         --p-inlinemessage-contrast-color: var(--p-crust) !important;
         --p-inlinemessage-contrast-shadow: none !important;
-    }
+
+        --p-message-info-background: color-mix(in srgb,var(--color-info),transparent 84%) !important;
+        --p-message-info-border-color: transparent !important;
+        --p-message-info-color: var(--color-info) !important;
+        --p-message-info-shadow: none !important;
+        --p-message-info-close-button-hover-background: rgba(255,255,255,0.05) !important;
+        --p-message-info-close-button-focus-ring-color: var(--p-focus-ring-color) !important;
+        --p-message-info-close-button-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--color-info),transparent 80%) !important;
+        --p-message-info-outlined-color: var(--color-info) !important;
+        --p-message-info-outlined-border-color: var(--color-info) !important;
+        --p-message-info-simple-color: var(--color-info) !important;
+        --p-message-success-background: color-mix(in srgb,var(--color-success),transparent 84%) !important;
+        --p-message-success-border-color: transparent !important;
+        --p-message-success-color: var(--color-success) !important;
+        --p-message-success-shadow: none !important;
+        --p-message-success-close-button-hover-background: rgba(255,255,255,0.05) !important;
+        --p-message-success-close-button-focus-ring-color: var(--p-focus-ring-color) !important;
+        --p-message-success-close-button-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--color-success),transparent 80%) !important;
+        --p-message-success-outlined-color: var(--color-success) !important;
+        --p-message-success-outlined-border-color: var(--color-success) !important;
+        --p-message-success-simple-color: var(--color-success) !important;
+        --p-message-warn-background: color-mix(in srgb,var(--color-warning),transparent 84%) !important;
+        --p-message-warn-border-color: transparent !important;
+        --p-message-warn-color: var(--color-warning) !important;
+        --p-message-warn-shadow: none !important;
+        --p-message-warn-close-button-hover-background: rgba(255,255,255,0.05) !important;
+        --p-message-warn-close-button-focus-ring-color: var(--p-focus-ring-color) !important;
+        --p-message-warn-close-button-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--color-warning),transparent 80%) !important;
+        --p-message-warn-outlined-color: var(--color-warning) !important;
+        --p-message-warn-outlined-border-color: var(--color-warning) !important;
+        --p-message-warn-simple-color: var(--color-warning) !important;
+        --p-message-error-background: color-mix(in srgb,var(--color-error),transparent 84%) !important;
+        --p-message-error-border-color: transparent !important;
+        --p-message-error-color: var(--color-error) !important;
+        --p-message-error-shadow: none !important;
+        --p-message-error-close-button-hover-background: rgba(255,255,255,0.05) !important;
+        --p-message-error-close-button-focus-ring-color: var(--p-focus-ring-color) !important;
+        --p-message-error-close-button-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--color-error),transparent 80%) !important;
+        --p-message-error-outlined-color: var(--color-error) !important;
+        --p-message-error-outlined-border-color: var(--color-error) !important;
+        --p-message-error-simple-color: var(--color-error) !important;
+        --p-message-secondary-background: var(--p-surface-800) !important;
+        --p-message-secondary-border-color: transparent !important;
+        --p-message-secondary-color: var(--p-surface-300) !important;
+        --p-message-secondary-shadow: none !important;
+        --p-message-secondary-close-button-hover-background: var(--p-surface-700) !important;
+        --p-message-secondary-close-button-focus-ring-color: var(--p-focus-ring-color) !important;
+        --p-message-secondary-close-button-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--p-surface-300),transparent 80%) !important;
+        --p-message-secondary-outlined-color: var(--p-surface-400) !important;
+        --p-message-secondary-outlined-border-color: var(--p-surface-400) !important;
+        --p-message-secondary-simple-color: var(--p-surface-400) !important;
+        --p-message-contrast-background: var(--p-surface-0) !important;
+        --p-message-contrast-border-color: transparent !important;
+        --p-message-contrast-color: var(--p-surface-950) !important;
+        --p-message-contrast-shadow: none !important;
+        --p-message-contrast-close-button-hover-background: var(--p-surface-100) !important;
+        --p-message-contrast-close-button-focus-ring-color: var(--p-focus-ring-color) !important;
+        --p-message-contrast-close-button-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--p-surface-950),transparent 80%) !important;
+        --p-message-contrast-outlined-color: var(--p-surface-0) !important;
+        --p-message-contrast-outlined-border-color: var(--p-surface-0) !important;
+        --p-message-contrast-simple-color: var(--p-surface-0) !important;
+  }
 }
