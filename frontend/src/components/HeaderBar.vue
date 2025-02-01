@@ -74,7 +74,7 @@ const computeTableOptions = computed(() => {
             <div class="flex flex-row mr-1">
                 <p class="text-info italic"> {{ useStatusMessage().getRecentStatusMessage.value?.msg }}</p>
             </div>
-            <NotificationCenter class="ml-auto" y-expand="bottom" x-expand="left" ></NotificationCenter>
+            <NotificationCenter class="ml-auto mr-4" y-expand="bottom" x-expand="left" ></NotificationCenter>
 
         </div>
 

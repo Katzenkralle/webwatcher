@@ -9,7 +9,7 @@ export interface StatusMessage {
 }
 
 const isLoading: Ref<boolean> = ref(false);
-const statusMsg: Ref<StatusMessage[]> = ref([]); 
+const statusMsg: Ref<Record<number, StatusMessage>> = ref({});
 
 export const useLoadingAnimation = () => {
     const setState = (value: boolean) => {
@@ -47,31 +47,37 @@ export const useStatusMessage = () => {
                 icon = "pi-expand";
                 break;
         }
-
-        statusMsg.value.push({
+        const keys = Object.keys(statusMsg.value).map(k => k);
+        statusMsg.value[keys.length-1 >=0 ? parseInt(keys[keys.length-1])+1 : 0] = ({
             msg: msg,
             severity: severity,
             time: new Date().toLocaleTimeString(),
-            icon: icon
+            icon: icon,
         });
     }
 
     const removeStatusMessage = (index: number[], all: boolean = false) => {
+        console.log("Removing", index);
         if (all) {
             statusMsg.value = [];
             return;
         }
         index.forEach((i) => {
-            statusMsg.value.splice(i, 1);
+            // For some reason, the index is a string, so we need to convert it to an integer
+            // this happens at some point but I have absolutely no idea where...
+            i = typeof i === "string" ? parseInt(i) : i;
+            statusMsg.value = Object.fromEntries(Object.entries(statusMsg.value).filter(([k, v]) => parseInt(k) !== i));
         });
         return;
     }
 
     const getRecentStatusMessage = computed(() => {
-        if (statusMsg.value.length === 0) {
+        const keys = Object.keys(statusMsg.value).map(k => k);
+        if (keys.length === 0) {
             return null;
         }
-        return statusMsg.value[statusMsg.value.length - 1];
+        const last = parseInt(keys[keys.length-1]);
+        return {"index": last, "msg": statusMsg.value[last]};
     });
 
     const statusMsgList = computed(() => {

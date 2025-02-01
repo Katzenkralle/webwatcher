@@ -1,6 +1,10 @@
 
 main {
-    @apply min-h-[96vh] relative z-0;
+    @apply min-h-[96vh] relative;
+}
+
+main, header, footer {
+    @apply overflow-clip overflow-y-visible;
 }
 
 .selectable,.selectable-menu-entry {

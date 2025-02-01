@@ -310,3 +310,8 @@
         --p-message-contrast-simple-color: var(--p-surface-0) !important;
   }
 }
+
+.w-fit {
+  /* Fix for applying wrong moz */
+    width: -moz-available;
+}

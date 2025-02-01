@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineProps, watch } from 'vue'
+import { ref, defineProps, watch, computed, type Ref } from 'vue'
 import { useStatusMessage, type StatusMessage } from '@/composable/AppState';
 import Button from 'primevue/button';
 import Message from 'primevue/message';
@@ -11,9 +11,30 @@ const props = defineProps<{
 
 const isOpendInteractive = ref<"interactivly" | "display" | null>(null);
 
-const displayedMessages = ref<StatusMessage[]>([]);
+const displayedMessages: Ref<Record<number, StatusMessage>> = ref({})
 const progress = ref<number>(0);
 const PROGRESS_DURATION = 2000;
+
+const prevNotificationHeader = ref<string>("");
+const notificationHeader = computed(() => {
+    if (!isOpendInteractive.value){
+        return prevNotificationHeader.value;
+    }
+    const mode_connection = () => {
+        switch (isOpendInteractive.value) {
+            case "interactivly":
+                return "pending";
+            case "display":
+                return "new";
+            default:
+                return "";
+        }
+    }
+    const len = Object.keys(displayedMessages.value).length;
+    const header = `${len} ${mode_connection()} Notification${len > 1 ? 's' : ''}`;
+    prevNotificationHeader.value = header;
+    return header;
+});
 
 watch(isOpendInteractive, (val, old_val) => {
     if (val == "interactivly") {
@@ -22,51 +43,68 @@ watch(isOpendInteractive, (val, old_val) => {
     if (val == null && old_val == "interactivly") {
         setTimeout(() => {
             isOpendInteractive.value = null;
+            displayedMessages.value = [];
         }, 700);
     }
 });
 
-watch(useStatusMessage().getRecentStatusMessage, (msg) => {
-    if (msg == null || isOpendInteractive.value == "interactivly") return;
+watch(useStatusMessage().getRecentStatusMessage, (last_msg) => {
+    if (last_msg == null || isOpendInteractive.value == "interactivly") return;
     isOpendInteractive.value = "display";
-    displayedMessages.value.includes(msg) ? null : displayedMessages.value.push(msg)
+    displayedMessages.value[last_msg.index] = last_msg.msg;
     progress.value = 0;
-    let prev_progress: number
     const interval = setInterval(() => {
-        if (prev_progress === progress.value || isOpendInteractive.value == "interactivly" || !displayedMessages.value) {
+        let last_index = parseInt(Object.keys(displayedMessages.value)[Object.keys(displayedMessages.value).length - 1]);
+        if (isOpendInteractive.value == "interactivly" || last_index != last_msg.index) {
             // exit early if new message is displayed or the notification is opend interactively
             // or the notification is cleared
             clearInterval(interval);
         }
-        prev_progress = progress.value;
         progress.value += 25;
-        if (progress.value >= 100) {
+        if (progress.value > 100) {
             clearInterval(interval);
             isOpendInteractive.value = null;
             setTimeout(() => {
                 progress.value = 0;
+                displayedMessages.value = [];
             }, 700);
         }
     }, PROGRESS_DURATION/4);
 });
 
-const removeMessage = (msg: StatusMessage) => {
-    const index = useStatusMessage().statusMsgList.value?.indexOf(msg);
-    if (index !== undefined && index !== null) {
-        useStatusMessage().removeStatusMessage([index]);
+watch(
+  () => useStatusMessage().statusMsgList.value,
+  (msgList) => {
+    if (isOpendInteractive.value === "interactivly") {
+      displayedMessages.value = msgList;
+    } else if (isOpendInteractive.value === "display") {
+      // Only include messages that are in both msgList and displayedMessages by key
+      displayedMessages.value = Object.keys(displayedMessages.value)
+        .filter(key => key in msgList)
+        .reduce((obj, key) => {
+          // Type assertion to ensure TypeScript understands that the key exists in the object
+          (obj as Record<string, any>)[key] = displayedMessages.value[parseInt(key)];
+          return obj;
+        }, {} as Record<string, any>);
     }
-}
+  },
+  { deep: true }
+);
+
+
 
 </script>
 
 <template>
     <div class="">
     <Button icon="pi pi-clock" class="ml-auto" 
-    :severity="useStatusMessage().getRecentStatusMessage.value?.severity" 
+    :severity="useStatusMessage().getRecentStatusMessage.value?.msg.severity" 
     @click="isOpendInteractive != null ? isOpendInteractive = null : isOpendInteractive = 'interactivly'"></Button>
     <div class="relative">
-        <div :class="{'absolute bg-panel rounded-lg overflow-hidden transition-all duration-700 min-w-64 border-2 border border-app': true,
-                'invisable opacity-0': isOpendInteractive == null,
+        <div :class="{
+                'absolute flex flex-col bg-panel w-screen md:w-128 rounded-lg transition-all duration-700 border-2 border-app': true,
+                'max-h-0 translate-x-full invisible opacity-0 ': !isOpendInteractive, 
+                'max-h-[100vh]  opacity-100 visible': isOpendInteractive,
                 'right-0': props.xExpand == 'left',
                 'left-0': props.xExpand == 'right',
                 'bottom-0': props.yExpand == 'top',
@@ -74,38 +112,63 @@ const removeMessage = (msg: StatusMessage) => {
                 'left-1/2 transform -translate-x-1/2': props.yExpand == 'center',
                 'top-1/2 transform -translate-y-1/2': props.xExpand == 'center',
         }">
-            <div class="flex flex-col h-full w-full p-3 overflow-y-scroll">
-                <h3 class="mx-auto">{{ (isOpendInteractive == "display" ? "New " : "") + "Notifications"}}</h3>
-                <div v-if="displayedMessages" v-for="msg in displayedMessages">
-                    <Message
-                        class="border border-2 mt-2" 
-                        :severity="msg.severity" 
-                        closable
-                        @close="removeMessage(msg)"> 
-                        <template #icon>
-                            <i :class="`pi ${msg.icon}`"></i>
-                        </template>
-                        <template #closeicon>
-                            <i class="pi pi-times-circle"></i>
-                        </template>                     
-                        <span class="flex flex-col">
-                            <p>{{ msg.msg }}</p>
-                            <p class="text-xs">{{ msg.time }}</p>
-                        </span>
-                    </Message>
+            <div class="absolute top-0 right-0 mt-2 mr-2" v-if="isOpendInteractive == 'interactivly'">
+                <Button @click="() => {
+                    isOpendInteractive = null;
+                }" severity="danger" class="ml-auto" icon="pi pi-times"></Button>
+            </div>
+
+
+            <div class="flex flex-col h-full w-full p-3 overflow-y-scroll overflow-x-hidden">
+                <h3 class="mx-auto mb-4 mt-2">{{ notificationHeader }}</h3>
+                <div class="grid grid-cols-3 gap-y-4 justify-items-stretch">
+                    <template v-if="Object.keys(displayedMessages).length" v-for="(msg, index) in displayedMessages" >
+                            <span class="grid_element col-span-2">
+                                <Message
+                                    class="border border-2 w-full h-full"
+                                    :severity="msg.severity">   
+                                    <template #icon>
+                                        <i :class="`pi ${msg.icon}`"></i>
+                                    </template>
+                                    <template #closeicon>
+                                        <i class="pi pi-times-circle"></i>
+                                    </template>                     
+                                    <span class="flex flex-col">
+                                        <p>{{ msg.msg }}</p>
+                                        <p class="text-xs">{{ msg.time }}</p>
+                                    </span>
+                            </Message>
+                            </span>
+                            <span class="grid_element">
+                                <Button @click="() => {
+                                    useStatusMessage().removeStatusMessage([index]);
+                                }" class="h-full w-fit text-center ml-2" label="Remove"></Button>
+                            </span>    
+                    </template>
+                    <template v-else>
+                        <p class="col-span-3 justify-stretch text-center">No Messages</p>
+                    </template>
                 </div>
-                <div v-else>
-                    <p>No new notifications</p>
-                </div>
-                <div class="w-full h-[2px] relative mt-4">
-                    <div id="progress" :class="{
-                        'bg-info h-full transition-all ease-linear': true,
-                        ['duration-' + PROGRESS_DURATION / 4]: true,
-                        'invisible': isOpendInteractive == 'interactivly',
-                    }" :style="`width: ${progress}%`"></div>
+                
+                <div :class="{'w-full h-[4px] rounded-lg relative mt-4 bg-crust-d': true,
+                            'invisible': isOpendInteractive == 'interactivly'}">
+                    <div id="progress" class="bg-info h-full transition-all ease-linear,
+                    }" :style="`width: ${progress}%; transition-duration: ${(PROGRESS_DURATION / 4)}ms`"></div>
                 </div>
             </div>
         </div>
         </div>
     </div>
 </template>
+
+
+<style lang="css" scoped>
+.grid_element::after {
+    content: "";
+    display: block;
+    border-bottom: 2px solid var(--color-text-d);
+    transform: translate(0px, calc(var(--spacing) * 2));
+    width: 100%;
+}
+
+</style>
