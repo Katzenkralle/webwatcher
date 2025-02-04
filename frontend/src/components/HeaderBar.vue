@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import "@/assets/slight_l_r.css";
 import { ref, computed } from "vue";
 import { useLoadingAnimation, useStatusMessage } from "@/composable/AppState";
 import DropDownSelector from "@/components/DropDownSelection.vue";
@@ -7,6 +6,8 @@ import { useTableMetaData } from "@/composable/TableAPI";
 import router from "@/router";
 import Button from 'primevue/button';
 import NotificationCenter from "./NotificationCenter.vue";
+
+import LoadingBar from "./LoadingBar.vue";
 
 const activeDropDown = ref(-1);
 /*
@@ -78,12 +79,6 @@ const computeTableOptions = computed(() => {
 
         </div>
 
-        <div id="appStatusBar" class="w-full h-1 bg-panel-d">
-            <div v-if="useLoadingAnimation().isLoading.value" class="relative w-screen h-1 overflow-hidden">
-                <div class="w-[100px] h-1 bg-info left-to-right"></div>
-                <div class="w-[100px] h-1 bg-info left-to-right" :style="{ animationDelay: '0.25s' }"></div>
-                <div class="w-[100px] h-1 bg-info left-to-right" :style="{ animationDelay: '0.5s' }"></div>
-            </div>
-        </div>
+        <LoadingBar :isLoading="useLoadingAnimation().isLoading" />
     </header>
 </template>

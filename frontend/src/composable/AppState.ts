@@ -9,7 +9,6 @@ export interface StatusMessage {
 }
 
 const isLoading: Ref<boolean> = ref(false);
-const statusMsg: Ref<Record<number, StatusMessage>> = ref({});
 
 export const useLoadingAnimation = () => {
     const setState = (value: boolean) => {
@@ -21,7 +20,12 @@ export const useLoadingAnimation = () => {
     }; 
 };
 
+const statusMsg: Ref<Record<number, StatusMessage>> = ref({});
+const msgCounter: Ref<number> = ref(-1);
+
 export const useStatusMessage = () => {
+    let previousStatusMessage: { index: number, msg: StatusMessage } | null = null;
+
     const newStatusMessage = (msg: string, severity: "secondary" | "success" | "info" | "warn" | "help" | "danger" | "contrast") => {
         let icon = "";
         switch (severity) {
@@ -47,8 +51,8 @@ export const useStatusMessage = () => {
                 icon = "pi-expand";
                 break;
         }
-        const keys = Object.keys(statusMsg.value).map(k => k);
-        statusMsg.value[keys.length-1 >=0 ? parseInt(keys[keys.length-1])+1 : 0] = ({
+        msgCounter.value += 1;
+        statusMsg.value[msgCounter.value] = ({
             msg: msg,
             severity: severity,
             time: new Date().toLocaleTimeString(),
@@ -77,6 +81,10 @@ export const useStatusMessage = () => {
             return null;
         }
         const last = parseInt(keys[keys.length-1]);
+        if (previousStatusMessage && previousStatusMessage.index >= last) {
+            return previousStatusMessage;
+        }
+        previousStatusMessage = {"index": last, "msg": statusMsg.value[last]};
         return {"index": last, "msg": statusMsg.value[last]};
     });
 

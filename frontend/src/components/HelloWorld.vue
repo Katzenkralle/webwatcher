@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import Button from "primevue/button"
 import {useAuth} from "@/composable/Auth";
-import {useStatusMessage} from "@/composable/AppState";
+import {useStatusMessage, useLoadingAnimation} from "@/composable/AppState";
 const date = ref(new Date().toLocaleString());
 const user = ref<any>(null);
 
@@ -30,7 +30,8 @@ const counter = ref(0);
     <h3>Vue Test:</h3>
     <p>{{ date }}</p>
     <h3>PrimeVue Test:</h3>
-    <Button label="Click me"/>
+    <Button label="Toggle loading"
+        @click="useLoadingAnimation().isLoading.value = !useLoadingAnimation().isLoading.value"/>
     <Button label="Trigger MSG"
             @click="() => {
                 useStatusMessage().newStatusMessage(`Hello World ${counter}`, 'info');

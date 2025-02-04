@@ -14,8 +14,19 @@ const isOpendInteractive = ref<"interactivly" | "display" | null>(null);
 const displayedMessages: Ref<Record<number, StatusMessage>> = ref({})
 const progress = ref<number>(0);
 const PROGRESS_DURATION = 2000;
+const OPEN_CLOSE_DURATION = 700; // Define the duration constant
 
 const prevNotificationHeader = ref<string>("");
+
+const resetStateIfClosed = () => {
+    setTimeout(() => {
+        if (isOpendInteractive.value == null) {
+            displayedMessages.value = [];
+            progress.value = 0;
+        }
+    }, OPEN_CLOSE_DURATION);
+}
+
 const notificationHeader = computed(() => {
     if (!isOpendInteractive.value){
         return prevNotificationHeader.value;
@@ -41,10 +52,7 @@ watch(isOpendInteractive, (val, old_val) => {
         displayedMessages.value = useStatusMessage().statusMsgList.value;
     }
     if (val == null && old_val == "interactivly") {
-        setTimeout(() => {
-            isOpendInteractive.value = null;
-            displayedMessages.value = [];
-        }, 700);
+        resetStateIfClosed();
     }
 });
 
@@ -55,21 +63,18 @@ watch(useStatusMessage().getRecentStatusMessage, (last_msg) => {
     progress.value = 0;
     const interval = setInterval(() => {
         let last_index = parseInt(Object.keys(displayedMessages.value)[Object.keys(displayedMessages.value).length - 1]);
-        if (isOpendInteractive.value == "interactivly" || last_index != last_msg.index) {
+        if (isOpendInteractive.value == "interactivly" || (!isNaN(last_index) && last_index != last_msg.index)) {
             // exit early if new message is displayed or the notification is opend interactively
             // or the notification is cleared
             clearInterval(interval);
         }
         progress.value += 25;
-        if (progress.value > 100) {
+        if (progress.value > 100 || isOpendInteractive.value == null || isNaN(last_index)) {
             clearInterval(interval);
             isOpendInteractive.value = null;
-            setTimeout(() => {
-                progress.value = 0;
-                displayedMessages.value = [];
-            }, 700);
+            resetStateIfClosed();
         }
-    }, PROGRESS_DURATION/4);
+    }, (PROGRESS_DURATION/4));
 });
 
 watch(
@@ -102,9 +107,10 @@ watch(
     @click="isOpendInteractive != null ? isOpendInteractive = null : isOpendInteractive = 'interactivly'"></Button>
     <div class="relative">
         <div :class="{
-                'absolute flex flex-col bg-panel w-screen md:w-128 rounded-lg transition-all duration-700 border-2 border-app': true,
-                'max-h-0 translate-x-full invisible opacity-0 ': !isOpendInteractive, 
-                'max-h-[100vh]  opacity-100 visible': isOpendInteractive,
+                'absolute flex flex-col bg-panel w-screen md:w-128 rounded-lg transition-all border-2 border-app': true,
+                [`duration-${OPEN_CLOSE_DURATION}`]: true, 
+                'max-h-0 translate-x-full invisible opacity-0': !isOpendInteractive, 
+                'max-h-[100vh] opacity-100 visible': isOpendInteractive,
                 'right-0': props.xExpand == 'left',
                 'left-0': props.xExpand == 'right',
                 'bottom-0': props.yExpand == 'top',
@@ -142,7 +148,7 @@ watch(
                             <span class="grid_element">
                                 <Button @click="() => {
                                     useStatusMessage().removeStatusMessage([index]);
-                                }" class="h-full w-fit text-center ml-2" label="Remove"></Button>
+                                }" class="h-full w-fit text-center ml-2 animate-fade-in" label="Remove"/>
                             </span>    
                     </template>
                     <template v-else>
@@ -152,8 +158,8 @@ watch(
                 
                 <div :class="{'w-full h-[4px] rounded-lg relative mt-4 bg-crust-d': true,
                             'invisible': isOpendInteractive == 'interactivly'}">
-                    <div id="progress" class="bg-info h-full transition-all ease-linear,
-                    }" :style="`width: ${progress}%; transition-duration: ${(PROGRESS_DURATION / 4)}ms`"></div>
+                    <div id="progress" class="bg-info h-full transition-all ease-linear" 
+                        :style="`width: ${progress}%; transition-duration: ${(PROGRESS_DURATION / 4)}ms;`"/>
                 </div>
             </div>
         </div>
