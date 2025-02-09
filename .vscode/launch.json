@@ -17,6 +17,12 @@
         "type": "debugpy",
         "request": "launch",
         "name": "Python: Webapi",
+        "env": {
+          "CRYPTO_SECRET_KEY": "51bc0c1562e265a67af236137d6b17f14e5e1c5c580c066dff775b2d53f05d04",
+          "CRYPTO_ALGORITHM": "HS256",
+          "APP_DEV_MODE": "True",
+          "APP_LOG_LEVEL": "debug",
+        },
         "cwd": "${workspaceFolder}/backend",
         "program": "${workspaceFolder}/backend/main.py",
         "justMyCode": false

@@ -1,40 +1,21 @@
 import uvicorn
 from API.core import get_routes
+from configurator import Config
+
+from utility.custom_logging import CustomLogger
+from utility import DEFAULT_LOGGER
+
 
 from db_handler import MongoDbHandler, MariaDbHandler
-from utility import default_logger as logger
-
-from dotenv import dotenv_values
-from fastapi import FastAPI, middleware
-
-import os
-from fastapi.routing import APIRoute
+from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+
+
 
 def establish_db_connections():
     # ToDo: Think about using connection pools
     # Setup everything
-    logger.info("Starting the API")
-    dotenv = dotenv_values(".env")
-    mongo_con_string = os.environ.get("EXTERNAL_MONGO", "")
-    if mongo_con_string == "":
-        logger.info("Using local mongo connection")
-        mongo_con_string = dotenv["MONGO_PATH_PORT"]
-    else:
-        logger.info("Using external mongo connection")
-    maria_con_details = [os.environ.get("EXTERNAL_MARIA", "")]
-    if maria_con_details[0] == "":
-        logger.info("Using local maria connection")
-        maria_con_details = [dotenv["MARIA_HOST"], 
-                                dotenv["MARIA_USER"], 
-                                dotenv["MARIA_PASS"], 
-                                dotenv["MARIA_DB"]]
-    else:
-        logger.info("Using external maria connection")
-        maria_con_details.append(os.environ.get("MARIA_USER", ""))
-        maria_con_details.append(os.environ.get("MARIA_PASS", ""))
-        maria_con_details.append(os.environ.get("MARIA_DB", ""))
-    return [MongoDbHandler(mongo_con_string), MariaDbHandler(*maria_con_details)]
+    return [MongoDbHandler(Config().mongo), MariaDbHandler(Config().maria)]
 
 
 def create_app():
@@ -65,5 +46,11 @@ def create_app():
     return app
 
 if __name__ == "__main__":
+    CustomLogger.set_default_log_opperation(level=Config().app.log_level, dev=Config().app.dev_mode)
     app = create_app()
-    uvicorn.run(app, host="127.0.0.1", port=7000)
+    DEFAULT_LOGGER.info(f"Starting server at {Config().app.host}:{Config().app.port}")
+    uvicorn.run(app, 
+        host=Config().app.host,
+        port=Config().app.port,
+        log_level=Config().app.log_level,
+        log_config=CustomLogger.get_uvicorn_logging_config())

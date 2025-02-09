@@ -1,11 +1,10 @@
 import mariadb
-import os
 
 from .misc import libroot
 from .misc import read_sql_blocks
 from .maria_schemas import DbUser
 
-from utility import default_logger as logger
+from utility import DEFAULT_LOGGER as logger
 
 
 
@@ -14,8 +13,15 @@ class MariaDbHandler:
     SQL_DIR = f"{libroot}/sql/"
     EXPECTED_TABLES = ['cron_list', 'job_input_settings', 'job_list', 'script_input_info', 'script_list', 'web_users']
 
-    def __init__(self, host, user, password, db):
-        [self.__conn, self.__cursor] = self.__establish_connection(host, user, password, db)
+    def __init__(self, maria_config):
+        logger.debug("MARIA: Initializing MariaDbHandler")
+        [self.__conn, self.__cursor] = self.__establish_connection(
+            maria_config.host,
+            maria_config.port,
+            maria_config.user,
+            maria_config.password,
+            maria_config.database
+        )
         self.check_and_build_schema()
     
             
@@ -32,10 +38,11 @@ class MariaDbHandler:
         self.__conn.commit()
         
 
-    def __establish_connection(self, host, user, password, db):
+    def __establish_connection(self, host, port, user, password, db):
         conn = mariadb.connect(
             host=host,
             user=user,
+            port=port,
             password=password,
             database=db if db != "" and None else None
         )

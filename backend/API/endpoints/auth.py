@@ -15,15 +15,16 @@ import json
 from functools import wraps
 
 from db_handler.maria_schemas import DbUser
-from .gql_types import ErrorMessage
+from ..gql_types import ErrorMessage
+from configurator import Config
 
 hash_context = CryptContext(schemes=["bcrypt"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
 # ToDo: Move to .env
-SECRET_KEY = "51bc0c1562e265a67af236137d6b17f14e5e1c5c580c066dff775b2d53f05d04"
-ALGORITHM = "HS256"
+SECRET_KEY = Config().crypto.secret_key
+ALGORITHM = Config().crypto.algorithm
 
 def get_hashed(password: str):
     return hash_context.hash(password)
@@ -95,8 +96,9 @@ def admin_guard(reject_unauth: any = None, reject_user: any = None, use_http_exc
 
 router = APIRouter(prefix="/auth")
 @router.post("/token_test")
-async def test_token(user: DbUser = Depends(get_current_user)):
+async def test_token(form_string: str, Request: Request) -> DbUser | None:
     # This is just a test endpoint to see if the token is working
+    user = await get_current_user_or_none(token=form_string, request=Request)
     return user
 
 @router.post("/token")

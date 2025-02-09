@@ -31,6 +31,8 @@ class ColoredLogger(logging.StreamHandler):
 # The CustomLogger class is a wrapper around the built-in Logger class.
 # It sets up a colored logger with a given application name.
 class CustomLogger:
+    default_format = "%(asctime)s: %(levelname)-8s- %(name)s - %(message)s"
+
     def __init__(self, application_name: str):
         """
         Initialize a new instance of the CustomLogger class.
@@ -42,11 +44,70 @@ class CustomLogger:
 
         # Set up a colored logger handler and add it to the logger.
         handler = ColoredLogger()
-        formatter = logging.Formatter('%(levelname)s - %(filename)s:%(lineno)d - %(message)s')
+        formatter = logging.Formatter(self.default_format)
         handler.setFormatter(formatter)
+        self.logger.propagate = False
         self.logger.addHandler(handler)
+    
+    def update_format(self, new_format):
+        """
+        Update the format of the logger.
+        """
+        formatter = logging.Formatter(new_format)
+        for handler in self.logger.handlers:
+            handler.setFormatter(formatter)
 
-default_logger = CustomLogger('API').logger
+    @staticmethod
+    def set_default_log_opperation(level, dev=False):
+        """
+        Set the default logger style to colored.
+        """
+        if dev:
+            CustomLogger.default_format = "%(asctime)s: %(levelname)-8s- %(name)s - %(module)s.%(funcName)s:%(lineno)d - %(message)s"
+        else:
+            CustomLogger.default_format = "%(asctime)s: %(levelname)-8s- %(name)s - %(message)s"
+
+        internal_level = None
+        match level:
+            case "debug":
+                internal_level = logging.DEBUG
+            case "info":
+                internal_level = logging.INFO
+            case "warning":
+                internal_level = logging.WARNING
+            case "error":
+                internal_level = logging.ERROR
+            case "critical":
+                internal_level = logging.CRITICAL
+            case _:
+                internal_level = logging.NOTSET   
+    
+        logging.basicConfig(level=internal_level, format=CustomLogger.default_format, handlers=[ColoredLogger()])
+        LOGGER_INSTANCE.update_format(CustomLogger.default_format)
+
+    @staticmethod
+    def get_uvicorn_logging_config():
+        """
+        Get the logging configuration for Uvicorn.
+        """
+        return {
+            "version": 1,
+            "disable_existing_loggers": False,
+            "handlers": {
+                "default": {
+                    "class": "logging.StreamHandler",
+                    "formatter": "default",
+                },
+            },
+            "formatters": {
+                "default": {
+                    "format": CustomLogger.default_format,
+                },
+            }
+        }
+
+LOGGER_INSTANCE = CustomLogger("DEFAULT_API")
+
 
 if __name__ == '__main__':
     log = CustomLogger('Test').logger

@@ -1,10 +1,7 @@
 import strawberry
 
 from .auth import get_hashed, admin_guard, user_guard
-from .gql_types import ResultType, ErrorMessage, UserResult
-
-
-
+from ..gql_types import ResultType, ErrorMessage, UserResult
 
 @strawberry.type
 class Mutation:

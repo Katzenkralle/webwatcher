@@ -1,9 +1,12 @@
 import pymongo
-from utility import default_logger as logger
+from utility import DEFAULT_LOGGER as logger
+import logging
 
 class MongoDbHandler:
-    def __init__(self, mongo_con_string):
-        self.__db = self.__establish_connection(mongo_con_string)
+    def __init__(self, mongo_config):
+        logger.debug("MONGO: Initializing MongoDbHandler")
+        logging.getLogger("pymongo.topology").setLevel(logging.INFO) # Suppressing pymongo hartbeat logs
+        self.__db = self.__establish_connection(mongo_config.connection_string)
         self.check_or_create_collection("webwatcher_data")
 
     def __establish_connection(self, mongo_con_string) -> pymongo.MongoClient:
