@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTableMetaData, type TableMetaData } from "@/composable/TableAPI";
+import { useTableMetaData, type TableMetaData } from "@/composable/api/TableAPI";
 import router from "@/router";
 
 
@@ -9,7 +9,7 @@ import ColumnGroup from 'primevue/columngroup';   // optional
 import Row from 'primevue/row';                   // optional
 
 import { ref, watch, onMounted, computed } from "vue";
-import { useTableData } from "@/composable/TableAPI";
+import { useTableData } from "@/composable/api/TableAPI";
 
 
 const DEFAULT_VISIBLE_DATA_RANGE = 2;

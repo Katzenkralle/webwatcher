@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, defineProps, watch, computed, type Ref } from 'vue'
-import { useStatusMessage, type StatusMessage } from '@/composable/AppState';
+import { useStatusMessage, type StatusMessage } from '@/composable/core/AppState';
 import Button from 'primevue/button';
 import Message from 'primevue/message';
 

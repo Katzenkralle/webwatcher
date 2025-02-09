@@ -1,5 +1,5 @@
 import { ref, type Ref} from 'vue';
-import { useStatusMessage } from './AppState';
+import { useStatusMessage } from '../core/AppState';
 const API_ENDPOINT = "/api/";
 
 export interface TableMetaData {

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import router from '@/router';
 import { DataTable, Column, Button } from 'primevue';
 const scripts = [
     { name: 'Script1', path: '/path/to/script1', description: 'Description of Script1' },

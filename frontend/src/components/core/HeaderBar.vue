@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { useLoadingAnimation, useStatusMessage } from "@/composable/AppState";
-import DropDownSelector from "@/components/DropDownSelection.vue";
-import { useTableMetaData } from "@/composable/TableAPI";
+import { useLoadingAnimation, useStatusMessage } from "@/composable/core/AppState";
+import DropDownSelector from "@/components/reusables/DropDownSelection.vue";
+import { useTableMetaData } from "@/composable/api/TableAPI";
 import router from "@/router";
 import Button from 'primevue/button';
 import NotificationCenter from "./NotificationCenter.vue";
 
-import LoadingBar from "./LoadingBar.vue";
+import LoadingBar from "@/components/reusables/LoadingBar.vue";
 
 const activeDropDown = ref(-1);
 /*
@@ -72,9 +72,6 @@ const computeTableOptions = computed(() => {
                 </template>
 
             </nav>
-            <div class="flex flex-row mr-1">
-                <p class="text-info italic"> {{ useStatusMessage().getRecentStatusMessage.value?.msg }}</p>
-            </div>
             <NotificationCenter class="ml-auto mr-4" y-expand="bottom" x-expand="left" ></NotificationCenter>
 
         </div>

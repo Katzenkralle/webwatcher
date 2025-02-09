@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import TableOverview from '../views/TableOverview.vue'
-import TableView from '@/views/TableView.vue'
-import NotFound from '@/views/NotFound.vue'
-import ScriptUpload from '@/views/UploadScript.vue'
-import Login from '@/views/Login.vue'
-import ScriptOverview from '@/views/ScriptOverview.vue'
+import HomeView from '../views/core/HomeView.vue'
+import TableOverview from '../views/jobs/TableOverview.vue'
+import TableView from '@/views/jobs/TableView.vue'
+import NotFound from '@/views/core/NotFound.vue'
+import ScriptUpload from '@/views/scripts/UploadScript.vue'
+import Login from '@/views/core/Login.vue'
+import ScriptOverview from '@/views/scripts/ScriptOverview.vue'
 
 const router = createRouter({
   history: createWebHistory(),

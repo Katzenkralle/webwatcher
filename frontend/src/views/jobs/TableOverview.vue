@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import { useTableMetaData } from "@/composable/TableAPI";
-
-import { onMounted } from "vue";
-
+import { useTableMetaData } from "@/composable/api/TableAPI";
 
 </script>
 

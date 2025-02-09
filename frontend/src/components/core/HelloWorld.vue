@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import Button from "primevue/button"
-import {useAuth} from "@/composable/Auth";
-import {useStatusMessage, useLoadingAnimation} from "@/composable/AppState";
+import {useAuth} from "@/composable/api/Auth";
+import {useStatusMessage, useLoadingAnimation} from "@/composable/core/AppState";
 const date = ref(new Date().toLocaleString());
 const user = ref<any>(null);
 

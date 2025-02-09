@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import {ref} from 'vue';
-import router from '@/router';
-import {useAuth, type AuthResponse} from "@/composable/Auth";
+import {useAuth, type AuthResponse} from "@/composable/api/Auth";
 import InputText from "primevue/inputtext";
 import Password from "primevue/password";
 import Button from "primevue/button";
 import InlineMessage from 'primevue/inlinemessage';
 
-import { useLoadingAnimation, useQueryRouting } from '@/composable/AppState';
+import { useLoadingAnimation, useQueryRouting } from '@/composable/core/AppState';
 const username = ref('');
 const password = ref('');
 const auth_error = ref('');

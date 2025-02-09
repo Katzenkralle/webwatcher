@@ -13,9 +13,9 @@ import InputGroupAddon from 'primevue/inputgroupaddon';
 
 import {ref, watch, reactive, computed} from 'vue';
 
-import { useLoadingAnimation} from "@/composable/AppState";
-import { useScriptAPI, type ScriptValidation } from "@/composable/ScriptAPI";
-import "@/components/GoBack.vue";
+import { useLoadingAnimation} from "@/composable/core/AppState";
+import { useScriptAPI, type ScriptValidation } from "@/composable/api/ScriptAPI";
+import "@/components/reusables/GoBack.vue";
 
 // reactive needed for deep watch
 const nameStatus = reactive<{field: string, severity: string, summary: string, blacklist: string[]}>({field: '', severity: 'warn', summary: 'Should be provided.', blacklist: []});
@@ -73,7 +73,7 @@ let noErrors = computed(() => {
     <main class="flex flex-col items-center w-screen">
             <GoBack />
             <h1>Upload Script</h1>
-            <form class="card flex flex-col w-fit w-max-screen w-min-3/2">
+            <form class="card flex flex-col">
                     <div class="input-box">
                         <label for="scriptName">Script Name</label>
                         <InputText id="scriptName" aria-describedby="scriptNameHelp" v-model="nameStatus.field" />
