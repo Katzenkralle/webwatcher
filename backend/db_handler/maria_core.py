@@ -1,10 +1,12 @@
 import mariadb
+import asyncio
 
 from .misc import libroot
 from .misc import read_sql_blocks
 from .maria_schemas import DbUser
 
 from utility import DEFAULT_LOGGER as logger
+from configurator import Config
 
 
 
@@ -13,7 +15,7 @@ class MariaDbHandler:
     SQL_DIR = f"{libroot}/sql/"
     EXPECTED_TABLES = ['cron_list', 'job_input_settings', 'job_list', 'script_input_info', 'script_list', 'web_users']
 
-    def __init__(self, maria_config):
+    def __init__(self, maria_config, app_config):
         logger.debug("MARIA: Initializing MariaDbHandler")
         [self.__conn, self.__cursor] = self.__establish_connection(
             maria_config.host,
@@ -23,20 +25,25 @@ class MariaDbHandler:
             maria_config.database
         )
         self.check_and_build_schema()
-    
-            
-
-    def check_and_build_schema(self):
-        self.__cursor.execute("SHOW TABLES")
-        existing_tables = list(map(lambda x: x[0], self.__cursor.fetchall()))
-        missing_tables = list(filter(lambda x: x not in existing_tables, self.EXPECTED_TABLES))
-        if len(missing_tables) == 0:
-            return
-        logger.warning(f"MARIA: Missing tables: {missing_tables}, creating them")
-        for block in read_sql_blocks(f"{self.SQL_DIR}/create.sql"):
-                self.__cursor.execute(block)
-        self.__conn.commit()
+        # We currently dont react to the return, so no need to await
         
+        try_create_user = self.__try_create_default_user(
+                app_config.default_admin_username,
+                app_config.default_admin_hash)
+        asyncio.run(try_create_user)
+        
+    
+    async def __try_create_default_user(self, username, hash):
+        if username and hash:
+            if await self.get_user(username):
+                logger.warning("Default admin user already exists! Skipping creation..")
+            else:
+                logger.info("Creating default admin user")
+                return self.create_user(username, hash, True)
+        else:
+            logger.info("No default admin user provided, skipping creation..")
+        return None
+
 
     def __establish_connection(self, host, port, user, password, db):
         conn = mariadb.connect(
@@ -51,6 +58,17 @@ class MariaDbHandler:
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db}")
             cursor.execute(f"USE {db}")
         return [conn, cursor]
+    
+    def check_and_build_schema(self):
+        self.__cursor.execute("SHOW TABLES")
+        existing_tables = list(map(lambda x: x[0], self.__cursor.fetchall()))
+        missing_tables = list(filter(lambda x: x not in existing_tables, self.EXPECTED_TABLES))
+        if len(missing_tables) == 0:
+            return
+        logger.warning(f"MARIA: Missing tables: {missing_tables}, creating them")
+        for block in read_sql_blocks(f"{self.SQL_DIR}/create.sql"):
+                self.__cursor.execute(block)
+        self.__conn.commit()
     
     async def create_user(self, username: str, password: str, is_admin: bool):
         self.__cursor.execute("INSERT INTO web_users (username, password, is_admin) VALUES (?, ?, ?)", (username, password, is_admin))

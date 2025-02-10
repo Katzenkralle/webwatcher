@@ -55,8 +55,27 @@ if [ "$DEV" = 'true' ]; then
 
         apt-get update
         apt-get install build-essential git mongocli -y
+        
+        echo "Installing remote ssh server"
+        apt-get install openssh-server -y
+        echo "Setting up ssh server for localhost only"
+        passwd -d root
+	ssh-keygen -A
+        echo "sshd: ALL" > /etc/hosts.deny
+        echo "sshd: localhost" > /etc/hosts.allow
+        cat >/etc/ssh/sshd_config <<EOL
+PermitRootLogin yes
+ListenAddress localhost
+PasswordAuthentication yes
+PermitEmptyPasswords yes
+Subsystem       sftp    /usr/lib/ssh/sftp-server
+EOL
+
         touch /devsetup
     fi
+
+    echo "Starting ssh server"
+    /sbin/sshd -f /etc/ssh/sshd_config
 else
     echo "Production mode, not implemented"
     exit 1

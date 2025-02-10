@@ -8,6 +8,8 @@ class App:
     port: int = 7000
     dev_mode: bool = False
     log_level: str = "info"
+    default_admin_username: str = ""
+    default_admin_hash: str = ""
 
 @dataclass
 class SqlConnection:

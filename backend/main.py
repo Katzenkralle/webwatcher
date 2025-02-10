@@ -15,7 +15,8 @@ from starlette.middleware.cors import CORSMiddleware
 def establish_db_connections():
     # ToDo: Think about using connection pools
     # Setup everything
-    return [MongoDbHandler(Config().mongo), MariaDbHandler(Config().maria)]
+    return [MongoDbHandler(Config().mongo),
+            MariaDbHandler(Config().maria, Config().app)]
 
 
 def create_app():

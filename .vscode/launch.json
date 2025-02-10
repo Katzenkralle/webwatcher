@@ -22,6 +22,8 @@
           "CRYPTO_ALGORITHM": "HS256",
           "APP_DEV_MODE": "True",
           "APP_LOG_LEVEL": "debug",
+          "APP_DEFAULT_ADMIN_USERNAME": "someone",
+          "APP_DEFAULT_ADMIN_HASH": "$2b$12$3cV0JOP3f8LbR8VXtbbpDOIf1gUhPf7bk1DMtUCmdIA/d.uCePomC",
         },
         "cwd": "${workspaceFolder}/backend",
         "program": "${workspaceFolder}/backend/main.py",
