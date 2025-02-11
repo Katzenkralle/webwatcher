@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 import Button from "primevue/button"
 import {useAuth} from "@/composable/api/Auth";
 import {useStatusMessage, useLoadingAnimation} from "@/composable/core/AppState";
+import { useFilterGroups, test } from "@/composable/scripts/FilterGroups";
 const date = ref(new Date().toLocaleString());
 const user = ref<any>(null);
 
@@ -30,6 +31,7 @@ const counter = ref(0);
     <h3>Vue Test:</h3>
     <p>{{ date }}</p>
     <h3>PrimeVue Test:</h3>
+    <div>
     <Button label="Toggle loading"
         @click="useLoadingAnimation().isLoading.value = !useLoadingAnimation().isLoading.value"/>
     <Button label="Trigger MSG"
@@ -38,4 +40,13 @@ const counter = ref(0);
                 counter++;
             }"
     />
+    <Button label="Test Filter groups"
+            @click="() => {
+                test();
+            }"
+    />
+    </div>
+    <textarea class="w-full h-[1000px] bg-crust" readonly>
+        {{ useFilterGroups().safeJsonStringify() }}
+    </textarea>
 </template>
