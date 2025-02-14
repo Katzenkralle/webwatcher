@@ -1,4 +1,4 @@
-import { AUTH_ENDPOINT, GQL_ENDPOINT } from "@/main"
+import { AUTH_ENDPOINT } from "@/main"
 import router from "@/router";
 import { queryGql, type GQLResponse } from "./GqlHandler";
 

@@ -23,8 +23,9 @@ export const useLoadingAnimation = () => {
 const statusMsg: Ref<Record<number, StatusMessage>> = ref({});
 const msgCounter: Ref<number> = ref(-1);
 
-export const useStatusMessage = () => {
+export const useStatusMessage = (batchFire = false) => {
     let previousStatusMessage: { index: number, msg: StatusMessage } | null = null;
+    let onHold: StatusMessage[] = [];
 
     const newStatusMessage = (msg: string, severity: "secondary" | "success" | "info" | "warn" | "help" | "danger" | "contrast") => {
         let icon = "";
@@ -51,6 +52,15 @@ export const useStatusMessage = () => {
                 icon = "pi-expand";
                 break;
         }
+        if (batchFire) {
+            onHold.push({
+                msg: msg,
+                severity: severity,
+                time: new Date().toLocaleTimeString(),
+                icon: icon,
+            });
+            return;
+        }
         msgCounter.value += 1;
         statusMsg.value[msgCounter.value] = ({
             msg: msg,
@@ -58,6 +68,17 @@ export const useStatusMessage = () => {
             time: new Date().toLocaleTimeString(),
             icon: icon,
         });
+    }
+
+    const fireBatch = () => {
+        setInterval(() => {
+            if (onHold.length === 0) {
+                return;
+            }
+            msgCounter.value += 1;
+            statusMsg.value[msgCounter.value] = onHold[0];
+            onHold.shift();
+            }, 100);
     }
 
     const removeStatusMessage = (index: number[], all: boolean = false) => {
@@ -95,6 +116,7 @@ export const useStatusMessage = () => {
     return {
         newStatusMessage,
         removeStatusMessage,
+        fireBatch,
         getRecentStatusMessage,
         statusMsgList
     }; 

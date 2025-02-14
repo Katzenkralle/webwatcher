@@ -2,7 +2,7 @@
 import { ref, computed } from "vue";
 import { useLoadingAnimation, useStatusMessage } from "@/composable/core/AppState";
 import DropDownSelector from "@/components/reusables/DropDownSelection.vue";
-import { useTableMetaData } from "@/composable/api/TableAPI";
+import { useTableMetaData } from "@/composable/api/JobAPI";
 import router from "@/router";
 import Button from 'primevue/button';
 import NotificationCenter from "./NotificationCenter.vue";
@@ -30,7 +30,7 @@ const changeUrl = (_: number, a: number) => {
 
 const computeTableOptions = computed(() => {
     return useTableMetaData().localTableMetaData.value.map((element) => {
-        return [element.label, changeUrl, element.id]
+        return [element.name, changeUrl, element.id]
     })
 })
 

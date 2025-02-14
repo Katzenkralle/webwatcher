@@ -39,7 +39,7 @@ class MariaDbHandler:
                 logger.warning("Default admin user already exists! Skipping creation..")
             else:
                 logger.info("Creating default admin user")
-                return self.create_user(username, hash, True)
+                return await self.create_user(username, hash, True)
         else:
             logger.info("No default admin user provided, skipping creation..")
         return None

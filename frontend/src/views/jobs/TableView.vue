@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { useTableMetaData, type TableMetaData } from "@/composable/api/TableAPI";
+import { useTableMetaData, type TableMetaData } from "@/composable/api/JobAPI";
+import { useJobDataHandler } from "@/composable/scripts/JobDataHandler";
+import { useFilterGroups } from "@/composable/scripts/FilterGroups";
 import router from "@/router";
 
 
@@ -8,88 +10,46 @@ import Column from 'primevue/column';
 import ColumnGroup from 'primevue/columngroup';   // optional
 import Row from 'primevue/row';                   // optional
 
-import { ref, watch, onMounted, computed } from "vue";
-import { useTableData } from "@/composable/api/TableAPI";
+import { ref, watch, onMounted, computed, type Ref } from "vue";
+
+const currentJobId = ref(Number(router.currentRoute.value.params.id));
+
+const filter: Ref<ReturnType<typeof useFilterGroups>> = ref(useFilterGroups())
 
 
-const DEFAULT_VISIBLE_DATA_RANGE = 2;
-
-const tableMetadata = ref<TableMetaData | undefined>(undefined);
-const tableData = ref<ReturnType<typeof useTableData> | undefined>(undefined);
-const visibleDatarange = ref<[number, number]>([0, DEFAULT_VISIBLE_DATA_RANGE-1]);
-const rangeOfVisibleData = computed(() => {
-    return visibleDatarange.value[1]+1 - visibleDatarange.value[0];
-})
-const init = () => {
-    tableMetadata.value = useTableMetaData()
-        .localTableMetaData
-        .value
-        .find((element) => 
-            element.id === Number(router.currentRoute.value.params.id)
-        );
-    if (tableMetadata.value){
-        tableData.value = useTableData(tableMetadata.value.id);
-        tableData.value?.fetchNextEntrys(rangeOfVisibleData.value);
+watch(
+  () => router.currentRoute.value.params.id,
+  (newVal) => {
+    if (!newVal) return;
+    try {
+      currentJobId.value = Number(newVal);
+    } catch (e) {
+      console.error(e);
     }
-}
-
-onMounted(() => {
-    init();
-})
-
-watch(() => router.currentRoute.value.params.id, () => {
-    // reload if path changes
-    init();
-})
-
-watch(() => useTableMetaData().localTableMetaData.value, () => {
-    // reload if table data changes
-    init();
-  })
-
-const showMore = () => {
-
-    let len = tableData.value?.getLocalData().length || 0;
-    new Promise<void>(async (resolve, reject) => {
-      if (len-1 <= visibleDatarange.value[1]){
-        let result = await tableData.value?.fetchNextEntrys(DEFAULT_VISIBLE_DATA_RANGE);
-        console.info("Result: ", result);
-        if (result === undefined || result.length === 0){
-          reject();
-        } 
-      }
-      resolve();
-    }).then(() => {
-      visibleDatarange.value = [visibleDatarange.value[0], visibleDatarange.value[1] + DEFAULT_VISIBLE_DATA_RANGE];
-    }).catch(() => {
-      console.info("No more data to fetch");
-    });
-   
+    filter.value.resetMaster();
   }
+);
 
-const showLess = () => {
-    if (visibleDatarange.value[1] <= DEFAULT_VISIBLE_DATA_RANGE){
-        console.info("No more data to hide");
-        return;
-    }
-    visibleDatarange.value = [visibleDatarange.value[0], visibleDatarange.value[1] - DEFAULT_VISIBLE_DATA_RANGE];
-    console.info("Show less: ", visibleDatarange.value);
-  }
+const tableMetadata = computed(() => {
+  return useTableMetaData().getTaleMetaData(currentJobId.value);
+});
+
+const jobHandler = computed(() => {
+  return useJobDataHandler(currentJobId.value, filter);
+});
 
 </script>
 
 <template>
   <main>
-    <dev class="flex flex-col w-full h-full items-center">
-      <h1 class="mb-2 mt-5">{{ tableMetadata?.label }}</h1>
-      <p class="bg-panel w-fit border-2 border-info rounded-lg p-2">{{ tableMetadata?.description }} - {{ tableMetadata?.created_at }}</p>
-      <DataTable :value="tableData?.getLocalData(visibleDatarange) || []"  tableStyle="min-width: 50rem">
-          <template v-for="col in tableData?.getTableLayout() || ['n','a']">
-              <Column :field="col[0]" :header="col[0]+ '(' + col[1] + ')'"></Column>
+    <dev class="flex flex-col w-full h-full items-center" :key="currentJobId">
+      <h1 class="mb-2 mt-5">{{ tableMetadata?.name }}</h1>
+      <p class="bg-panel w-fit border-2 border-info rounded-lg p-2">{{ tableMetadata?.description }} - {{ tableMetadata?.executedLast }}</p>
+      <DataTable :value="jobHandler?.computeDisplayedData.value"  tableStyle="min-width: 50rem">
+          <template v-for="col in jobHandler?.computeLayout.value">
+              <Column :field="col.key" :header="`${col.key} (${col.type})`"></Column>
           </template>  
       </DataTable>
-      <button @click="showMore()">Show more</button>
-      <button @click="showLess()">Show less</button>
     </dev>
   </main>
 </template>

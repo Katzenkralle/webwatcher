@@ -1,11 +1,24 @@
-import { GQL_ENDPOINT } from "@/main";
 import { requireLogin } from "./Auth";
+import { useStatusMessage } from "../core/AppState";
+
+export type ErrorTypes = "SUCCESS" |
+    "AUTH_ERROR" |
+    "PREMISSION_ERROR" |
+    "FAILURE" |
+    "NETWORK_ERROR" |
+    "WARNING" |
+    "OK" |
+    "NOT_OK" |
+    "UNHEALTHY" |
+    "TIMEOUT" |
+    "CATS_AND_DOGS";
 
 export interface GQLResponse {
     data: { [key: string]: any };
     keys: string[];
     errors: any[];
 }
+export const GQL_ENDPOINT = '/gql'
 
 export function queryGql(query: string): Promise<GQLResponse> {
     return fetch(GQL_ENDPOINT, {
@@ -35,4 +48,21 @@ export function queryGql(query: string): Promise<GQLResponse> {
         console.log(error);
         return { data: {}, keys: [], errors: [error] } as GQLResponse;
     });
+}
+
+
+export function reportError(gql: GQLResponse, includeDataErrors: boolean = true) {
+    const statusMessage = useStatusMessage(true);
+    
+    for (let error of gql.errors) {
+        statusMessage.newStatusMessage(error.message, "danger");
+    }
+    if (includeDataErrors){
+        for (let key of gql.keys) {
+            if (gql.data[key] === "ErrorMessage") {
+                statusMessage.newStatusMessage(gql.data[key].message, "danger");
+            }
+        }
+    }
+    statusMessage.fireBatch();
 }
