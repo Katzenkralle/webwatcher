@@ -1,8 +1,8 @@
 import { ref, computed, readonly, type Ref } from "vue";
 import { type TableLayout } from "../api/JobAPI";
 
-interface BooleanCondition {
-    type: "Boolean";
+export interface BooleanCondition {
+    type: "boolean";
     col: string
     testFor: boolean;
 }
@@ -12,29 +12,31 @@ type NumberConditionTest = {
     value: number | string;
 }
 
-interface NumberCondition {
-    type: "Number";
+export interface NumberCondition {
+    type: "number";
     testFor1: NumberConditionTest;
     testFor2: NumberConditionTest;
     opperation: "==" | "!=" | "<" | "<=" | ">" | ">=";
 }
 
-interface StringCondition {
-    type: "String";
+export interface StringCondition {
+    type: "string";
     col: string;
     testFor: String;
     mode: "includes" | "exact_match" | "regex";
 }
 
-interface AbstractCondition {
+export interface AbstractCondition {
     condition: StringCondition | NumberCondition | BooleanCondition;
     negated: boolean;
+    type: "condition";
     parent?: Group | null;
 }
 
 export interface Group {
     connector: "AND" | "OR" | "XOR";
     evaluatable: (Group|AbstractCondition)[];
+    type: "group";
     parent?: Group | null;
 }
 
@@ -43,7 +45,8 @@ export const useFilterGroups = (masterGroup: Ref<Group>|undefined = undefined) =
     if (!(masterGroup)){
         masterGroup = ref({
             connector: "AND",
-            evaluatable: []
+            evaluatable: [],
+            type: "group",
         } as Group)
     }
 
@@ -63,14 +66,13 @@ export const useFilterGroups = (masterGroup: Ref<Group>|undefined = undefined) =
     const groupEvaluator = (group: Group): Boolean => {
         let result = false;
         let evaluatedChildren = group.evaluatable.map((groupOrCondition) => {
-            if ('evaluatable' in groupOrCondition) {
+            if (groupOrCondition.type === "group") {
                 return groupEvaluator(groupOrCondition);
             } else {
-
                 switch (groupOrCondition.condition.type) {
-                    case "Boolean": return evaluateBoolean(groupOrCondition.condition);
-                    case "Number": return evaluateNumber(groupOrCondition.condition);
-                    case "String": return evaluateString(groupOrCondition.condition);
+                    case "boolean": return evaluateBoolean(groupOrCondition.condition);
+                    case "number": return evaluateNumber(groupOrCondition.condition);
+                    case "string": return evaluateString(groupOrCondition.condition);
                 }
             }
         });
@@ -140,7 +142,7 @@ export const useFilterGroups = (masterGroup: Ref<Group>|undefined = undefined) =
     }
 
     return {
-        filterGroup: readonly(masterGroup.value),
+        filterGroup: masterGroup,
         addToFilterGroup,
         removeFromFilterGroup,
         safeJsonStringify,
@@ -153,58 +155,6 @@ export const useFilterGroups = (masterGroup: Ref<Group>|undefined = undefined) =
 // Test:
 
 export const test = () => {
-    let subGroup: Group = {
-        connector: "OR",
-        evaluatable: [
-            {condition: {
-                testFor: true,
-                } as BooleanCondition,
-                negated: false
-            }
-        ]
-    };
-    let seccond_subGroup: Group = {
-        connector: "XOR",
-        evaluatable: [
-            
-        ]
-    }
-    let rootGroup = ref({
-        connector: "AND",
-        evaluatable: []
-    } as Group);
-    useFilterGroups(rootGroup).addToFilterGroup({
-        connector: "AND",
-        evaluatable: [
-            {condition: {
-                    type: "String",
-                    testFor: "test",
-                    col: "some",
-                    mode: "exact_match",
-                } as StringCondition,
-                negated: false
-            } as AbstractCondition,
-            subGroup,
-            seccond_subGroup
-        ]
-    });
-    let numberCondition: AbstractCondition = {
-        condition: {
-            type: "Number",
-            testFor1: { mode: "col", value: "some" },
-            testFor2: { mode: "const", value: 0 },
-            opperation: "<",
-        } as NumberCondition,
-        negated: false
-    }
-    useFilterGroups(rootGroup).addToFilterGroup(
-        numberCondition,
-        subGroup
-    )
-
-    console.log("Move number condition to root");
-    //
-    useFilterGroups(rootGroup).changeParent(subGroup, seccond_subGroup)
-    console.log(useFilterGroups(rootGroup).filterGroup);
+    
 
 }

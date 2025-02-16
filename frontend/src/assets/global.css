@@ -146,7 +146,7 @@
         --p-mask-background: rgba(0,0,0,0.6) !important;
         --p-mask-color: var(--p-surface-200) !important;
         --p-form-field-background: var(--p-surface-950) !important;
-        --p-form-field-disabled-background: var(--p-surface-700) !important;
+        --p-form-field-disabled-background: var(--color-base-h) !important;
         --p-form-field-filled-background: var(--p-surface-800) !important;
         --p-form-field-filled-hover-background: var(--p-surface-800) !important;
         --p-form-field-filled-focus-background: var(--p-surface-950) !important;
@@ -319,7 +319,9 @@
         --p-message-contrast-simple-color: var(--p-surface-0) !important;
   }
 }
-
+.p-disabled{
+  @apply !cursor-not-allowed !text-base [pointer-events:auto;];
+}
 .w-fit {
   /* Fix for applying wrong moz */
     width: -moz-available;

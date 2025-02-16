@@ -10,7 +10,6 @@ import router from './router'
 import PrimeVue from 'primevue/config';
 import 'primeicons/primeicons.css';
 
-export const GQL_ENDPOINT = '/gql'
 export const AUTH_ENDPOINT = '/auth'
 const app = createApp(App)
 
