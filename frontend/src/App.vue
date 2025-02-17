@@ -11,4 +11,3 @@ import Footer from '@/components/core/Footer.vue'
   <RouterView />
   <Footer />
 </template>
-

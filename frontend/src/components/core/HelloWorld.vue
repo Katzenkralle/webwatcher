@@ -30,18 +30,24 @@ const counter = ref(0);
 const exampleFilterGroupLayout: Ref<Group> = ref({
     type: 'group',
     connector: "AND",
-    evaluatable: [
-        {
-            type: 'condition',
-            negated: false,
-            condition: {
-                type: "string",
-                col: "name",
-                testFor: "HelloWorld",
-                mode: "includes"
-            }
-        },
-        {
+    evaluatable: [ 
+    ]
+
+} as Group)
+const filterGroupHandler = useFilterGroups(ref(exampleFilterGroupLayout));
+
+filterGroupHandler.addToFilterGroup(
+                {
+                type: 'condition',
+                negated: false,
+                condition: {
+                    type: "string",
+                    col: "name",
+                    testFor: "HelloWorld",
+                    mode: "includes"
+                }
+            }, filterGroupHandler.filterGroup.value);
+filterGroupHandler.addToFilterGroup({
             type: 'group',
             connector: "OR",
             evaluatable: [
@@ -73,11 +79,8 @@ const exampleFilterGroupLayout: Ref<Group> = ref({
                     }
                 }
             ]
-        }        
-    ]
+        }, filterGroupHandler.filterGroup.value);
 
-} as Group)
-const filterGroupHandler = useFilterGroups(ref(exampleFilterGroupLayout));
 </script>
 
 <template>

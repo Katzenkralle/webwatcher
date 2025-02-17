@@ -7,7 +7,7 @@ export interface BooleanCondition {
     testFor: boolean;
 }
 
-type NumberConditionTest = {
+export type NumberConditionTest = {
     mode: "col" | "const";
     value: number | string;
 }
@@ -22,7 +22,7 @@ export interface NumberCondition {
 export interface StringCondition {
     type: "string";
     col: string;
-    testFor: String;
+    testFor: string;
     mode: "includes" | "exact_match" | "regex";
 }
 
@@ -152,6 +152,10 @@ export const useFilterGroups = (masterGroup: Ref<Group>|undefined = undefined) =
     };
 };
 
+
+export const availableColumns = (tableLayout: TableLayout[] | undefined, type: string) => {
+    return tableLayout ? tableLayout.filter(col => col.type === type).map(col => col.key) : [];
+  };
 // Test:
 
 export const test = () => {

@@ -1,5 +1,5 @@
-@import 'tailwindcss';
 @import url("./fonts.css");
+@import "tailwindcss";
 @layer base, primevue, components, utilities, theme;
 
 @layer components {
@@ -285,18 +285,8 @@
         --p-message-warn-close-button-focus-ring-color: var(--p-focus-ring-color) !important;
         --p-message-warn-close-button-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--color-warning),transparent 80%) !important;
         --p-message-warn-outlined-color: var(--color-warning) !important;
-        --p-message-warn-outlined-border-color: var(--color-warning) !important;
-        --p-message-warn-simple-color: var(--color-warning) !important;
-        --p-message-error-background: color-mix(in srgb,var(--color-error),transparent 84%) !important;
-        --p-message-error-border-color: transparent !important;
-        --p-message-error-color: var(--color-error) !important;
-        --p-message-error-shadow: none !important;
-        --p-message-error-close-button-hover-background: rgba(255,255,255,0.05) !important;
-        --p-message-error-close-button-focus-ring-color: var(--p-focus-ring-color) !important;
-        --p-message-error-close-button-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--color-error),transparent 80%) !important;
-        --p-message-error-outlined-color: var(--color-error) !important;
-        --p-message-error-outlined-border-color: var(--color-error) !important;
-        --p-message-error-simple-color: var(--color-error) !important;
+        --p-message-warn-outlined-border-color: var(@layer base, primevue, components, utilities, theme;
+        rror) !important;
         --p-message-secondary-background: var(--p-surface-800) !important;
         --p-message-secondary-border-color: transparent !important;
         --p-message-secondary-color: var(--p-surface-300) !important;
@@ -320,7 +310,7 @@
   }
 }
 .p-disabled{
-  @apply !cursor-not-allowed !text-base [pointer-events:auto;];
+  @apply !cursor-not-allowed !text-base [pointer-events:auto];
 }
 .w-fit {
   /* Fix for applying wrong moz */

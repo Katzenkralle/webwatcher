@@ -2,80 +2,92 @@
 import { defineComponent, ref, computed, defineProps, h, type Ref } from "vue";
 import Select from "primevue/select";
 import InputNumber from "primevue/inputnumber";
-import Dropdown from "primevue/dropdown";
 
-import type { NumberCondition } from "@/composable/scripts/FilterGroups";
+import { type NumberCondition, type NumberConditionTest, availableColumns } from "@/composable/scripts/FilterGroups";
 import type { TableLayout } from "@/composable/api/JobAPI";
 import type { RefSymbol } from "@vue/reactivity";
 
 const props = defineProps<{ cond: NumberCondition; tableLayout?: TableLayout[] }>();
 
 
-const operation = ref(props.cond.opperation);
-
-
-const availableColumns = computed(() => {
-  return props.tableLayout ? props.tableLayout.filter(col => col.type === "number").map(col => col.key) : [];
-});
 const TestSelectionVnode = defineComponent({
     props: {
-        defaultValue: {
-            type: [String, Number],
+        data: {
+            type: Object as () => NumberConditionTest,
             required: true
         },
-        defaultSelectedMode: {
-            type: String,
-            required: true
+        hotUpdate: {
+            type: Boolean,
+            required: false,
+            default: false,
         }
     },
     emits: ['update:modelValue'], // Declare emitted event
 
-    setup(props, { emit }) { // Accept the emit function
-        const selectedTestMode = ref(props.defaultSelectedMode);
-        const allowedModes = ['col', 'const'];
+    setup(subProps, { emit }) { // Accept the emit function
+        const selectedTestMode = ref(subProps.data.mode);
+        const allowedModes: Record<string, string> = {
+            col: 'Column',
+            const: 'Constant'
+        };
 
         const valueTestX = {
-            col: typeof props.defaultValue === 'string' ? props.defaultValue : null,
-            const: typeof props.defaultValue === 'number' ? props.defaultValue : null
+            col: ref(availableColumns(props.tableLayout, "number").includes(String(subProps.data.value)) ? subProps.data.value : null),
+            const: ref(typeof subProps.data.value === 'number' ? subProps.data.value : null)
         };
 
         const emitValue = () => {
-            const emittedValue = selectedTestMode.value === 'col' ? valueTestX.col : valueTestX.const;
+            const emittedValue = {
+                mode: selectedTestMode.value,
+                value: selectedTestMode.value === 'col' ? valueTestX.col.value : valueTestX.const.value
+            };
+            if (subProps.hotUpdate) {
+                subProps.data.mode = emittedValue.mode;
+                subProps.data.value = emittedValue.value ? emittedValue.value : "";
+            }
             emit('update:modelValue', emittedValue); // Emit value to the parent
         };
 
         return () =>
-            h('div', { class: 'flex space-x-2' }, [
+            h('div', { class: 'grid grid grid-cols-2 gap-4 w-full' }, [
                 h(Select, {
+                    class: 'number-condition',
                     modelValue: selectedTestMode.value,
+                    optionLabel: (option: string) => {return allowedModes[option] ? allowedModes[option] : option},
+                    size: 'small',
                     'onUpdate:modelValue': (value: string) => {
-                        if (allowedModes.includes(value)) {
+                        if (Object.keys(allowedModes).includes(value)) {
                             selectedTestMode.value = value as 'col' | 'const';
                             emitValue(); // Emit whenever the mode changes
                         }
                     },
-                    options: allowedModes,
+                    options: Object.keys(allowedModes),
                     placeholder: 'Select Mode',
                 }),
-                h('div', {}, [
-                    selectedTestMode.value === 'col'
-                        ? h(Select, {
-                              modelValue: valueTestX.col,
-                              'onUpdate:modelValue': (value: any) => {
-                                  valueTestX.col = value;
-                                  emitValue(); // Emit when col value changes
-                              },
-                              options: availableColumns.value,
-                              placeholder: 'Select Column',
-                          })
-                        : h(InputNumber, {
-                              modelValue: valueTestX.const,
-                              'onUpdate:modelValue': (value: number | null) => {
-                                  valueTestX.const = value;
-                                  emitValue(); // Emit when const value changes
-                              },
-                          })
-                ])
+                selectedTestMode.value === 'col'
+                    ? h(Select, {
+                            class: 'number-condition',
+                            modelValue: valueTestX.col.value,
+                            size: 'small',
+                            'onUpdate:modelValue': (value: any) => {
+                                valueTestX.col.value = value;
+                                emitValue(); // Emit when col value changes
+                            },
+                            options: availableColumns(props.tableLayout, "number"),
+                            invalid: valueTestX.col.value === null,
+                            placeholder: 'Select Column',
+                        })
+                    : h(InputNumber, {
+                            class: 'number-condition',
+                            modelValue: valueTestX.const.value,
+                            size: 'small',
+                            invalid: valueTestX.const.value === null,
+                            'onUpdate:modelValue': (value: number | null) => {
+                                valueTestX.const.value = value;
+                                emitValue(); // Emit when const value changes
+                            },
+                        })
+                
             ]);
     }
 });
@@ -84,13 +96,34 @@ const TestSelectionVnode = defineComponent({
 </script>
 
 <template>
-    <div class="p-2 flex flex-col items-center space-y-2">
+    <div class="inner-condition-container">
         <h4>Number Condition</h4>
-        
-        <TestSelectionVnode :defaultValue="props.cond.testFor1.value" :defaultSelectedMode="props.cond.testFor1.mode" />
-        <Dropdown v-model="operation" :options="['==', '!=', '>', '<', '>=', '<=']" placeholder="Select Operation" />
-        <TestSelectionVnode :defaultValue="props.cond.testFor2.value" :defaultSelectedMode="props.cond.testFor2.mode" @update:model-value="(e) => console.log(e)"/>
-
-        
+        <TestSelectionVnode :data="props.cond.testFor1" :hot-update="true" @update:model-value="(e) => console.log(e)" />
+        <div class="grid justify-items-center  grid-cols-5 w-full px-3">
+            <div class="seperator"/>
+            <Select 
+                class="mx-auto"
+                v-model="props.cond.opperation" 
+                :options="['==', '!=', '>', '<', '>=', '<=']"
+                size="small" 
+                placeholder="Select Operation" />
+            <div class="seperator"/>
+        </div>
+        <TestSelectionVnode :data="props.cond.testFor2" :hot-update="true" @update:model-value="(e) => console.log(e)"/>
     </div>
 </template>
+
+
+<style lang="css" scoped>
+/*Needet due to https://github.com/tailwindlabs/tailwindcss/discussions/16429 */
+@reference "@/assets/global.css";
+
+.number-condition {
+    @apply w-full
+}
+
+.seperator {
+    @apply w-full h-2 bg-panel m-auto col-span-2
+}
+
+</style>

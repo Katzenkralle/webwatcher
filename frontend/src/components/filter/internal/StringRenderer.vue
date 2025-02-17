@@ -1,20 +1,44 @@
 <script setup lang="tsx">
-import type { StringCondition } from "@/composable/scripts/FilterGroups";
+import { availableColumns, type StringCondition } from "@/composable/scripts/FilterGroups";
+import type { TableLayout } from "@/composable/api/JobAPI";
+import Select  from "primevue/select";
+import InputText from 'primevue/inputtext';
 
 const props = defineProps<{
     cond: StringCondition;
+    tableLayout?: TableLayout[]
 }>();
 
+const modeAlias = {
+    'includes': "Includes",
+    'exact_match': "Exact Match",
+    'regex': "RegEx"
+}
 </script>
 
 
 <template>
-    <div>
+    <div class="inner-condition-container">
         <h4>String</h4>
-        <p>
-            Test for: <span class="text-warn">{{props.cond.col}}</span>
-            <span class="text-warn">{{props.cond.mode}}</span>
-            <span class="text-warn">{{props.cond.testFor}}</span>
-        </p>
+        <div class="grid grid-cols-2 gap-4">
+            <Select
+            size="small"
+            v-model="props.cond.col"
+            :options="availableColumns(props.tableLayout,'string')"
+            />
+            <InputText
+            size="small"
+            v-model="props.cond.testFor"
+            />
+        </div>
+        <div>
+            <Select
+            size="small"
+            v-model="props.cond.mode"
+            :option-label="(val: keyof typeof modeAlias) => modeAlias[val]"
+            :options="['includes', 'exact_match', 'regex']"
+            />
+        </div>
+       
     </div>
 </template>
