@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import type { Group, AbstractCondition } from "@/composable/scripts/FilterGroups";
+import type { IterationWrapperReturnType, AbstractCondition, Group } from "@/composable/scripts/FilterGroups";
 import BooleanRenderer from "./BooleanRenderer.vue";
 import NumberRenderer from "./NumberRenderer.vue";
 import StringRenderer from "./StringRenderer.vue";
@@ -7,11 +7,13 @@ import type { TableLayout } from "@/composable/api/JobAPI";
 
 import { ref, defineProps, toRef, computed, type Ref } from "vue";
 
+type IterationWrapperConstraint = Extract<IterationWrapperReturnType, {thisElement: Group}>;
 const props = defineProps<{
-  filterGroup: Group;
+  groupIterator: IterationWrapperConstraint;
   tableLayout?: TableLayout[];
   dragInfo?: Ref<Group | AbstractCondition | null>;
 }>();
+
 
 const rootDragRef: Ref<Group | AbstractCondition | null> = ref(null);
 
@@ -35,50 +37,22 @@ const getColorForConnnectionType = (type: string) => {
 };
 
 
-const removeFromFilterGroup = (evaluatable: Group|AbstractCondition) => {
-        const parent = evaluatable.parent || null;
-        if (parent) {
-            parent.evaluatable = parent.evaluatable.filter((item) => item !== evaluatable);
-        } else if (evaluatable.type === 'group') {
-            evaluatable.evaluatable.forEach((item) => {
-                item.parent = null;
-            });
-        } else {
-          console.log('Error: No parent found');
-        }
-    }
-
-const changeParent = (evaluatable: Group|AbstractCondition, newParent: Group) => {
-        // This function also works if the evaluatable is not present in the tree
-        // can be use to add, without reevaluating the parent
-        if (evaluatable.parent) {
-            removeFromFilterGroup(evaluatable);
-        }
-        evaluatable.parent = newParent;
-        newParent.evaluatable.push(evaluatable);
-    }
 
 const handelDragEnd = (destination: AbstractCondition | Group) => {
   const source = getDraggingInfo().value;
-
   if (source === null) {
-    getDraggingInfo().value = null;
+    getDraggingInfo().value = null; 
     return;
   }
-  const destParent = destination.type == "group" ? destination : destination.parent;
-  const sourceParent = source.type == "group" ? source : source.parent;
-  if (!destParent || !sourceParent) {
-    console.log('Error: No parent of source/dest found');
-    getDraggingInfo().value = null;
-    return;
-  }
-  
-  changeParent(destination, sourceParent)
-  changeParent(source, destParent);
+  if (source.type == destination.type) {
+    props.groupIterator.root.exchangePosition(source, destination);
+  } else if (source.type === 'condition' && destination.type === 'group') {
+    props.groupIterator.root.changeParent(source, destination);
+  } 
   getDraggingInfo().value = null;
 };
 
-const handleDragStart = (origin: AbstractCondition) => {
+const handleDragStart = (origin: AbstractCondition | Group) => {
   getDraggingInfo().value = origin;
 };
 
@@ -88,48 +62,52 @@ const handleDragStart = (origin: AbstractCondition) => {
 <template>
   <div 
     class="border-l-4 flex "
-    :style="{ borderLeftColor: `var(${getColorForConnnectionType(props.filterGroup.connector)})` }">
-    <div class="flex flex-row bg-panel-h">
+    :style="{ borderLeftColor: `var(${getColorForConnnectionType(props.groupIterator.thisElement.connector)})` }">
+    <div class="flex flex-row bg-panel-h"
+      draggable="true"
+      @dragstart="handleDragStart(props.groupIterator.thisElement)"
+      @dragover="(e) => e.preventDefault()"
+      @drop="handelDragEnd(props.groupIterator.thisElement)">
       <div :class="{'flex items-center dragging-placeholder': true,
                     'transform scale-80 !border-info ': getDraggingInfo().value}">
-        <p class="px-1 h-fit">{{ props.filterGroup.connector }}</p>
+        <p class="px-1 h-fit">{{ props.groupIterator.thisElement.connector }}</p>
       </div>
     </div>
     <div>
-      <template v-for="evaluatable, index in props.filterGroup.evaluatable" :key="props.filterGroup.evaluatable.indexOf(evaluatable)">
+      <template v-for="evaluatable, index in props.groupIterator.iter()" :key="`${props.groupIterator.position}/${index}`">
         <div v-if="index > 0" class="w-full h-2"/>
         
-        <div v-if="evaluatable.type === 'group'">
-          <FilterGroupRenderer :tableLayout="props.tableLayout" :filterGroup="evaluatable" :dragInfo="getDraggingInfo()" />
+        <div v-if="evaluatable.thisElement.type === 'group'">
+          <FilterGroupRenderer :tableLayout="props.tableLayout" :groupIterator="evaluatable as IterationWrapperConstraint" :dragInfo="getDraggingInfo()" />
         </div>
-        <div v-else-if="evaluatable.type === 'condition'" 
+        <div v-else-if="evaluatable.thisElement.type === 'condition'" 
           class="outer-condition-container" 
           draggable="true" 
-          @dragstart="handleDragStart(evaluatable)" 
+          @dragstart="handleDragStart(evaluatable.thisElement)" 
           @dragover="(e) => e.preventDefault()"
-          @drop="handelDragEnd(evaluatable)">
-          <div :class="`condition-marker ${evaluatable.negated ? 'bg-error' : 'bg-success'}`">
+          @drop="handelDragEnd(evaluatable.thisElement)">
+          <div :class="`condition-marker ${evaluatable.thisElement.negated ? 'bg-error' : 'bg-success'}`">
             <button
               class="self-start cursor-pointer"
-              @click="evaluatable.negated = !evaluatable.negated ">
+              @click="evaluatable.thisElement.negated = !evaluatable.thisElement.negated ">
               <i class="pi pi-sort-alt-slash"></i>
             </button>            
             <div class="rotate-270 self-center">
-              <p class="text-xs whitespace-nowrap">IF{{ evaluatable.negated ? ' NOT' : "" }}</p>
+              <p class="text-xs whitespace-nowrap">IF{{ evaluatable.thisElement.negated ? ' NOT' : "" }}</p>
             </div>
             <div class="self-end">
               <button
                 class="cursor-pointer"
-                @click="props.filterGroup.evaluatable.splice(index, 1)">
+                @click="props.groupIterator.thisElement.evaluatable.splice(index, 1)">
                 <i class="pi pi-arrows-v"></i>
               </button>
             </div>
           </div>
           <div :class="{'dragging-placeholder': true,
-           'transform scale-80 !border-info ': getDraggingInfo().value}">
-            <BooleanRenderer v-if="evaluatable.condition.type === 'boolean'" :cond="evaluatable.condition" :tableLayout="props.tableLayout" />
-            <NumberRenderer v-if="evaluatable.condition.type === 'number'" :cond="evaluatable.condition" :tableLayout="props.tableLayout"/>
-            <StringRenderer v-if="evaluatable.condition.type === 'string'" :cond="evaluatable.condition" :tableLayout="props.tableLayout"/>
+           'transform scale-80 !border-info ': getDraggingInfo().value?.type === 'condition'}">
+            <BooleanRenderer v-if="evaluatable.thisElement.condition.type === 'boolean'" :cond="evaluatable.thisElement.condition" :tableLayout="props.tableLayout" />
+            <NumberRenderer v-if="evaluatable.thisElement.condition.type === 'number'" :cond="evaluatable.thisElement.condition" :tableLayout="props.tableLayout"/>
+            <StringRenderer v-if="evaluatable.thisElement.condition.type === 'string'" :cond="evaluatable.thisElement.condition" :tableLayout="props.tableLayout"/>
           </div>
         </div>
       </template>

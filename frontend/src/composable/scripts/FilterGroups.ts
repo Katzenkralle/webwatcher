@@ -108,13 +108,14 @@ export const useFilterGroups = (masterGroup: Ref<Group>|undefined = undefined) =
         }
     }
 
-    const removeFromFilterGroup = (evaluatable: Group|AbstractCondition) => {
+    const removeFromFilterGroup = (evaluatable: Group|AbstractCondition, justReturnIndex: boolean = false): number => {
         const parent = evaluatable.parent || null;
-        if (parent) {
-            parent.evaluatable = parent.evaluatable.filter((item) => item !== evaluatable);
-        } else {
-            masterGroup.value.evaluatable = masterGroup.value.evaluatable.filter((item) => item !== evaluatable);
+        let parentGroup = parent ? parent.evaluatable : masterGroup.value.evaluatable;
+        let index = parentGroup.findIndex((elem) => elem === evaluatable);
+        if (!justReturnIndex) {
+            parentGroup.splice(index, 1);
         }
+        return index;
     }
 
     const changeParent = (evaluatable: Group|AbstractCondition, newParent: Group | null = null) => {
@@ -126,6 +127,43 @@ export const useFilterGroups = (masterGroup: Ref<Group>|undefined = undefined) =
         }
         evaluatable.parent = newParent;
         newParent.evaluatable.push(evaluatable);
+        }
+
+    const exchangePosition = <T extends Group | AbstractCondition>(elemA: T, elemB: T) => {
+        if (elemA === elemB) {
+            return;
+        }
+        const indexA = removeFromFilterGroup(elemA, true);
+        const indexB = removeFromFilterGroup(elemB, true);
+        
+        const parentA = elemA.parent || null;
+        const parentB = elemB.parent || null;
+        if (!parentA !== !parentB) {
+            // For moving groups (to the top level)
+            if (elemA.type === "condition" || elemB.type === "condition") {
+                throw new Error("A condition should have a perent group");
+            }
+            const new_master = (parentA ? elemA : elemB) as Group;
+            const old_master = (!parentA ? elemA : elemB) as Group;
+    
+            new_master.parent = null;
+            old_master.parent = new_master;
+            new_master.evaluatable.push(old_master);
+            masterGroup.value = new_master;
+
+            return;
+        } else if (parentA == null || parentB == null) {
+            // Both elements are not in the tree
+            throw new Error("Both elements are not in the tree");
+        }
+       
+        elemB.parent = parentA;
+        parentA.evaluatable.splice(indexA, 1, elemB);
+    
+        elemA.parent = parentB;
+        parentB.evaluatable.splice(indexB, 1, elemA);
+        
+
     }
 
     const safeJsonStringify = () => {
@@ -146,6 +184,7 @@ export const useFilterGroups = (masterGroup: Ref<Group>|undefined = undefined) =
         addToFilterGroup,
         removeFromFilterGroup,
         safeJsonStringify,
+        exchangePosition,
         changeParent,
         applyFilterTo,
         resetMaster
@@ -156,6 +195,60 @@ export const useFilterGroups = (masterGroup: Ref<Group>|undefined = undefined) =
 export const availableColumns = (tableLayout: TableLayout[] | undefined, type: string) => {
     return tableLayout ? tableLayout.filter(col => col.type === type).map(col => col.key) : [];
   };
+
+
+  export const iterationWrapper = (
+    root: ReturnType<typeof useFilterGroups>,
+    _thisElement: Group | AbstractCondition | null = null,
+    _position: number = 0
+  ): IterationWrapperReturnType => {
+    const thisElement = _thisElement ?? root.filterGroup.value;
+    const position = _position;
+  
+    if (!thisElement) {
+      throw new Error("Invalid element reference");
+    }
+  
+    const iter = (): IterationWrapperReturnType[] => {
+      if (thisElement.type === "condition") {
+        return []; // Return an empty array instead of throwing an error
+      }
+  
+      return (thisElement as Group).evaluatable.map((evaluatable, index) =>
+        iterationWrapper(root, evaluatable, position + index + 1)
+      );
+    };
+    const getRoot = (): Extract<IterationWrapperReturnType, {thisElement: Group}> => {
+        return iterationWrapper(root, root.filterGroup.value, 0) as Extract<IterationWrapperReturnType, {thisElement: Group}>;
+    }
+  
+    return {
+        thisElement,
+        position,
+        root,
+        iter,
+        getRoot
+    } as IterationWrapperReturnType;
+  };
+  
+  // Needet to be able to use Extract to pick weather to use Group or AbstractCondition
+  export type IterationWrapperReturnType = {
+    thisElement: Group;
+    position: number;
+    root: ReturnType<typeof useFilterGroups>;
+    iter: () => IterationWrapperReturnType[];
+    getRoot: () => Extract<IterationWrapperReturnType, {thisElement: Group}>;
+  } |
+  {
+    thisElement: AbstractCondition;
+    position: number;
+    root: ReturnType<typeof useFilterGroups>;
+    iter: () => IterationWrapperReturnType[];
+    getRoot: () => Extract<IterationWrapperReturnType, {thisElement: Group}>;
+  }
+  
+  
+
 // Test:
 
 export const test = () => {

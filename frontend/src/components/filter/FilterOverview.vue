@@ -4,7 +4,7 @@ import type { Group,
   StringCondition,
   NumberCondition,
   BooleanCondition } from "@/composable/scripts/FilterGroups";
-import { useFilterGroups } from "@/composable/scripts/FilterGroups";
+import { iterationWrapper, useFilterGroups, type IterationWrapperReturnType } from "@/composable/scripts/FilterGroups";
 import { type TableLayout } from "@/composable/api/JobAPI";
 import { ref, defineProps, type Ref } from "vue";
 
@@ -33,6 +33,6 @@ const tableLayout: TableLayout[]  = [{
 
 <template>
   <div class="bg-panel m-4 border-2 border-primary rounded-lg p-2">
-    <FilterGroupRenderer :filterGroup="props.filterGroupHandler.filterGroup.value"  :tableLayout="tableLayout" />
+    <FilterGroupRenderer :groupIterator="iterationWrapper(props.filterGroupHandler).getRoot()"  :tableLayout="tableLayout" />
   </div>
 </template>
