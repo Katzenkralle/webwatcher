@@ -3,9 +3,10 @@ import { computed, onMounted, onUnmounted, ref, type Ref } from "vue";
 import Button from "primevue/button"
 import {useAuth} from "@/composable/api/Auth";
 import {useStatusMessage, useLoadingAnimation} from "@/composable/core/AppState";
-import { useFilterGroups, test, type Group } from "@/composable/scripts/FilterGroups";
+import { useFilterIterationContext, type IterationContext, type Group } from "@/composable/scripts/FilterGroups";
 
-import FilterRenderer from "../filter/FilterOverview.vue";
+import FilterGroupRenderer from "../filter/FilterGroupRenderer.vue";
+import { useJobDataHandler } from "@/composable/scripts/JobDataHandler";
 
 const date = ref(new Date().toLocaleString());
 const user = ref<any>(null);
@@ -27,14 +28,13 @@ onUnmounted(() => {
 });
 const counter = ref(0);
 
-const exampleFilterGroupLayout: Ref<Group> = ref({
+let masterFilterGroup = ref({
     type: 'group',
     connector: "AND",
-    evaluatable: [ 
-    ]
+    evaluatable: []
+}as Group);
 
-} as Group)
-const filterGroupHandler = useFilterGroups(ref(exampleFilterGroupLayout));
+let filterGroupHandler: IterationContext =  useFilterIterationContext(masterFilterGroup)
 
 filterGroupHandler.addToFilterGroup(
                 {
@@ -46,7 +46,7 @@ filterGroupHandler.addToFilterGroup(
                     testFor: "HelloWorld",
                     mode: "includes"
                 }
-            }, filterGroupHandler.filterGroup.value);
+            });
 filterGroupHandler.addToFilterGroup({
             type: 'group',
             connector: "OR",
@@ -79,8 +79,9 @@ filterGroupHandler.addToFilterGroup({
                     }
                 }
             ]
-        }, filterGroupHandler.filterGroup.value);
+        });
 
+const jobHandlerDemo = useJobDataHandler(0);
 </script>
 
 <template>
@@ -90,8 +91,18 @@ filterGroupHandler.addToFilterGroup({
     <p>{{ date }}</p>
     <h3>PrimeVue Test:</h3>
 
-    <FilterRenderer :filterGroupHandler="filterGroupHandler" />
+    <div class="bg-panel m-4 border-2 border-primary rounded-lg p-2">
+        <FilterGroupRenderer :jobHandler="jobHandlerDemo" :groupIterator="filterGroupHandler as IterationContext<Group>"/>
+    </div>
 
+    <Button 
+        label="Clear"
+        @click="() => {
+            filterGroupHandler = useFilterIterationContext();
+            //filterGroupHandler.root.value = dat;
+        }"
+    >   
+    </Button>
     <div>
     <Button label="Toggle loading"
         @click="useLoadingAnimation().isLoading.value = !useLoadingAnimation().isLoading.value"/>
@@ -101,13 +112,7 @@ filterGroupHandler.addToFilterGroup({
                 counter++;
             }"
     />
-    <Button label="Test Filter groups"
-            @click="() => {
-                test();
-            }"
-    />
     </div>
     <textarea class="w-full h-[1000px] bg-crust" readonly>
-        {{ useFilterGroups().safeJsonStringify() }}
     </textarea>
 </template>

@@ -3,11 +3,14 @@ import { defineComponent, ref, computed, defineProps, h, type Ref } from "vue";
 import Select from "primevue/select";
 import InputNumber from "primevue/inputnumber";
 
-import { type NumberCondition, type NumberConditionTest, availableColumns } from "@/composable/scripts/FilterGroups";
+import { type NumberCondition, type NumberConditionTest } from "@/composable/scripts/FilterGroups";
 import type { TableLayout } from "@/composable/api/JobAPI";
 import type { RefSymbol } from "@vue/reactivity";
 
-const props = defineProps<{ cond: NumberCondition; tableLayout?: TableLayout[] }>();
+const props = defineProps<{ 
+    cond: NumberCondition; 
+    availableColumns: string[]; 
+}>();
 
 
 const TestSelectionVnode = defineComponent({
@@ -32,7 +35,7 @@ const TestSelectionVnode = defineComponent({
         };
 
         const valueTestX = {
-            col: ref(availableColumns(props.tableLayout, "number").includes(String(subProps.data.value)) ? subProps.data.value : null),
+            col: ref(props.availableColumns.includes(String(subProps.data.value)) ? subProps.data.value : null),
             const: ref(typeof subProps.data.value === 'number' ? subProps.data.value : null)
         };
 
@@ -73,7 +76,7 @@ const TestSelectionVnode = defineComponent({
                                 valueTestX.col.value = value;
                                 emitValue(); // Emit when col value changes
                             },
-                            options: availableColumns(props.tableLayout, "number"),
+                            options: props.availableColumns,
                             invalid: valueTestX.col.value === null,
                             placeholder: 'Select Column',
                         })

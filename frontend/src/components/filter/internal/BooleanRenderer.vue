@@ -1,12 +1,10 @@
 <script setup lang="tsx">
-import { availableColumns, type BooleanCondition } from "@/composable/scripts/FilterGroups";
-import type { TableLayout } from "@/composable/api/JobAPI";
+import { type BooleanCondition } from "@/composable/scripts/FilterGroups";
 import Select  from "primevue/select";
 
 const props = defineProps<{
     cond: BooleanCondition;
-    tableLayout?: TableLayout[]
-
+    availableColumns: string[];
 }>();
 
 </script>
@@ -18,9 +16,11 @@ const props = defineProps<{
         <div class="grid grid-cols-3 justify-items-center">
             <Select
             @value-change="(e) => props.cond.col = e"
+            :invalid="!availableColumns.includes(props.cond.col)"
             :default-value="props.cond.col"
+            :options="availableColumns"
             size="small"
-            :options="availableColumns(props.tableLayout,'boolean')"
+            placeholder="Select Column"
             />
             <p class="my-auto">
                 ==

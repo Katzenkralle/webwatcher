@@ -1,6 +1,6 @@
 import {ref, computed, type Ref, watch} from 'vue';
 import { useJobData, type TableMetaData, type jobEnty, type TableLayout, DUMMY_JOB_ENTRY } from '../api/JobAPI';
-import { useFilterGroups, type Group as FilterGroup } from './FilterGroups';
+import type { IterationContext, Group as FilterGroup, Group, AbstractCondition } from './FilterGroups';
 /*
 global: refers to local data accessible from all components
 local: referce to data tat is shared by one use instance
@@ -9,6 +9,7 @@ remote: referse to data on the server
 */
 
 let globalJobData: Record<number, Ref<jobEnty[]>> = {}
+export let handlerRefs: Record<number, Ref<jobEnty[]>> = {}
 
 interface flattendJobEnty {
     [key: string]: any;
@@ -16,7 +17,7 @@ interface flattendJobEnty {
 
 export const useJobDataHandler = (
     jobId: number, 
-    filters: Ref<ReturnType<typeof useFilterGroups>>|undefined = undefined,
+    filters: IterationContext|undefined = undefined,
     range: Ref<[number, number]>|undefined = undefined,
     ) => {
     const localJobData: Ref<jobEnty[]> = ref([]);
@@ -40,6 +41,10 @@ export const useJobDataHandler = (
         )
     }
     init();
+
+    const getColumnsByType = (type: string|undefined): string[] => {
+        return computeLayout.value.filter(col => col.type === type || type === undefined).map(col => col.key);
+    }
 
     const computeRelevantDataRange = computed((): jobEnty[] => 
         range ? localJobData.value.slice(range.value[0], range.value[1]) : localJobData.value
@@ -72,7 +77,7 @@ export const useJobDataHandler = (
         console.debug("Recomputed Display Data");
         let relevantData: jobEnty[] = localJobData.value;
         if (filters) {
-            relevantData = filters.value.applyFilterTo(computeRelevantDataRange.value, computeLayout.value);
+            relevantData = filters.applyFiltersOnData(computeRelevantDataRange.value);
         }
         else if (range) {
             let relevantData = [];
@@ -92,5 +97,5 @@ export const useJobDataHandler = (
         
     });
 
-    return { computeDisplayedData, computeLayout, localJobData };
+    return { computeDisplayedData, computeLayout, localJobData, getColumnsByType };
 }

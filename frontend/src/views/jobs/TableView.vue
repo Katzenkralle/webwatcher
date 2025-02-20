@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTableMetaData, type TableMetaData } from "@/composable/api/JobAPI";
 import { useJobDataHandler } from "@/composable/scripts/JobDataHandler";
-import { useFilterGroups } from "@/composable/scripts/FilterGroups";
+import { useFilterIterationContext, type AbstractCondition, type Group, type IterationContext} from "@/composable/scripts/FilterGroups";
 import router from "@/router";
 
 
@@ -14,7 +14,7 @@ import { ref, watch, onMounted, computed, type Ref } from "vue";
 
 const currentJobId = ref(Number(router.currentRoute.value.params.id));
 
-const filter: Ref<ReturnType<typeof useFilterGroups>> = ref(useFilterGroups())
+let filter = useFilterIterationContext();
 
 
 watch(
@@ -26,7 +26,7 @@ watch(
     } catch (e) {
       console.error(e);
     }
-    filter.value.resetMaster();
+    filter = useFilterIterationContext(); // Reset the filter
   }
 );
 

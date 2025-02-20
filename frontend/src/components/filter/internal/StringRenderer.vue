@@ -1,12 +1,12 @@
 <script setup lang="tsx">
-import { availableColumns, type StringCondition } from "@/composable/scripts/FilterGroups";
+import { type StringCondition } from "@/composable/scripts/FilterGroups";
 import type { TableLayout } from "@/composable/api/JobAPI";
 import Select  from "primevue/select";
 import InputText from 'primevue/inputtext';
 
 const props = defineProps<{
     cond: StringCondition;
-    tableLayout?: TableLayout[]
+    availableColumns: string[];
 }>();
 
 const modeAlias = {
@@ -24,7 +24,9 @@ const modeAlias = {
             <Select
             size="small"
             v-model="props.cond.col"
-            :options="availableColumns(props.tableLayout,'string')"
+            :options="props.availableColumns"
+            :invalid="!props.availableColumns.includes(props.cond.col)"
+            placeholder="Select Column"
             />
             <InputText
             size="small"
