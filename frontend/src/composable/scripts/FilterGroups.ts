@@ -239,14 +239,34 @@ export const useFilterIterationContext = (
             old_master.parent = new_master;
 
 
+            // Resort evaluatables
+            // Ensures that only Conditions are moved with the old/new master
+            // This turned out to be a better user experience
+            let eval_new = new_master.evaluatable;
+            let eval_old = old_master.evaluatable;
+            new_master.evaluatable = [];
+            old_master.evaluatable = [];
+
+            const reorderChildren = (group: (Group | AbstractCondition)[], order_fn: (elem: Group|AbstractCondition) => boolean) => {
+                group.forEach((elem) => {
+                    if (order_fn(elem)) {
+                        elem.parent = new_master;
+                        new_master.evaluatable.push(elem);
+                    } else {
+                        elem.parent = old_master;
+                        old_master.evaluatable.push(elem);
+                    }
+                });
+            }
+            reorderChildren(eval_new, (elem) => elem.type !== "group");
+            reorderChildren(eval_old, (elem) => elem.type === "group");
+
             new_master.evaluatable.push(old_master);
             if (new_master.parent) {
                 new_master.parent.evaluatable.push(new_master);
             } else {
                 root.value = new_master;
             }
-            
-    
             return;
         } 
         const indexA = removeFromFilterGroup(elemA, true);
