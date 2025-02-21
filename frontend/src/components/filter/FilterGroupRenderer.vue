@@ -93,7 +93,9 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
         <div v-if="index > 0" class="w-full h-2"/>
         
         <div v-if="evaluatable.thisElement.value.type === 'group'">
-          <FilterGroupRenderer :jobHandler="props.jobHandler" :groupIterator="evaluatable as IterationContext<Group>" :dragInfo="getDraggingInfo()" />
+          <FilterGroupRenderer :jobHandler="props.jobHandler" 
+            :groupIterator="evaluatable as IterationContext<Group>" 
+            :dragInfo="getDraggingInfo()" />
         </div>
         <div v-else-if="evaluatable.thisElement.value.type === 'condition'" 
           class="outer-condition-container" 

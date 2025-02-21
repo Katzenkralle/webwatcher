@@ -1,5 +1,5 @@
 import { ref, computed, readonly, type Ref, type ComputedRef } from "vue";
-import { type jobEnty, type TableLayout } from "../api/JobAPI";
+import { type flattendJobEnty } from "./JobDataHandler";
 
 export interface BooleanCondition {
     type: "boolean";
@@ -40,43 +40,87 @@ export interface Group {
     parent?: Group | null;
 }
 
-
-
-const evaluateNumber = (condition: NumberCondition): boolean => {
-
-    return false;
-}
-const evaluateString = (condition: StringCondition): boolean => {
-
-    return false;
-}
-const evaluateBoolean = (condition: BooleanCondition): boolean => {
-
-    return false
+const numEval = {
+    "==": (a: number, b: number) => a === b,
+    "!=": (a: number, b: number) => a !== b,
+    "<": (a: number, b: number) => a < b,
+    "<=": (a: number, b: number) => a <= b,
+    ">": (a: number, b: number) => a > b,
+    ">=": (a: number, b: number) => a >= b,
 }
 
-const groupEvaluator = (group: Group): boolean => {
-    let result = false;
-    let evaluatedChildren = group.evaluatable.map((groupOrCondition) => {
-        if (groupOrCondition.type === "group") {
-            return groupEvaluator(groupOrCondition);
-        } else {
-            switch (groupOrCondition.condition.type) {
-                case "boolean": return evaluateBoolean(groupOrCondition.condition);
-                case "number": return evaluateNumber(groupOrCondition.condition);
-                case "string": return evaluateString(groupOrCondition.condition);
+const evaluateNumber = (condition: NumberCondition, entry: flattendJobEnty): boolean => {
+    const getNumber = (testFor: NumberConditionTest): number => {
+        if (testFor.mode === "const") {
+            if (typeof testFor.value === "string") {
+                throw new Error("Invalid number in const for Condition");
             }
+            return Number(testFor.value);
+        } else {
+            if (!(Object.keys(entry).includes(String(testFor.value)))) {
+                throw new Error("Invalid column in Condition");
+            } else if (typeof entry[testFor.value] !== "number") {
+                throw new Error("Invalid type in column for Condition");
+            }
+            return Number(entry[testFor.value]);
+        }
+    }
+    return numEval[condition.opperation](getNumber(condition.testFor1), getNumber(condition.testFor2));
+}
+const evaluateString = (condition: StringCondition, entry: flattendJobEnty): boolean => {
+    if (!(Object.keys(entry).includes(condition.col))) {
+        throw new Error("Invalid column in Condition");
+    }
+    switch (condition.mode) {
+        case "includes":
+            console.log(entry[condition.col], condition.testFor)
+            return String(entry[condition.col]).includes(condition.testFor);
+        case "exact_match":
+            // == is used to compare the string with possible numbers
+            return entry[condition.col] == condition.testFor;
+        case "regex":
+            return new RegExp(condition.testFor).test(String(entry[condition.col]));
+        default: return true;
+    }
+}
+const evaluateBoolean = (condition: BooleanCondition, entry: flattendJobEnty): boolean => {
+    if (!(Object.keys(entry).includes(condition.col))) {
+        throw new Error("Invalid column in Condition");
+    }
+    if (typeof entry[condition.col] === "boolean") {
+        return entry[condition.col] === condition.testFor;
+    }
+    return true
+}
+
+
+const groupEvaluator = (group: Group, jobEntrys: flattendJobEnty[]): flattendJobEnty[] => {
+    let result: flattendJobEnty[] = jobEntrys.filter((entry) => {
+        let evaluatedChildren = group.evaluatable.map((groupOrCondition) => {
+            if (groupOrCondition.type === "group") {
+                return groupEvaluator(groupOrCondition, [entry]);
+            } else {
+                const shouldNegate = (val: boolean) => groupOrCondition.negated ? !val : val;
+                switch (groupOrCondition.condition.type) {
+                    // Returns bool, error or true
+                    case "boolean": return shouldNegate(evaluateBoolean(groupOrCondition.condition, entry));
+                    case "number": return shouldNegate(evaluateNumber(groupOrCondition.condition, entry));
+                    case "string": return shouldNegate(evaluateString(groupOrCondition.condition, entry));
+                }
+            }
+        });
+        if (evaluatedChildren.length === 0) {
+            return true;
+        }
+        switch (group.connector) {
+            case "AND": return evaluatedChildren.every((child) => child);
+            case "OR": return evaluatedChildren.some((child) => child);
+            case "XOR": return evaluatedChildren.filter((child) => child).length === 1;
+            default: return true;
         }
     });
-    switch (group.connector) {
-        case "AND": result = evaluatedChildren.every((child) => child); break;
-        case "OR": result = evaluatedChildren.some((child) => child); break;
-        case "XOR": result = evaluatedChildren.filter((child) => child).length === 1; break;
-        default: result = false;
-    }
     return result;
 }
-
 
 export const safeJsonStringify = (group: Group) => {
     return JSON.stringify(group, (key, value) => {
@@ -98,7 +142,7 @@ export type IterationContext<T extends Group | AbstractCondition = Group | Abstr
     exchangePosition: <T extends Group | AbstractCondition>(elemA: T, elemB: T) => void;
     changeParent: (newParent: Group, evaluatable?: Group|AbstractCondition|null) => void;
     removeFromFilterGroup: (evaluatable?: Group|AbstractCondition|null, justReturnIndex?: boolean) => number;
-    applyFiltersOnData: (data: jobEnty[], group?: Group|null) => jobEnty[];
+    applyFiltersOnData: (data: flattendJobEnty[], group?: Group|null) => flattendJobEnty[];
 };
 
 export const useFilterIterationContext = (
@@ -212,11 +256,10 @@ export const useFilterIterationContext = (
         newParent.evaluatable.push(evaluatable);
         }
 
-    const applyFiltersOnData = (data: jobEnty[], group: Group|null = null): jobEnty[] => {
+    const applyFiltersOnData = (data: flattendJobEnty[], group: Group|null = null): flattendJobEnty[] => {
         group = group ?? root.value;
         // This function is not yet implemented
-        groupEvaluator(group);
-        return data;
+        return groupEvaluator(group, data);
     }
 
     return {

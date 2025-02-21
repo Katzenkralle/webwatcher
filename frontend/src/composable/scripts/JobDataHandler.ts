@@ -11,7 +11,7 @@ remote: referse to data on the server
 let globalJobData: Record<number, Ref<jobEnty[]>> = {}
 export let handlerRefs: Record<number, Ref<jobEnty[]>> = {}
 
-interface flattendJobEnty {
+export interface flattendJobEnty {
     [key: string]: any;
 }
 
@@ -43,7 +43,11 @@ export const useJobDataHandler = (
     init();
 
     const getColumnsByType = (type: string|undefined): string[] => {
-        return computeLayout.value.filter(col => col.type === type || type === undefined).map(col => col.key);
+        return computeLayout.value.filter(col => 
+            type === undefined
+            ||
+            col.type.split("|").includes(type)
+            ).map(col => col.key);
     }
 
     const computeRelevantDataRange = computed((): jobEnty[] => 
@@ -75,25 +79,18 @@ export const useJobDataHandler = (
 
     const computeDisplayedData = computed((): flattendJobEnty[]  => {
         console.debug("Recomputed Display Data");
-        let relevantData: jobEnty[] = localJobData.value;
-        if (filters) {
-            relevantData = filters.applyFiltersOnData(computeRelevantDataRange.value);
-        }
-        else if (range) {
-            let relevantData = [];
-            for (let i = range.value[0]; i < range.value[1]; i++) {
-                relevantData.push(localJobData.value[i]);
-            }
-            return relevantData;
-        }
-
-        return relevantData.map((row: jobEnty) => {
+        let flattendJobEntys: flattendJobEnty[] = localJobData.value.map((row: jobEnty) => {
             return {
                 ...row,
                 ...row.context,
                 context: undefined
             };
         });
+        if (filters) {
+            flattendJobEntys = filters.applyFiltersOnData(flattendJobEntys);
+        }
+
+        return flattendJobEntys;
         
     });
 

@@ -30,6 +30,7 @@ const modeAlias = {
             />
             <InputText
             size="small"
+            placeholder="Test for..."
             v-model="props.cond.testFor"
             />
         </div>
