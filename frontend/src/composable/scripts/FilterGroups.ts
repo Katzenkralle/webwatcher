@@ -34,7 +34,7 @@ export interface AbstractCondition {
 }
 
 export interface Group {
-    connector: "AND" | "OR" | "XOR";
+    connector: "AND" | "OR" | "XOR" | "NOR";
     evaluatable: (Group|AbstractCondition)[];
     type: "group";
     parent?: Group | null;
@@ -73,7 +73,6 @@ const evaluateString = (condition: StringCondition, entry: flattendJobEnty): boo
     }
     switch (condition.mode) {
         case "includes":
-            console.log(entry[condition.col], condition.testFor)
             return String(entry[condition.col]).includes(condition.testFor);
         case "exact_match":
             // == is used to compare the string with possible numbers
@@ -116,6 +115,7 @@ const groupEvaluator = (group: Group, jobEntrys: flattendJobEnty[]): flattendJob
             case "AND": return evaluatedChildren.every((child) => child);
             case "OR": return evaluatedChildren.some((child) => child);
             case "XOR": return evaluatedChildren.filter((child) => child).length === 1;
+            case "NOR": return !evaluatedChildren.some((child) => child);
             default: return true;
         }
     });
@@ -137,7 +137,9 @@ export type IterationContext<T extends Group | AbstractCondition = Group | Abstr
     thisElement: ComputedRef<T>;
     path: string;
     root: Ref<Group>;
+    evaluatables: readonly string[];
     iter: () => IterationContext[];
+    getStandartEvaluable: (name: "Number" | "String" | "Boolean" | "Group") => Group|AbstractCondition;
     addToFilterGroup: (evaluatable: Group|AbstractCondition, parent?: Group|null) => void;
     exchangePosition: <T extends Group | AbstractCondition>(elemA: T, elemB: T) => void;
     changeParent: (newParent: Group, evaluatable?: Group|AbstractCondition|null) => void;
@@ -154,7 +156,7 @@ export const useFilterIterationContext = (
     if (!root){
         root = ref({connector: "AND", evaluatable: [], type: "group"} as Group);
     }
-    
+    const evaluatables = ["Number", "String", "Boolean", "Group"] as const;
     
     const thisElement = computed(() => {
         return _thisElement ?? root.value;
@@ -211,38 +213,56 @@ export const useFilterIterationContext = (
         if (elemA === elemB) {
             return;
         }
+
+        if (elemA.type === "group" && elemB.type === "group") {
+            const findB = (group: Group): boolean => {
+                if (group === elemB) {
+                    return true;
+                }
+                for (let child of group.evaluatable) {
+                    if (child.type === "group") {
+                        if (findB(child as Group)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+            // New master is the one that curenntly holds the other as a child
+            const new_master = (findB(elemA) ? elemB : elemA) as Group;
+            const old_master = (new_master === elemA ? elemB : elemA) as Group;
+    
+            removeFromFilterGroup(new_master);
+            new_master.parent = old_master.parent;
+
+            removeFromFilterGroup(old_master);
+            old_master.parent = new_master;
+
+
+            new_master.evaluatable.push(old_master);
+            if (new_master.parent) {
+                new_master.parent.evaluatable.push(new_master);
+            } else {
+                root.value = new_master;
+            }
+            
+    
+            return;
+        } 
         const indexA = removeFromFilterGroup(elemA, true);
         const indexB = removeFromFilterGroup(elemB, true);
         
         const parentA = elemA.parent || null;
         const parentB = elemB.parent || null;
-        if (!parentA !== !parentB) {
-            // For moving groups (to the top level)
-            if (elemA.type === "condition" || elemB.type === "condition") {
-                throw new Error("A condition should have a perent group");
-            }
-            const new_master = (parentA ? elemA : elemB) as Group;
-            const old_master = (!parentA ? elemA : elemB) as Group;
-    
-            removeFromFilterGroup(new_master);
-            new_master.parent = null;
-            old_master.parent = new_master;
-            new_master.evaluatable.push(old_master);
-            root.value = new_master;
-    
-            return;
-        } else if (parentA == null || parentB == null) {
-            // Both elements are not in the tree
-            throw new Error("Both elements are not in the tree");
+
+        if (!parentA || !parentB) {
+            throw new Error("Invalid parent");
         }
-        
         elemB.parent = parentA;
         parentA.evaluatable.splice(indexA, 1, elemB);
     
         elemA.parent = parentB;
         parentB.evaluatable.splice(indexB, 1, elemA);
-        
-    
     }
 
     const changeParent = (newParent: Group, evaluatable: Group|AbstractCondition|null = null) => {
@@ -262,12 +282,56 @@ export const useFilterIterationContext = (
         return groupEvaluator(group, data);
     }
 
+    const getStandartEvaluable = (name: typeof evaluatables[number]): Group|AbstractCondition => {
+        const standardCondition = {
+            "Number": {
+                "type": "number",
+                "testFor1": {
+                    "mode": "col",
+                    "value": ""
+                },
+                "testFor2": {
+                    "mode": "col",
+                    "value": ""
+                },
+                "opperation": "=="
+            } as NumberCondition,
+            "String": {
+                "type": "string",
+                "col": "job_id",
+                "testFor": "",
+                "mode": "exact_match"
+            } as StringCondition,
+            "Boolean": {
+                "type": "boolean",
+                "col": "job_id",
+                "testFor": true 
+            } as BooleanCondition
+        }
+        
+        if (name !== "Group") {
+            return {
+                condition: standardCondition[name],
+                negated: false,
+                type: "condition"
+            } as AbstractCondition;
+        }
+        return {
+                "connector":
+                    "AND",
+                "evaluatable": [],
+                "type": "group"
+            } as Group;
+    }
+
     return {
         thisElement,
         path,
         root,
+        evaluatables,
         iter,
         addToFilterGroup,
+        getStandartEvaluable,
         exchangePosition,
         changeParent,
         removeFromFilterGroup,

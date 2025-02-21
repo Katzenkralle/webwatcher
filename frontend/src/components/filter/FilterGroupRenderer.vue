@@ -6,6 +6,7 @@ import StringRenderer from "./internal/StringRenderer.vue";
 import type { useJobDataHandler } from "@/composable/scripts/JobDataHandler";
 
 import { ref, defineProps, type Ref, watchEffect, watch } from "vue";
+import { Select, Button } from "primevue";
 
 const props = defineProps<{
   groupIterator: IterationContext<Group>;
@@ -53,14 +54,18 @@ const getVueConditionComponent = (type: string) => {
   }
 };
 
-const handelDragEnd = (destination: AbstractCondition | Group) => {
+const handelDragEnd = (destination: AbstractCondition | Group, exchangePossitionsIfPossible: Boolean = true) => {
   const source = getDraggingInfo().value;
-  if (source === null) {
+  if (source === null || source === destination) {
     getDraggingInfo().value = null; 
     return;
   }
   if (source.type == destination.type) {
-    props.groupIterator.exchangePosition(source, destination);
+    if (exchangePossitionsIfPossible) {
+      props.groupIterator.exchangePosition(source, destination);
+    } else if (source.type === 'group' && destination.type === 'group') {
+      props.groupIterator.changeParent(destination, source);
+    }
   } else if (source.type === 'condition' && destination.type === 'group') {
     props.groupIterator.changeParent(destination, source);
   } 
@@ -78,57 +83,106 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
   <div 
     class="border-l-4 flex"
     :style="{ borderLeftColor: `var(${getColorForConnnectionType(props.groupIterator.thisElement.value.connector)})` }">
-    <div class="flex flex-row bg-panel-h"
-      draggable="true"
-      @dragstart="handleDragStart(props.groupIterator.thisElement.value)"
-      @dragover="(e) => e.preventDefault()"
-      @drop="handelDragEnd(props.groupIterator.thisElement.value)">
-      <div :class="{'flex items-center dragging-placeholder': true,
-                    'transform scale-80 !border-info ': getDraggingInfo().value}">
-        <p class="px-1 h-fit">{{ props.groupIterator.thisElement.value.connector }}</p>
+    <div class="flex flex-col bg-panel-h relative">
+      <div class="flex h-full flex-row min-h-24"
+        draggable="true"
+        @dragstart="handleDragStart(props.groupIterator.thisElement.value)"
+        @dragover="(e) => e.preventDefault()"
+        @dragend="getDraggingInfo().value = null"
+        @drop="handelDragEnd(props.groupIterator.thisElement.value, false)">
+        <div :class="{'flex items-center dragging-placeholder relative': true,
+                      'transform scale-80 !border-info ': getDraggingInfo().value}">
+          <Button
+            v-if="props.groupIterator.path !== '.0'"
+            icon="pi pi-times"
+            @click="groupIterator.removeFromFilterGroup()"
+            severity="danger"
+            size="small"
+            class="absolute top-0 right-0 p-0 m-0 w-6 h-6"
+            />
+          <Select
+            v-model="props.groupIterator.thisElement.value.connector"
+            :options="['AND', 'OR', 'NOR', 'XOR']"
+            placeholder="Connector"          
+            size="small"/>
+        </div>
+      </div>
+      <div :class="{'bottom-0': true,
+                    'transform scale-80 !border-info': getDraggingInfo().value?.type === 'group',
+                    'collapse': getDraggingInfo().value?.type !== 'group'}">
+        <div class="w-full h-2 bg-panel"/>
+          <p :class="{'text-center w-min': true, 'dragging-placeholder !border-info p-1 mt-1': getDraggingInfo().value}"
+          @dragover="(e) => e.preventDefault()"
+          @drop="handelDragEnd(props.groupIterator.thisElement.value)">
+            Switch Possitions
+          </p>
       </div>
     </div>
-    <div>
+
+    <div class="flex flex-col w-full max-w-128">
       <template v-for="evaluatable, index in props.groupIterator.iter()" :key="`${props.groupIterator.path}/${index}`">
         <div v-if="index > 0" class="w-full h-2"/>
         
-        <div v-if="evaluatable.thisElement.value.type === 'group'">
-          <FilterGroupRenderer :jobHandler="props.jobHandler" 
-            :groupIterator="evaluatable as IterationContext<Group>" 
-            :dragInfo="getDraggingInfo()" />
-        </div>
-        <div v-else-if="evaluatable.thisElement.value.type === 'condition'" 
-          class="outer-condition-container" 
-          draggable="true" 
-          @dragstart="handleDragStart(evaluatable.thisElement.value)" 
-          @dragover="(e) => e.preventDefault()"
-          @drop="handelDragEnd(evaluatable.thisElement.value)">
-          <div :class="`condition-marker ${evaluatable.thisElement.value.negated ? 'bg-error' : 'bg-success'}`">
-            <button
-              class="self-start cursor-pointer"
-              @click="evaluatable.thisElement.value.negated = !evaluatable.thisElement.value.negated ">
-              <i class="pi pi-sort-alt-slash"></i>
-            </button>            
-            <div class="rotate-270 self-center">
-              <p class="text-xs whitespace-nowrap">IF{{ evaluatable.thisElement.value.negated ? ' NOT' : "" }}</p>
-            </div>
-            <div class="self-end">
-              <button
-                class="cursor-pointer"
-                @click="props.groupIterator.thisElement.value.evaluatable.splice(index, 1)">
-                <i class="pi pi-arrows-v"></i>
-              </button>
-            </div>
+        <div class="flex flex-col w-[inherit] ">
+          <div v-if="evaluatable.thisElement.value.type === 'group'">
+            <FilterGroupRenderer :jobHandler="props.jobHandler" 
+              :groupIterator="evaluatable as IterationContext<Group>" 
+              :dragInfo="getDraggingInfo()" />
           </div>
-          <div :class="{'dragging-placeholder': true,
-           'transform scale-80 !border-info ': getDraggingInfo().value?.type === 'condition'}">
-            <component
-              :is="getVueConditionComponent(evaluatable.thisElement.value.condition.type)"
-              :cond="evaluatable.thisElement.value.condition as any" 
-              :available-columns="props.jobHandler.getColumnsByType(evaluatable.thisElement.value.condition.type)" />
+          <div v-else-if="evaluatable.thisElement.value.type === 'condition'" 
+            class="outer-condition-container" 
+            draggable="true" 
+            @dragstart="handleDragStart(evaluatable.thisElement.value)" 
+            @dragover="(e) => e.preventDefault()"
+            @dragend="getDraggingInfo().value = null"
+            @drop="handelDragEnd(evaluatable.thisElement.value)">
+            <div :class="`condition-marker ${evaluatable.thisElement.value.negated ? 'bg-error' : 'bg-success'}`">
+              <button
+                class="self-start cursor-pointer"
+                @click="evaluatable.thisElement.value.negated = !evaluatable.thisElement.value.negated ">
+                <i class="pi pi-sort-alt-slash"></i>
+              </button>            
+              <div class="rotate-270 self-center">
+                <p class="text-xs whitespace-nowrap">IF{{ evaluatable.thisElement.value.negated ? ' NOT' : "" }}</p>
+              </div>
+              <div class="self-end">
+                <button
+                  class="cursor-pointer"
+                  @click="props.groupIterator.thisElement.value.evaluatable.splice(index, 1)">
+                  <i class="pi pi-arrows-v"></i>
+                </button>
+              </div>
+            </div>
+            <div :class="{'dragging-placeholder w-full relative': true,
+            'transform scale-80 !border-info ': getDraggingInfo().value?.type === 'condition'}">
+             <Button
+              icon="pi pi-times"
+              @click="groupIterator.removeFromFilterGroup(evaluatable.thisElement.value)"
+              severity="danger"
+              size="small"
+              class="absolute top-0 right-0 p-0 m-0 w-6 h-6"
+              />
+              <component
+                :is="getVueConditionComponent(evaluatable.thisElement.value.condition.type)"
+                :cond="evaluatable.thisElement.value.condition as any" 
+                :available-columns="props.jobHandler.getColumnsByType(evaluatable.thisElement.value.condition.type)" />
+            </div>
           </div>
         </div>
       </template>
+
+      <div class="flex w-[inherit] justify-center mt-auto">
+          <div class="flex flex-row max-w-128 w-[inherit] justify-around items-center">
+            <template v-for="element in props.groupIterator.evaluatables">
+              <Button
+                icon="pi pi-plus"
+                @click="groupIterator.addToFilterGroup(groupIterator.getStandartEvaluable(element as any))"
+                :label="element"
+                size="small"
+                />
+            </template>
+          </div>
+        </div>
     </div>
   </div>
 </template>
@@ -141,7 +195,7 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
 
 
 .dragging-placeholder {
-  @apply border-4 border border-dashed rounded-full border-transparent
+  @apply border-4 border border-dashed rounded-xl border-transparent
 }
 
 .outer-condition-container {
