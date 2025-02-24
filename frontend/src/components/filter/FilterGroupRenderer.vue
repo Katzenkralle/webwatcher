@@ -5,7 +5,7 @@ import NumberRenderer from "./internal/NumberRenderer.vue";
 import StringRenderer from "./internal/StringRenderer.vue";
 import type { useJobDataHandler } from "@/composable/scripts/JobDataHandler";
 
-import { ref, defineProps, type Ref, watchEffect, watch } from "vue";
+import { ref, defineProps, type Ref, watchEffect, watch, Transition } from "vue";
 import { Select, Button } from "primevue";
 
 const props = defineProps<{
@@ -21,6 +21,8 @@ const props = defineProps<{
 */
 
 const rootDragRef: Ref<Group | AbstractCondition | null> = ref(null);
+
+const hoverAdditionArea = ref(false);
 
 const getDraggingInfo = () => {
   return props.dragInfo === undefined ? rootDragRef : props.dragInfo;
@@ -81,7 +83,7 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
 
 <template>
   <div 
-    class="border-l-4 flex"
+    class="border-l-4 flex transition-all duration-300 h-min-24 h-max-content"
     :style="{ borderLeftColor: `var(${getColorForConnnectionType(props.groupIterator.thisElement.value.connector)})` }">
     <div class="flex flex-col bg-panel-h relative">
       <div class="flex h-full flex-row min-h-24"
@@ -171,17 +173,32 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
         </div>
       </template>
 
-      <div class="flex w-[inherit] justify-center mt-auto">
-          <div class="flex flex-row max-w-128 w-[inherit] justify-around items-center">
-            <template v-for="element in props.groupIterator.evaluatables">
-              <Button
-                icon="pi pi-plus"
-                @click="groupIterator.addToFilterGroup(groupIterator.getStandartEvaluable(element as any))"
-                :label="element"
-                size="small"
-                />
-            </template>
-          </div>
+      <div class="relative flex mt-auto h-8 w-full transition-all duration-300 overflow-x-hidden"
+           @mouseover="hoverAdditionArea = true"
+           @mouseleave="hoverAdditionArea = false">
+          
+          <Transition name="addition-area">
+            <div class="flex flex-row max-w-128 w-fit justify-around items-center"
+              v-if="hoverAdditionArea">
+              <template
+              v-for="element in props.groupIterator.evaluatables">
+                <Button
+                  icon="pi pi-plus"
+                  @click="groupIterator.addToFilterGroup(groupIterator.getStandartEvaluable(element as any))"
+                  :label="element"
+                  class="h-full"
+                  size="small"
+                  />
+              </template>
+                <!-- Serves as Placeholder -->
+              <i class="pi pi-plus p-1 invisible"/>
+            </div>
+          </Transition>
+          <i :class="{'absolute pi pi-plus p-1 bg-success text-h-text rounded-full cursor-pointer': true,
+          ' transition-all ease-in-out duration-900 transform top-[50%] -translate-y-1/2': true,
+          'right-[50%] translate-x-1/2': !hoverAdditionArea,
+          'right-[0]': hoverAdditionArea }" 
+          @click="hoverAdditionArea = !hoverAdditionArea"/>
         </div>
     </div>
   </div>
@@ -204,6 +221,21 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
 
 .inner-condition-container {
   @apply p-1 flex flex-col items-center space-y-2 w-full
+}
+
+
+
+.addition-area-enter-active {
+  transition: all 0.9s ease-in-out;
+}
+.addition-area-leave-active {
+  transition: all 0.9s ease-in-out;
+}
+
+.addition-area-enter-from,
+.addition-area-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
 }
 
 </style>
