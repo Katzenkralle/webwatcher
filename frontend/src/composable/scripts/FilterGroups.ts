@@ -100,11 +100,16 @@ const groupEvaluator = (group: Group, jobEntrys: flattendJobEnty[]): flattendJob
                 return groupEvaluator(groupOrCondition, [entry]);
             } else {
                 const shouldNegate = (val: boolean) => groupOrCondition.negated ? !val : val;
-                switch (groupOrCondition.condition.type) {
-                    // Returns bool, error or true
-                    case "boolean": return shouldNegate(evaluateBoolean(groupOrCondition.condition, entry));
-                    case "number": return shouldNegate(evaluateNumber(groupOrCondition.condition, entry));
-                    case "string": return shouldNegate(evaluateString(groupOrCondition.condition, entry));
+                try { 
+                    switch (groupOrCondition.condition.type) {
+                        // Returns bool, error or true
+                        case "boolean": return shouldNegate(evaluateBoolean(groupOrCondition.condition, entry));
+                        case "number": return shouldNegate(evaluateNumber(groupOrCondition.condition, entry));
+                        case "string": return shouldNegate(evaluateString(groupOrCondition.condition, entry));
+                    }
+                } catch (e) {
+                    console.debug("Accepted error during evaluation:" + e);
+                    return true;
                 }
             }
         });
