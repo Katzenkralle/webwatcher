@@ -3,20 +3,13 @@ from enum import Enum
 from typing import Annotated, Union
 
 from db_handler.maria_schemas import *
+from watcher.base import ResultType as BaseResultType
+from utility.toolbox import extend_enum
 
+@extend_enum(BaseResultType)
 @strawberry.enum
 class ResultType(Enum):
-    SUCCESS = "success"
-    AUTH_ERROR = "auth_error"
-    PREMISSION_ERROR = "premission_error"
-    FAILURE = "failure"
-    NETWORK_ERROR = "network_error"
-    WARNING = "warning"
-    OK = "ok"
-    NOT_OK = "not_ok"
-    UNHEALTHY = "unhealthy"
-    TIMEOUT = "timeout"
-    CATS_AND_DOGS = "cats_and_dogs"
+    pass
 
 @strawberry.type
 class ErrorMessage:
