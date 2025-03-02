@@ -127,15 +127,6 @@ const groupEvaluator = (group: Group, jobEntrys: flattendJobEnty[]): flattendJob
     return result;
 }
 
-export const safeJsonStringify = (group: Group) => {
-    return JSON.stringify(group, (key, value) => {
-        if (key === "parent") {
-            return "[parent_circle]";
-        }
-        return value;
-    }, 2);
-}
-
 
 // Needet to be able to use Extract to pick weather to use Group or AbstractCondition
 export type IterationContext<T extends Group | AbstractCondition = Group | AbstractCondition> = {
@@ -150,6 +141,7 @@ export type IterationContext<T extends Group | AbstractCondition = Group | Abstr
     changeParent: (newParent: Group, evaluatable?: Group|AbstractCondition|null) => void;
     removeFromFilterGroup: (evaluatable?: Group|AbstractCondition|null, justReturnIndex?: boolean) => number;
     applyFiltersOnData: (data: flattendJobEnty[], group?: Group|null) => flattendJobEnty[];
+    safeJsonStringify: () => string;
 };
 
 export const useFilterIterationContext = (
@@ -180,8 +172,7 @@ export const useFilterIterationContext = (
       return (thisElement.value as Group).evaluatable.map((evaluatable, index) =>
         useFilterIterationContext(root, evaluatable, `${path}.${index}`)
       );
-    };
-    
+    }; 
 
     const removeFromFilterGroup = (evaluatable: Group|AbstractCondition|null = null, justReturnIndex: boolean = false): number => {
         evaluatable = evaluatable ?? thisElement.value;
@@ -349,6 +340,15 @@ export const useFilterIterationContext = (
             } as Group;
     }
 
+    const safeJsonStringify = (): string => {
+        return JSON.stringify(root.value, (key, value) => {
+            if (key === "parent") {
+                return "[circulare]";
+            }
+            return value;
+        }, 4);
+    }
+
     return {
         thisElement,
         path,
@@ -360,7 +360,8 @@ export const useFilterIterationContext = (
         exchangePosition,
         changeParent,
         removeFromFilterGroup,
-        applyFiltersOnData
+        applyFiltersOnData,
+        safeJsonStringify
 
     } as IterationContext;
   };

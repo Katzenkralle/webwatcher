@@ -22,7 +22,7 @@ const submit = () => {
         .catch((error: Error) => {
             console.debug("2");
             console.debug(error);
-            auth_error.value = `${error.message}: ${error.message}`;
+            auth_error.value = `${error.name}: ${error.message}`;
         })
         .finally(() => {
             useLoadingAnimation().setState(false);

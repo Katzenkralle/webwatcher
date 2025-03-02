@@ -8,7 +8,7 @@ const props = defineProps<{
     duration?: number
 }>()
 
-const duration = computed(() => props.duration ?? DEFAULT_DURATION) 
+const duration = computed(() => props.duration ?? DEFAULT_DURATION); 
 
 </script>
 <template>
@@ -17,23 +17,24 @@ const duration = computed(() => props.duration ?? DEFAULT_DURATION)
                 <div v-if="props.isLoading.value" class="relative w-screen h-1 overflow-hidden">
                     <div @animationiteration = "(e) => {loadingAnimationCounter = e.elapsedTime / duration }"
                         @animationstart="() => {loadingAnimationCounter = 0}"
-                        class="w-[100px] h-1 bg-info left-to-right"></div>
-                    <div class="w-[100px] h-1 bg-info left-to-right" :style="{ animationDelay: '0.25s' }"></div>
-                    <div class="w-[100px] h-1 bg-info left-to-right" :style="{ animationDelay: '0.5s' }"></div>
+                        class="animation-bar"></div>
+                    <div class="animation-bar" :style="{ animationDelay: '0.25s' }"></div>
+                    <div class="animation-bar" :style="{ animationDelay: '0.5s' }"></div>
                 </div>
             </Transition>
         </div>
 </template>
 
 <style lang="css" scoped>
-.left-to-right {
-    position: absolute;
-    transform: translateX(-100%);
+@reference "@/assets/global.css";
+
+.animation-bar {
+    @apply w-[100px] h-1 bg-info absolute z-10 [transform:translateX(-100%)];
     animation: l-to-r v-bind(duration + "s") cubic-bezier(.46,.03,.52,.96) forwards infinite;
 }
 @keyframes l-to-r {
     0% {
-        left: 0px;
+        left: 0;
     }
     100% { 
         left: 100%;
@@ -41,10 +42,11 @@ const duration = computed(() => props.duration ?? DEFAULT_DURATION)
     }
 }
 
-.loading-leave-active .left-to-right,
+.loading-leave-active .animation-bar,
 .loading-leave-active {
     /* transistion needet to delay removal from DOM, .loading-leave-active serves as trigger */
-    transition: none v-bind(duration + "s");
+    transition: linear v-bind(duration + "s");
+    opacity: 0;
     animation-iteration-count: v-bind(loadingAnimationCounter +1) !important;
 }
 

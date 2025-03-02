@@ -101,13 +101,13 @@ watch(
 </script>
 
 <template>
-    <div class="">
+    <div>
     <Button icon="pi pi-clock" class="ml-auto" 
     :severity="useStatusMessage().getRecentStatusMessage.value?.msg.severity" 
     @click="isOpendInteractive != null ? isOpendInteractive = null : isOpendInteractive = 'interactivly'"></Button>
     <div class="relative">
         <div :class="{
-                'absolute flex flex-col bg-panel w-screen md:w-128 rounded-lg transition-all border-2 border-app': true,
+                'absolute flex flex-col bg-panel w-screen md:w-128 rounded-lg transition-all border-2 border-app z-20': true,
                 [`duration-${OPEN_CLOSE_DURATION}`]: true, 
                 'max-h-0 translate-x-full invisible opacity-0': !isOpendInteractive, 
                 'max-h-[100vh] opacity-100 visible': isOpendInteractive,
@@ -128,7 +128,7 @@ watch(
             <div class="flex flex-col h-full w-full p-3 overflow-y-scroll overflow-x-hidden">
                 <h3 class="mx-auto mb-4 mt-2">{{ notificationHeader }}</h3>
                 <div class="grid grid-cols-3 gap-y-4 justify-items-stretch">
-                    <template v-if="Object.keys(displayedMessages).length" v-for="(msg, index) in displayedMessages" >
+                    <template v-if="Object.keys(displayedMessages).length" v-for="([index, msg]) in Object.entries(displayedMessages).reverse()" >
                             <span class="grid_element col-span-2">
                                 <Message
                                     class="border border-2 w-full h-full"
@@ -147,7 +147,7 @@ watch(
                             </span>
                             <span class="grid_element">
                                 <Button @click="() => {
-                                    useStatusMessage().removeStatusMessage([index]);
+                                    useStatusMessage().removeStatusMessage([Number(index)]);
                                 }" class="h-full w-fit text-center ml-2 animate-fade-in" label="Remove"/>
                             </span>    
                     </template>

@@ -121,7 +121,7 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
       </div>
     </div>
 
-    <div class="flex flex-col w-full max-w-128">
+    <div class="flex flex-col w-full min-w-128 max-w-full">
       <template v-for="evaluatable, index in props.groupIterator.iter()" :key="`${props.groupIterator.path}/${index}`">
         <div v-if="index > 0" class="w-full h-2"/>
         
@@ -173,7 +173,7 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
         </div>
       </template>
 
-      <div class="relative flex mt-auto h-8 w-full transition-all duration-300 overflow-x-hidden"
+      <div class="relative w-[inherit] flex mt-auto h-8 w-full transition-all duration-300 overflow-x-hidden"
            @mouseover="hoverAdditionArea = true"
            @mouseleave="hoverAdditionArea = false">
           

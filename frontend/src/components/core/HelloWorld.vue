@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, type Ref } from "vue";
 import Button from "primevue/button"
-import {useAuth} from "@/composable/api/Auth";
+import {useAuth, requireLogin} from "@/composable/api/Auth";
 import {useStatusMessage, useLoadingAnimation} from "@/composable/core/AppState";
 import { useFilterIterationContext, type IterationContext, type Group } from "@/composable/scripts/FilterGroups";
 
@@ -89,8 +89,6 @@ const jobHandlerDemo = useJobDataHandler(0);
     <p>{{ user }}</p>
     <h3>Vue Test:</h3>
     <p>{{ date }}</p>
-    <h3>PrimeVue Test:</h3>
-
     <div class="bg-panel m-4 border-2 border-primary rounded-lg p-2">
         <FilterGroupRenderer :jobHandler="jobHandlerDemo" :groupIterator="filterGroupHandler as IterationContext<Group>"/>
     </div>
@@ -112,7 +110,19 @@ const jobHandlerDemo = useJobDataHandler(0);
                 counter++;
             }"
     />
+    <Button label="Trigger Error"
+            @click="() => {
+                useStatusMessage().newStatusMessage(`Hello World ${counter}`, 'danger');
+                counter++;
+            }"
+    />
+    <Button label="Logout"
+            @click="() => {
+                requireLogin();
+            }"
+    />
     </div>
     <textarea class="w-full h-[1000px] bg-crust" readonly>
+        {{filterGroupHandler.safeJsonStringify()}}
     </textarea>
 </template>
