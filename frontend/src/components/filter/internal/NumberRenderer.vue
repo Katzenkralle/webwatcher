@@ -101,7 +101,7 @@ const TestSelectionVnode = defineComponent({
 <template>
     <div class="inner-condition-container">
         <h4>Number Condition</h4>
-        <TestSelectionVnode :data="props.cond.testFor1" :hot-update="true" @update:model-value="(e) => console.log(e)" />
+        <TestSelectionVnode :data="props.cond.testFor1" :hot-update="true"/>
         <div class="grid justify-items-center  grid-cols-5 w-full px-3">
             <div class="seperator"/>
             <Select 
@@ -112,7 +112,7 @@ const TestSelectionVnode = defineComponent({
                 placeholder="Select Operation" />
             <div class="seperator"/>
         </div>
-        <TestSelectionVnode :data="props.cond.testFor2" :hot-update="true" @update:model-value="(e) => console.log(e)"/>
+        <TestSelectionVnode :data="props.cond.testFor2" :hot-update="true"/>
     </div>
 </template>
 

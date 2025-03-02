@@ -131,7 +131,7 @@ const groupEvaluator = (group: Group, jobEntrys: flattendJobEnty[]): flattendJob
         if (evaluatedChildren.length === 0) {
             return true;
         }
-        console.log("Evaluation:", evaluatedChildren);
+        console.debug("Evaluation:", evaluatedChildren);
         switch (group.connector) {
             case "AND": return evaluatedChildren.every((child) => child);
             case "OR": return evaluatedChildren.some((child) => child);
@@ -140,7 +140,6 @@ const groupEvaluator = (group: Group, jobEntrys: flattendJobEnty[]): flattendJob
             default: return true;
         }
     });
-    console.log(result);
     return result;
 }
 

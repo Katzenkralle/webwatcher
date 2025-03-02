@@ -110,9 +110,7 @@ export function useTableMetaData() {
 }
    
 
-export interface jobEnty {
-	callId: number
-	timestamp: number
+export interface jobEnty {	timestamp: number
 	runtime: number
 	result: ErrorTypes
 	scriptFailure: Boolean
@@ -120,7 +118,6 @@ export interface jobEnty {
 }
 
 export const DUMMY_JOB_ENTRY: jobEnty = {
-    callId: 0,
     timestamp: 0,
     runtime: 0,
     result: "CATS_AND_DOGS",
@@ -129,9 +126,9 @@ export const DUMMY_JOB_ENTRY: jobEnty = {
 }
 
 export const useJobData = (jobId: number) => {
-    const FETCH_AT_ONCE = 500    
+    const FETCH_AT_ONCE = 10; 
     
-    const fetchData = async (range: [Number, Number]|undefined = undefined): Promise<jobEnty[]> => {
+    const fetchData = async (range: [Number, Number]|undefined = undefined): Promise<Record<number, jobEnty>> => {
         return new Promise(async (resolve, reject) => {
             const query = `
                 query {
@@ -142,7 +139,7 @@ export const useJobData = (jobId: number) => {
                     __typename
                     ... on jobsEntryList {
                         jobs {
-                            callId
+                            id
                             timestamp
                             runtime
                             result
@@ -161,32 +158,35 @@ export const useJobData = (jobId: number) => {
                 const key = response.keys[0];
                 switch (key) {
                     case "jobEntry":
-                        return resolve(response.data[key] as jobEnty[])
+                        return resolve(response.data[key] as Record<number, jobEnty>)
                     default:
-                        return resolve([
-                            {
-                                callId: 0,
-                                timestamp: 0,
-                                runtime: 0,
-                                result: "OK",
-                                scriptFailure: false,
+                        const generateRandomJobEntry = (): jobEnty => {
+                            return {
+                                timestamp: Date.now() - Math.floor(Math.random() * 1000000),
+                                runtime: Math.floor(Math.random() * 500),
+                                result: Math.random() > 0.5 ? "SUCCESS" : "FAILURE",
+                                scriptFailure: Math.random() > 0.5,
                                 context: {
-                                    "some": 1,
-                                    "aNumber": "string"
+                                    "some": Math.random().toString(36).substring(7),
+                                    "aNumber": Math.floor(Math.random() * 100)
                                 }
-                            },
-                            {
-                                callId: 1,
-                                timestamp: 1,
-                                runtime: 1,
-                                result: "NOT_OK",
-                                scriptFailure: false,
-                                context: {
-                                    "some": "string",
-                                    "aNumber": 1
-                                }
-                            }
-                        ])
+                            };
+                        };
+
+                        const data = Array.from({ length: 15 }, (_, index) => ({
+                            [index]: generateRandomJobEntry()
+                        })).reduce((acc, entry) => {
+                            return { ...acc, ...entry };
+                        }, {} as Record<number, jobEnty>);
+                        return resolve(Object.keys(data).filter((key) =>{
+                            const index = parseInt(key)
+                            return (range ? index >= Number(range[0]) && index < Number(range[1]) : true)
+                        }).map((key) => parseInt(key))
+                        .reduce((acc, key) => {
+                            acc[key] = data[key]
+                            return acc
+                        }, {} as Record<number, jobEnty>)                       
+                        )
                 }
                 reportError(response)                
                 return reject(response)

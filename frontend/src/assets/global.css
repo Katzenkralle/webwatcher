@@ -207,6 +207,16 @@
         --p-navigation-submenu-icon-focus-color: var(--p-surface-400) !important;
         --p-navigation-submenu-icon-active-color: var(--p-surface-400) !important;
 
+        --p-datatable-header-cell-hover-background: color-mix(in srgb, var(--color-app), transparent 84%) !important;
+
+        --p-toggleswitch-background: var(--color-crust) !important;
+        --p-toggleswitch-hover-background: var(--color-crust-h) !important;
+        --p-toggleswitch-handle-background: var(--color-app) !important;
+        --p-toggleswitch-handle-hover-background: var(--color-app-h) !important;
+        /*--p-toggleswitch-checked*/
+        --p-toggleswitch-border-color: var(--color-app) !important;
+        --p-toggleswitch-hover-border-color: var(--color-app-h) !important;
+
         --p-inlinemessage-info-background: color-mix(in srgb,var(--color-info),transparent 84%) !important;
         --p-inlinemessage-info-border-color: color-mix(in srgb,var(--color-info),transparent 84%) !important;
         --p-inlinemessage-info-color: var(--color-info) !important;
@@ -310,7 +320,7 @@
   }
 }
 .p-disabled{
-  @apply !cursor-not-allowed !text-base [pointer-events:auto];
+  @apply !cursor-not-allowed [pointer-events:auto];
 }
 .w-fit {
   /* Fix for applying wrong moz */
