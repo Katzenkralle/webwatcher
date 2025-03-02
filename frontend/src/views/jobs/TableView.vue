@@ -15,16 +15,6 @@ import { ref, watch, onMounted, computed, type Ref } from "vue";
 const currentJobId = ref(Number(router.currentRoute.value.params.id));
 
 let filter = useFilterIterationContext();
-filter.addToFilterGroup({
-  type: "condition",
-  negated: false,
-  condition: {
-    type: "string",
-    col: "result",
-    testFor: "_",
-    mode: "includes"
-  }
-})
 
 watch(
   () => router.currentRoute.value.params.id,
@@ -56,7 +46,7 @@ const jobHandler = computed(() => {
       <p class="bg-panel w-fit border-2 border-info rounded-lg p-2">{{ tableMetadata?.description }} - {{ tableMetadata?.executedLast }}</p>
       
       <div class="bg-panel m-4 border-2 border-primary rounded-lg p-2">
-        <FilterGroupRenderer :jobHandler="jobHandler" :groupIterator="filter as IterationContext<Group>" />
+        <FilterGroupRenderer :jobHandler="jobHandler"/>
       </div>
       
       <DataTable :value="jobHandler?.computeDisplayedData.value"  tableStyle="min-width: 50rem">

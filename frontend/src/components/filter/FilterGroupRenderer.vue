@@ -3,14 +3,15 @@ import type { IterationContext, AbstractCondition, Group } from "@/composable/sc
 import BooleanRenderer from "./internal/BooleanRenderer.vue";
 import NumberRenderer from "./internal/NumberRenderer.vue";
 import StringRenderer from "./internal/StringRenderer.vue";
+import TypeRenderer from "./internal/TypeRenderer.vue";
 import type { useJobDataHandler } from "@/composable/scripts/JobDataHandler";
 
-import { ref, defineProps, type Ref, watchEffect, watch, Transition } from "vue";
+import { ref, defineProps, type Ref, computed, type ComputedRef } from "vue";
 import { Select, Button } from "primevue";
 
 const props = defineProps<{
-  groupIterator: IterationContext<Group>;
   jobHandler: ReturnType<typeof useJobDataHandler>;
+  groupIterator?: IterationContext<Group>;
   dragInfo?: Ref<Group | AbstractCondition | null>;
 }>();
 
@@ -19,6 +20,16 @@ const props = defineProps<{
  but this way we can be independent of the jobHandler. 
  E.g. Potentialy creating a copy that can then be exchanged with the original. 
 */
+
+const groupIterator: ComputedRef<IterationContext<Group>>  = computed(() => {
+  if (props.groupIterator) {
+    return props.groupIterator as IterationContext<Group>;
+  }
+  if (props.jobHandler.filters) {
+    return props.jobHandler.filters as IterationContext<Group>;
+  }
+  throw new Error("No Group Iterator provided");
+});
 
 const rootDragRef: Ref<Group | AbstractCondition | null> = ref(null);
 
@@ -51,6 +62,8 @@ const getVueConditionComponent = (type: string) => {
       return NumberRenderer;
     case "boolean":
       return BooleanRenderer;
+    case "type":
+      return TypeRenderer;
     default:
       return BooleanRenderer;
   }
@@ -64,12 +77,12 @@ const handelDragEnd = (destination: AbstractCondition | Group, exchangePossition
   }
   if (source.type == destination.type) {
     if (exchangePossitionsIfPossible) {
-      props.groupIterator.exchangePosition(source, destination);
+      groupIterator.value.exchangePosition(source, destination);
     } else if (source.type === 'group' && destination.type === 'group') {
-      props.groupIterator.changeParent(destination, source);
+      groupIterator.value.changeParent(destination, source);
     }
   } else if (source.type === 'condition' && destination.type === 'group') {
-    props.groupIterator.changeParent(destination, source);
+    groupIterator.value.changeParent(destination, source);
   } 
   getDraggingInfo().value = null;
 };
@@ -84,18 +97,18 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
 <template>
   <div 
     class="border-l-4 flex transition-all duration-300 h-min-24 h-max-content"
-    :style="{ borderLeftColor: `var(${getColorForConnnectionType(props.groupIterator.thisElement.value.connector)})` }">
+    :style="{ borderLeftColor: `var(${getColorForConnnectionType(groupIterator.thisElement.value.connector)})` }">
     <div class="flex flex-col bg-panel-h relative">
       <div class="flex h-full flex-row min-h-24"
         draggable="true"
-        @dragstart="handleDragStart(props.groupIterator.thisElement.value)"
+        @dragstart="handleDragStart(groupIterator.thisElement.value)"
         @dragover="(e) => e.preventDefault()"
         @dragend="getDraggingInfo().value = null"
-        @drop="handelDragEnd(props.groupIterator.thisElement.value, false)">
+        @drop="handelDragEnd(groupIterator.thisElement.value, false)">
         <div :class="{'flex items-center dragging-placeholder relative': true,
                       'transform scale-80 !border-info ': getDraggingInfo().value}">
           <Button
-            v-if="props.groupIterator.path !== '.0'"
+            v-if="groupIterator.path !== '.0'"
             icon="pi pi-times"
             @click="groupIterator.removeFromFilterGroup()"
             severity="danger"
@@ -103,7 +116,7 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
             class="absolute top-0 right-0 p-0 m-0 w-6 h-6"
             />
           <Select
-            v-model="props.groupIterator.thisElement.value.connector"
+            v-model="groupIterator.thisElement.value.connector"
             :options="['AND', 'OR', 'NOR', 'XOR']"
             placeholder="Connector"          
             size="small"/>
@@ -115,14 +128,14 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
         <div class="w-full h-2 bg-panel"/>
           <p :class="{'text-center w-min': true, 'dragging-placeholder !border-info p-1 mt-1': getDraggingInfo().value}"
           @dragover="(e) => e.preventDefault()"
-          @drop="handelDragEnd(props.groupIterator.thisElement.value)">
+          @drop="handelDragEnd(groupIterator.thisElement.value)">
             Switch Possitions
           </p>
       </div>
     </div>
 
     <div class="flex flex-col w-full min-w-128 max-w-full">
-      <template v-for="evaluatable, index in props.groupIterator.iter()" :key="`${props.groupIterator.path}/${index}`">
+      <template v-for="evaluatable, index in groupIterator.iter()" :key="`${groupIterator.path}/${index}`">
         <div v-if="index > 0" class="w-full h-2"/>
         
         <div class="flex flex-col w-[inherit] ">
@@ -150,7 +163,7 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
               <div class="self-end">
                 <button
                   class="cursor-pointer"
-                  @click="props.groupIterator.thisElement.value.evaluatable.splice(index, 1)">
+                  @click="groupIterator.thisElement.value.evaluatable.splice(index, 1)">
                   <i class="pi pi-arrows-v"></i>
                 </button>
               </div>
@@ -167,7 +180,10 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
               <component
                 :is="getVueConditionComponent(evaluatable.thisElement.value.condition.type)"
                 :cond="evaluatable.thisElement.value.condition as any" 
-                :available-columns="props.jobHandler.getColumnsByType(evaluatable.thisElement.value.condition.type)" />
+                :available-columns="props.jobHandler.getColumnsByType(
+                    evaluatable.thisElement.value.condition.type
+                  )" 
+                />
             </div>
           </div>
         </div>
@@ -181,7 +197,7 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
             <div class="flex flex-row max-w-128 w-fit justify-around items-center"
               v-if="hoverAdditionArea">
               <template
-              v-for="element in props.groupIterator.evaluatables">
+              v-for="element in groupIterator.evaluatables">
                 <Button
                   icon="pi pi-plus"
                   @click="groupIterator.addToFilterGroup(groupIterator.getStandartEvaluable(element as any))"

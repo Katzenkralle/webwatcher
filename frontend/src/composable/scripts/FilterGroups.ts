@@ -26,8 +26,14 @@ export interface StringCondition {
     mode: "includes" | "exact_match" | "regex";
 }
 
+export interface TypeCondition {
+    type: "type";
+    col: string;
+    testFor: "string" | "number" | "boolean" | "any";
+}
+
 export interface AbstractCondition {
-    condition: StringCondition | NumberCondition | BooleanCondition;
+    condition: StringCondition | NumberCondition | BooleanCondition | TypeCondition;
     negated: boolean;
     type: "condition";
     parent?: Group | null;
@@ -92,12 +98,20 @@ const evaluateBoolean = (condition: BooleanCondition, entry: flattendJobEnty): b
     return true
 }
 
+const evaluateType = (condition: TypeCondition, entry: flattendJobEnty): boolean => {
+    switch (condition.testFor) {
+        case "string": return typeof entry[condition.col] === "string";
+        case "number": return typeof entry[condition.col] === "number";
+        case "boolean": return typeof entry[condition.col] === "boolean";
+        default: return true;
+    }
+}
 
 const groupEvaluator = (group: Group, jobEntrys: flattendJobEnty[]): flattendJobEnty[] => {
     let result: flattendJobEnty[] = jobEntrys.filter((entry) => {
         let evaluatedChildren = group.evaluatable.map((groupOrCondition) => {
             if (groupOrCondition.type === "group") {
-                return groupEvaluator(groupOrCondition, [entry]);
+                return groupEvaluator(groupOrCondition, [entry]).length > 0;
             } else {
                 const shouldNegate = (val: boolean) => groupOrCondition.negated ? !val : val;
                 try { 
@@ -106,16 +120,18 @@ const groupEvaluator = (group: Group, jobEntrys: flattendJobEnty[]): flattendJob
                         case "boolean": return shouldNegate(evaluateBoolean(groupOrCondition.condition, entry));
                         case "number": return shouldNegate(evaluateNumber(groupOrCondition.condition, entry));
                         case "string": return shouldNegate(evaluateString(groupOrCondition.condition, entry));
+                        case "type": return shouldNegate(evaluateType(groupOrCondition.condition, entry));
                     }
                 } catch (e) {
-                    console.debug("Accepted error during evaluation:" + e);
-                    return true;
+                    // console.debug("Error during evaluation:" + e);
+                    return false;
                 }
             }
         });
         if (evaluatedChildren.length === 0) {
             return true;
         }
+        console.log("Evaluation:", evaluatedChildren);
         switch (group.connector) {
             case "AND": return evaluatedChildren.every((child) => child);
             case "OR": return evaluatedChildren.some((child) => child);
@@ -124,6 +140,7 @@ const groupEvaluator = (group: Group, jobEntrys: flattendJobEnty[]): flattendJob
             default: return true;
         }
     });
+    console.log(result);
     return result;
 }
 
@@ -153,7 +170,7 @@ export const useFilterIterationContext = (
     if (!root){
         root = ref({connector: "AND", evaluatable: [], type: "group"} as Group);
     }
-    const evaluatables = ["Number", "String", "Boolean", "Group"] as const;
+    const evaluatables = ["Number", "String", "Boolean", "Type", "Group"] as const;
     
     const thisElement = computed(() => {
         return _thisElement ?? root.value;
@@ -314,15 +331,20 @@ export const useFilterIterationContext = (
             } as NumberCondition,
             "String": {
                 "type": "string",
-                "col": "job_id",
+                "col": "",
                 "testFor": "",
                 "mode": "exact_match"
             } as StringCondition,
             "Boolean": {
                 "type": "boolean",
-                "col": "job_id",
+                "col": "",
                 "testFor": true 
-            } as BooleanCondition
+            } as BooleanCondition,
+            "Type": {
+                "type": "type",
+                "col": "",
+                "testFor": "any"
+            } as TypeCondition
         }
         
         if (name !== "Group") {

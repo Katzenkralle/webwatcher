@@ -43,8 +43,16 @@ export const useJobDataHandler = (
     init();
 
     const getColumnsByType = (type: string|undefined): string[] => {
+        /*
+        Returns all columns that have the given type.
+        If type is undefined, all columns are returned.
+        If type is "type", all columns that have multiple types are returned.
+        */
+        
         return computeLayout.value.filter(col => 
             type === undefined
+            ||
+            (type === "type" && col.type.includes("|"))
             ||
             col.type.split("|").includes(type)
             ).map(col => col.key);
@@ -94,5 +102,5 @@ export const useJobDataHandler = (
         
     });
 
-    return { computeDisplayedData, computeLayout, localJobData, getColumnsByType };
+    return { computeDisplayedData, computeLayout, localJobData, filters, getColumnsByType };
 }
