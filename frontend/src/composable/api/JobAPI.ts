@@ -167,7 +167,7 @@ export const useJobData = (jobId: number) => {
                                 result: Math.random() > 0.5 ? "SUCCESS" : "FAILURE",
                                 scriptFailure: Math.random() > 0.5,
                                 context: {
-                                    "some": Math.random().toString(36).substring(7),
+                                    "some": Math.random().toString(36)+ " " + Math.random().toString(36),
                                     "aNumber": Math.floor(Math.random() * 100)
                                 }
                             };
