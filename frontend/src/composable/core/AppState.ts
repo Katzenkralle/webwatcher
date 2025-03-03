@@ -82,7 +82,6 @@ export const useStatusMessage = (batchFire = false) => {
     }
 
     const removeStatusMessage = (index: number[], all: boolean = false) => {
-        console.log("Removing", index);
         if (all) {
             statusMsg.value = [];
             return;
@@ -126,7 +125,6 @@ export const useQueryRouting = () => {
     const routeToQuery = (fallback="/") => {
         let search = new URLSearchParams(window.location.search);
         const query = (search.has("redirect") ? search.get("redirect") : fallback) as string;
-        console.log("Redirecting to", query);
         router.push(query);
     }
     return {

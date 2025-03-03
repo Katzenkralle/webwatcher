@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTableMetaData, type TableMetaData } from "@/composable/api/JobAPI";
+import { useTableMetaData, type TableLayout, DUMMY_JOB_ENTRY } from "@/composable/api/JobAPI";
 import { useJobDataHandler } from "@/composable/scripts/JobDataHandler";
 import { useFilterIterationContext, type AbstractCondition, type Group, type IterationContext} from "@/composable/scripts/FilterGroups";
 import router from "@/router";
@@ -9,7 +9,7 @@ import { useStatusMessage } from "@/composable/core/AppState";
 import FilterGroupRenderer from "@/components/filter/FilterGroupRenderer.vue";
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import {SplitButton} from "primevue";
+import {MultiSelect, SplitButton, FloatLabel} from "primevue";
 import ToggleSwitch from 'primevue/toggleswitch';
 import ColumnGroup from 'primevue/columngroup';   // optional
 import Row from 'primevue/row';                   // optional
@@ -19,7 +19,9 @@ import type { MenuItem } from "primevue/menuitem";
 
 const currentJobId = ref(Number(router.currentRoute.value.params.id));
 
-const showInternalData = ref(true);
+const intenalColums = [...Object.keys(DUMMY_JOB_ENTRY).filter((col) => col != 'context'), 'id'];
+
+const hiddenColumns = ref<string[]>([]);
 const fetchAmount = ref(10);
 
 watch(
@@ -28,7 +30,6 @@ watch(
     if (!newVal) return;
     try {
       currentJobId.value = Number(newVal);
-      showInternalData.value = true;
     } catch (e) {
       console.error(e);
     }
@@ -40,7 +41,7 @@ const tableMetadata = computed(() => {
 });
 
 const jobHandler = computed(() => {
-  return useJobDataHandler(currentJobId.value, showInternalData, computed(() => fetchAmount.value+1), useFilterIterationContext());
+  return useJobDataHandler(currentJobId.value, hiddenColumns, computed(() => fetchAmount.value+1), useFilterIterationContext());
 });
 
 const entryEditMenu = (forId: number | [number, number]): MenuItem[] => {
@@ -65,6 +66,16 @@ const entryEditMenu = (forId: number | [number, number]): MenuItem[] => {
     }
   ]
 }
+
+const computehiddenColumnsOptions = computed(() => {
+  return jobHandler.value.computeLayoutUnfiltered.value.map((col: TableLayout) => {
+    return { label: col.key }
+  });
+});
+const allInternalColumsHidden = computed(() => {
+  if (hiddenColumns.value.length !== intenalColums.length) return false;
+    return JSON.stringify(intenalColums.sort()) === JSON.stringify(hiddenColumns.value.sort());
+});
 </script>
 
 <template>
@@ -76,9 +87,38 @@ const entryEditMenu = (forId: number | [number, number]): MenuItem[] => {
       <div class="bg-panel m-4 border-2 border-primary rounded-lg p-2">
         <FilterGroupRenderer :jobHandler="jobHandler"/>
       </div>
-
-      <label for="internalDataToggle">Show internal data</label>
-      <ToggleSwitch v-model="showInternalData" input-id="internalDataToggle"/>
+      <FloatLabel class="w-full md:w-80" variant="in">
+        <MultiSelect 
+          v-model="hiddenColumns"
+          @update:model-value="(e) => hiddenColumns = e" 
+          :options="computehiddenColumnsOptions" 
+          optionLabel="label"
+          size="small"
+          option-value="label" 
+          overlayClass="hiddenColumnsMultiselect"
+          class="min-w-64 max-h-14"
+          >
+          <template #header>
+            <div class="flex flex-col items-center">
+              <div class="flex flex-row justify-around my-2 w-full">
+                <label for="toggleAllInternalColumnsHidden" class="font-bold">Hide Internal</label>
+                <ToggleSwitch
+                  input-id="toggleAllInternalColumnsHidden"
+                  :model-value="allInternalColumsHidden"
+                  @update:model-value="(e) => {
+                    hiddenColumns = hiddenColumns.filter((col) => !intenalColums.includes(col));
+                    if (e){
+                      hiddenColumns = [...hiddenColumns, ...intenalColums];
+                    }
+                  }"
+                />
+              </div>
+              <span class="w-3/4 h-1 bg-crust-d"></span>
+            </div>
+          </template>
+        </MultiSelect>
+        <label for="in_label">Hide Columns</label>
+      </FloatLabel>
       <div class="w-full h-full">
 
       <!-- Attempting to use lazy loading from the primevue datatable resulted in unpredictable behavior,
@@ -87,6 +127,7 @@ const entryEditMenu = (forId: number | [number, number]): MenuItem[] => {
         :value="jobHandler?.computeDisplayedData.value"  
         tableStyle="min-width: 50rem"
         sortMode="multiple"
+        reorderableColumns
         
         paginator
         :rows="fetchAmount" 
@@ -102,10 +143,10 @@ const entryEditMenu = (forId: number | [number, number]): MenuItem[] => {
           <template v-for="col in jobHandler?.computeLayout.value">
               <Column sortable :field="col.key" :header="`${col.key} (${col.type})`"></Column>
           </template>  
-          <Column field="vue_edit" header="Edit">
+          <Column field="vue_edit" header="Edit" :reorderableColumn="false" :sortable="false">
             <template #body="slotProps">
               <SplitButton
-                  icon="pi pi-pencil"
+                  icon="pi pi-eye"
                   size="small"
                   :model="entryEditMenu(slotProps.data.id)"
                 />
@@ -116,3 +157,10 @@ const entryEditMenu = (forId: number | [number, number]): MenuItem[] => {
     </dev>
   </main>
 </template>
+
+<style>
+.hiddenColumnsMultiselect .p-multiselect-header {
+  /* Hide Header with select all box from multiselect element */
+  display: none !important;
+}
+</style>

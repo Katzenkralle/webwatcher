@@ -30,7 +30,7 @@ export function useScriptAPI() {
     }
     async function submitScript(file: String): Promise<ScriptInfo> {
         const formData = new FormData();
-        console.log("todo")
+        console.debug("todo")
         return { } as ScriptInfo;
     }
 

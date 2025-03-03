@@ -45,7 +45,7 @@ export function queryGql(query: string): Promise<GQLResponse> {
             return { data: data, keys, errors } as GQLResponse;
         });
     }).catch((error) => {
-        console.log(error);
+        console.error(error);
         return { data: {}, keys: [], errors: [error] } as GQLResponse;
     });
 }

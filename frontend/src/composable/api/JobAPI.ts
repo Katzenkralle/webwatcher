@@ -97,7 +97,7 @@ export function useTableMetaData() {
     }
 
     const updateTableMetaData = (data: TableMetaData) => {
-        console.log("Not jet implemented")
+        console.debug("Not jet implemented")
     }
 
     return { 

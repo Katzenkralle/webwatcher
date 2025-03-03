@@ -35,19 +35,16 @@ export function useAuth() {
                 'Accept': 'application/json'
             }
         }).then( async response => {
-            console.log(response);
             if (!response.ok) {
                 throw new Error(response.statusText ? response.statusText : 'Unknown error');
             }
             return response.json() as Promise<AuthResponse>;
         })
         .catch((resp_or_err: any) => {
-
-            console.log("1");
             if (!(resp_or_err instanceof Error)) {
                 resp_or_err = new Error(resp_or_err.statusText ? resp_or_err.statusText : 'Unknown error');
             }
-            console.log(resp_or_err);
+            console.error(resp_or_err);
             throw resp_or_err;
         });
     }

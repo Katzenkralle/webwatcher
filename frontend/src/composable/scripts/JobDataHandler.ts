@@ -18,7 +18,7 @@ export interface flattendJobEnty {
 
 export const useJobDataHandler = (
     jobId: number, 
-    includeInternalData: Ref<boolean> = ref(false),
+    hiddenColumns: Ref<string[]> = ref([]),
     fetchAmount: Ref<number>|ComputedRef<number> = ref(10),
     filters: IterationContext|undefined = undefined,
     ) => {
@@ -68,7 +68,7 @@ export const useJobDataHandler = (
        localJobData.value // range ? localJobData.value.slice(range.value[0], range.value[1]) :
     ) 
 
-    const computeLayout = computed((): TableLayout[] => {
+    const computeLayoutUnfiltered = computed((): TableLayout[] => {
         const staticSchema: TableLayout[] = [
             { key: "id", type: "number" } as TableLayout,
             ...Object.keys(DUMMY_JOB_ENTRY).map(key => {
@@ -92,15 +92,17 @@ export const useJobDataHandler = (
         }, []);
 
         return [
-            ...(includeInternalData.value ? staticSchema : []),
+            ...staticSchema,
             ...contextColNames
         ];
     })
+    const computeLayout = computed((): TableLayout[] => {
+        return computeLayoutUnfiltered.value.filter((layout) => !hiddenColumns.value.includes(layout.key));
+    });
 
     const lazyFetch = async(startAt: number|undefined = undefined) => {
         startAt = startAt || Object.keys(localJobData.value).length;
         if (Object.keys(localJobData.value).length < startAt + fetchAmount.value && !allFetched.value) {
-            console.log("Fetching additional data", startAt, fetchAmount.value);
             localJobData.value = {
                 ...localJobData.value,
                 ...await apiHandler.fetchData([startAt, startAt + fetchAmount.value])
@@ -124,7 +126,7 @@ export const useJobDataHandler = (
             const row = localJobData.value[index];
             return {
                 id: index,
-                ...(includeInternalData.value ? row : {}),
+                ...row,
                 ...row.context,
                 context: undefined
             };
@@ -140,6 +142,7 @@ export const useJobDataHandler = (
     return { 
         computeDisplayedData,
         computeLayout,
+        computeLayoutUnfiltered,
         computedAllFetched: computed(() => allFetched.value),
         localJobData,
         filters,
