@@ -45,7 +45,7 @@ class Watcher(ABC):
         pass
 
     @abstractmethod
-    def run(self) -> JobEntry:
+    async def run(self) -> JobEntry:
         """
         Executes the watcher and returns the context of the entries that have been changed.
         
