@@ -46,7 +46,7 @@ const TestSelectionVnode = defineComponent({
             };
             if (subProps.hotUpdate) {
                 subProps.data.mode = emittedValue.mode;
-                subProps.data.value = emittedValue.value ? emittedValue.value : "";
+                subProps.data.value = typeof emittedValue.value === "number" ? emittedValue.value : "";
             }
             emit('update:modelValue', emittedValue); // Emit value to the parent
         };

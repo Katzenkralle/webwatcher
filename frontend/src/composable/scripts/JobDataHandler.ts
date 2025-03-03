@@ -35,27 +35,18 @@ export const useJobDataHandler = (
         };
         
         localJobData.value = globalJobData[jobId].value;
-    
-        /*if (range)(
-            watch(range, async(newRange) => {
-                const presentEntrys = localJobData.value.length
-                if (presentEntrys < newRange[1]){
-                    console.debug("Fetching aditional Data")
-                    localJobData.value.push(...await apiHandler.fetchData([presentEntrys, newRange[1]]).catch(() => []));
-                }
-            })
-        )*/
     }
     init();
 
-    const getColumnsByType = (type: string|undefined): string[] => {
+    const getColumnsByType = (type: string|undefined, includeHiddenColumns: boolean = true): string[] => {
         /*
         Returns all columns that have the given type.
         If type is undefined, all columns are returned.
         If type is "type", all columns that have multiple types are returned.
         */
         
-        return computeLayout.value.filter(col => 
+        return (includeHiddenColumns ? computeLayoutUnfiltered : computeLayout).value
+          .filter(col => 
             type === undefined
             ||
             (type === "type" && col.type.includes("|"))
@@ -63,10 +54,6 @@ export const useJobDataHandler = (
             col.type.split("|").includes(type)
             ).map(col => col.key);
     }
-
-    const computeRelevantDataRange = computed((): Record<number, jobEnty> => 
-       localJobData.value // range ? localJobData.value.slice(range.value[0], range.value[1]) :
-    ) 
 
     const computeLayoutUnfiltered = computed((): TableLayout[] => {
         const staticSchema: TableLayout[] = [
@@ -79,7 +66,7 @@ export const useJobDataHandler = (
             }).filter((layout): layout is TableLayout => layout !== null)
         ];
           
-        const contextColNames: TableLayout[] = Object.values(computeRelevantDataRange.value).flatMap((row: jobEnty) => 
+        const contextColNames: TableLayout[] = Object.values(localJobData.value).flatMap((row: jobEnty) => 
             Object.entries(row.context).map(([key, value]) => ({ key, type: typeof value }))
         ).reduce((acc: TableLayout[], curr: TableLayout) => {
             const existing = acc.find((layout) => layout.key === curr.key);
@@ -133,6 +120,9 @@ export const useJobDataHandler = (
         });
         if (filters) {
             flattendJobEntys = filters.applyFiltersOnData(flattendJobEntys);
+            if (!allFetched.value && flattendJobEntys.length < fetchAmount.value) {
+                lazyFetch(flattendJobEntys.length);
+            }
         }
 
         return flattendJobEntys;
