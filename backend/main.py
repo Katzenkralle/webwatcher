@@ -1,4 +1,7 @@
 import uvicorn
+from apscheduler.schedulers.background import BackgroundScheduler
+from contextlib import asynccontextmanager
+
 from API.core import get_routes
 from configurator import Config
 
@@ -18,12 +21,36 @@ def establish_db_connections():
     return [MongoDbHandler(Config().mongo),
             MariaDbHandler(Config().maria, Config().app)]
 
+def generate_scheduler():
+    scheduler = BackgroundScheduler(
+        executors={
+            'default': {'type': 'threadpool', 'max_workers': 20}
+        },
+        job_defaults={
+            'coalesce': False,
+            'max_instances': 3
+        }
+    )
+    return scheduler
+
 
 def create_app():
     [mongo, maria] = establish_db_connections()
+    scheduler = generate_scheduler()
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        yield
+        # executed when the app is shutting down
+        scheduler.shutdown()
+        mongo.close()
+        maria.close()
+
     app = FastAPI(
-        title="Webwatcher"
+        title="Webwatcher",
+        lifespan=lifespan
     )
+
     # ToDo: Edit for production
     # https://fastapi.tiangolo.com/tutorial/cors/#use-corsmiddleware
     app.add_middleware(
@@ -41,9 +68,11 @@ def create_app():
         # Make db available for all routes under request.state
         request.state.mongo = mongo
         request.state.maria = maria
+        request.state.scheduler = scheduler
+
         response = await call_next(request)
         return response
-    
+    scheduler.start()
     return app
 
 if __name__ == "__main__":
@@ -53,5 +82,6 @@ if __name__ == "__main__":
     uvicorn.run(app, 
         host=Config().app.host,
         port=Config().app.port,
+        lifespan="on",
         log_level=Config().app.log_level,
         log_config=CustomLogger.get_uvicorn_logging_config())

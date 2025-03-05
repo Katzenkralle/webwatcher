@@ -82,3 +82,9 @@ class MariaDbHandler:
             return DbUser(*user)
         except Exception as e:
             return None
+        
+    def close(self):
+        self.__cursor.close()
+        self.__conn.close()
+        logger.debug("MARIA: Closed MariaDbHandler")
+        return

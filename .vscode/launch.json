@@ -1,34 +1,38 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "type": "node",
-        "request": "launch",
-        "name": "Run npm dev",
-        "runtimeExecutable": "npm",
-        "runtimeArgs": [
-          "run",
-          "dev"
-        ],
-        "cwd": "${workspaceFolder}/frontend",
-        "console": "integratedTerminal"
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run npm dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}/frontend",
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "debugpy",
+      "request": "launch",
+      "name": "Python: Webapi",
+      "env": {
+        "CRYPTO_SECRET_KEY": "51bc0c1562e265a67af236137d6b17f14e5e1c5c580c066dff775b2d53f05d04",
+        "CRYPTO_ALGORITHM": "HS256",
+        "APP_DEV_MODE": "True",
+        "APP_LOG_LEVEL": "debug",
+        "APP_DEFAULT_ADMIN_USERNAME": "someone",
+        "APP_DEFAULT_ADMIN_HASH": "$2b$12$3cV0JOP3f8LbR8VXtbbpDOIf1gUhPf7bk1DMtUCmdIA/d.uCePomC"
       },
-      {
-        "type": "debugpy",
-        "request": "launch",
-        "name": "Python: Webapi",
-        "env": {
-          "CRYPTO_SECRET_KEY": "51bc0c1562e265a67af236137d6b17f14e5e1c5c580c066dff775b2d53f05d04",
-          "CRYPTO_ALGORITHM": "HS256",
-          "APP_DEV_MODE": "True",
-          "APP_LOG_LEVEL": "debug",
-          "APP_DEFAULT_ADMIN_USERNAME": "someone",
-          "APP_DEFAULT_ADMIN_HASH": "$2b$12$3cV0JOP3f8LbR8VXtbbpDOIf1gUhPf7bk1DMtUCmdIA/d.uCePomC",
-        },
-        "cwd": "${workspaceFolder}/backend",
-        "program": "${workspaceFolder}/backend/main.py",
-        "justMyCode": false
-      }
-    ]
-  }
-  
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/main.py",
+      "justMyCode": false
+    },
+    {
+      "name": "Python Debugger: Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
+  ]
+}

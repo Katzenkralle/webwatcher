@@ -20,3 +20,7 @@ class MongoDbHandler:
             self.__db = self.__db[collection_name]
         return
     
+    def close(self):
+        self.__db.client.close()
+        logger.debug("MONGO: Closed connection")
+        return
