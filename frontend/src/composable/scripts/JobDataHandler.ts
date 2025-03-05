@@ -16,10 +16,34 @@ export interface flattendJobEnty {
     [key: string]: any;
 }
 
+interface sortByString {
+    key: string,
+    ignoreColumns: string[],
+    caseInsensitive: boolean  
+}      
+
+function longestCommonSubstringLength(input: string, target: string, caseSensitive: boolean = false): number {
+    let maxMatch = 0;
+    if (!caseSensitive) {
+        input = input.toLowerCase();
+        target = target.toLowerCase();
+    }
+    for (let i = 0; i < input.length; i++) {
+        for (let j = i + 1; j <= input.length; j++) {
+            let substring = input.slice(i, j);
+            if (target.includes(substring)) {
+                maxMatch = Math.max(maxMatch, substring.length);
+            }
+        }
+    }
+    return maxMatch;
+}
+
 export const useJobDataHandler = (
     jobId: number, 
     hiddenColumns: Ref<string[]> = ref([]),
     fetchAmount: Ref<number>|ComputedRef<number> = ref(10),
+    sortByString: ComputedRef<sortByString> | undefined = undefined, // [key, [columns_NOT_to_sort_by]]
     filters: IterationContext|undefined = undefined,
     ) => {
     const localJobData: Ref<Record<number, jobEnty>> = ref([]);
@@ -124,9 +148,41 @@ export const useJobDataHandler = (
                 lazyFetch(flattendJobEntys.length);
             }
         }
+        if (sortByString) {
+            let indexValueMap: Record<number, number> = {};
+            // ensure that all columns are present
+            const columns = computeLayout.value.map(layout => layout.key).filter(col => !sortByString.value.ignoreColumns.includes(col));
+            const sortKey = sortByString.value.key
+
+
+            flattendJobEntys.sort((a, b) => {
+                let aScore: number[] = [];
+                let bScore: number[] = [];
+                // itterate over all columns and add the longest common substring length to the score
+                columns.forEach((col) => {
+                    aScore.push(longestCommonSubstringLength(String(a[col]),
+                        sortKey,
+                        !sortByString.value.caseInsensitive));
+                    bScore.push(longestCommonSubstringLength(String(b[col]),
+                        sortKey,
+                        !sortByString.value.caseInsensitive))
+                });
+                // array with highest score first
+                // ToDo: check if simply adding the values together and returning the difference
+                // would be a good enough approximation
+                aScore = aScore.sort((a, b) => b - a);
+                bScore = bScore.sort((a, b) => b - a);
+                let i = 0;
+                for(; i < aScore.length; i++) {
+                    if (aScore[i] !== bScore[i]) {
+                        return bScore[i] - aScore[i];
+                    }
+                }
+                return 0;
+            });
+        }
 
         return flattendJobEntys;
-        
     });
 
     return { 

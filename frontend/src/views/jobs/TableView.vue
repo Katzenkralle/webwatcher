@@ -2,6 +2,8 @@
 import { useTableMetaData, type TableLayout, DUMMY_JOB_ENTRY } from "@/composable/api/JobAPI";
 import { useJobDataHandler } from "@/composable/scripts/JobDataHandler";
 import { useFilterIterationContext, type AbstractCondition, type Group, type IterationContext} from "@/composable/scripts/FilterGroups";
+import Seperator from "@/components/reusables/SmallSeperator.vue";
+
 import router from "@/router";
 
 import { useStatusMessage } from "@/composable/core/AppState";
@@ -9,8 +11,13 @@ import { useStatusMessage } from "@/composable/core/AppState";
 import FilterGroupRenderer from "@/components/filter/FilterGroupRenderer.vue";
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import {MultiSelect, SplitButton, FloatLabel} from "primevue";
+import {MultiSelect, SplitButton, FloatLabel, InputText} from "primevue";
+import Popover from 'primevue/popover';
 import ToggleSwitch from 'primevue/toggleswitch';
+import Button from "primevue/button"
+import InputGroup from 'primevue/inputgroup';
+import Checkbox from 'primevue/checkbox';
+
 import ColumnGroup from 'primevue/columngroup';   // optional
 import Row from 'primevue/row';                   // optional
 
@@ -60,6 +67,15 @@ const hiddenColumns = ref<string[]>([]);
 const fetchAmount = ref(10);
 const page = ref(0);
 
+const sortByString = ref({
+  key: "",
+  ignoreColumns: [],
+  caseInsensitive: true
+})
+
+const sortByStringColumnSelectPopover = ref(); // type Popover
+const mainDataTable = ref(); // primevue datatable
+
 watch(
   () => router.currentRoute.value.params.id,
   (newVal) => {
@@ -77,7 +93,12 @@ const tableMetadata = computed(() => {
 });
 
 const jobHandler = computed(() => {
-  return useJobDataHandler(currentJobId.value, hiddenColumns, computed(() => fetchAmount.value+1), useFilterIterationContext());
+  return useJobDataHandler(
+  currentJobId.value, 
+  hiddenColumns,
+  computed(() => fetchAmount.value+1),
+  computed(() => sortByString.value),
+  useFilterIterationContext());
 });
 
 const entryEditMenu = (forId: number | [number, number]): MenuItem[] => {
@@ -113,6 +134,14 @@ const amountVisableInternalColumns = computed(() =>
     .map((col)  => intenalColums.includes(col.key) ? 1 : 0)
     .reduce((partialSum: number, a: number) => partialSum + a, 0)
 );
+
+const unsetSortByString = () => {
+  sortByString.value.key = "";
+}
+
+const unsetPrimevueSort = () => {
+  mainDataTable.value.$data.d_multiSortMeta = []
+}
 </script>
 
 <template>
@@ -130,9 +159,10 @@ const amountVisableInternalColumns = computed(() =>
           @update:model-value="(e) => hiddenColumns = e" 
           :options="computehiddenColumnsOptions" 
           optionLabel="label"
-          size="small"
           option-value="label" 
+          size="small"
           overlayClass="hiddenColumnsMultiselect"
+          inputId="hiddenColumnsMultiselect"
           class="min-w-64 max-h-14"
           >
           <template #header>
@@ -150,22 +180,66 @@ const amountVisableInternalColumns = computed(() =>
                   }"
                 />
               </div>
-              <span class="w-3/4 h-1 bg-crust-d"></span>
+              <Seperator/>
             </div>
           </template>
         </MultiSelect>
-        <label for="in_label">Hide Columns</label>
+        <label for="hiddenColumnsMultiselect">Hide Columns</label>
       </FloatLabel>
+
+
+      <InputGroup class="max-w-80">
+        <InputText 
+          v-model="sortByString.key" 
+          placeholder="Search..."
+          @value-change="() => unsetPrimevueSort()"
+          size="small"
+          />
+        <Button
+          icon="pi pi-sliders-v"
+          @click="(e) => sortByStringColumnSelectPopover?.toggle(e)"
+          />
+        <Popover ref="sortByStringColumnSelectPopover">
+          <div class="flex flex-col">
+            <p class="mb-2">Collumns not to search:</p>
+            <FloatLabel variant="in">
+              <MultiSelect
+                v-model="sortByString.ignoreColumns"
+                @update:model-value="(e) => sortByString.ignoreColumns = e" 
+                :options="computehiddenColumnsOptions" 
+                optionLabel="label"
+                option-value="label"
+                filter 
+                size="small"
+                inputId="sortByStringIgnoreColumns"
+                class="w-64 max-h-14"
+                />
+                <label for="sortByStringIgnoreColumns">Excluded</label>
+            </FloatLabel>
+
+            <Seperator class="my-2 mx-auto"/>
+            <div class="flex flex-row justify-between w-3/4">
+              <Checkbox 
+                v-model="sortByString.caseInsensitive"
+                inputId="sortByStringCaseInsensitive"
+                binary
+                />
+                <label for="sortByStringCaseInsensitive">Case-Insensitive</label>
+            </div>
+          </div>
+        </Popover>
+      </InputGroup>
       <div class="w-full h-full">
 
       <!-- Attempting to use lazy loading from the primevue datatable resulted in unpredictable behavior,
        using custom implementation instead -->
       <DataTable 
+        ref="mainDataTable"
         :value="jobHandler?.computeDisplayedData.value"  
         class="bg-panel-h main-table"
         removableSort
         sortMode="multiple"
-
+        @sort="() => {unsetSortByString()}"
         :scrollable="true"
         size="small"
         table-class="watched-table"
