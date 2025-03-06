@@ -20,23 +20,33 @@ interface sortByString {
     key: string,
     ignoreColumns: string[],
     caseInsensitive: boolean  
-}      
+}
 
-function longestCommonSubstringLength(input: string, target: string, caseSensitive: boolean = false): number {
-    let maxMatch = 0;
+export interface HighlightSubstring {
+    start: number,
+    end: number
+}
+
+function longestCommonSubstring(input: string, target: string, caseSensitive: boolean = false): HighlightSubstring[] {
+    let matches: HighlightSubstring[] = [{ start: 0, end: 0 }];
     if (!caseSensitive) {
         input = input.toLowerCase();
         target = target.toLowerCase();
     }
     for (let i = 0; i < input.length; i++) {
-        for (let j = i + 1; j <= input.length; j++) {
+        for (let j = input.length; j > i; j--) {
             let substring = input.slice(i, j);
-            if (target.includes(substring)) {
-                maxMatch = Math.max(maxMatch, substring.length);
+            if (target.includes(substring) && substring.length > target.length / 2) {
+                // we only consider substrings that are at least half the length of the target
+
+                matches.push({ start: i, end: j });
+                i = j;
+                break;
             }
         }
     }
-    return maxMatch;
+    matches = matches.sort((a, b) => (b.end - b.start)-(a.end - a.start));
+    return matches;
 }
 
 export const useJobDataHandler = (
@@ -48,7 +58,8 @@ export const useJobDataHandler = (
     ) => {
     const localJobData: Ref<Record<number, jobEnty>> = ref([]);
     const apiHandler = useJobData(jobId)
-    let allFetched = ref(false);
+    const allFetched = ref(false);
+    const highlightSubstring = ref<Record<number, Record<string, HighlightSubstring[]>>>({})
 
     const init = async () => {
         if (!(jobId in globalJobData)) {
@@ -130,7 +141,7 @@ export const useJobDataHandler = (
                 };
         }
     }
-    const computeDisplayedData = computed((): flattendJobEnty[]  => {
+    const computedFilterdJobData = computed(() => {
         console.debug("Recomputed Display Data");
         let flattendJobEntys: flattendJobEnty[] = Object.keys(localJobData.value).map((key: string) => {
             const index = parseInt(key);
@@ -148,28 +159,49 @@ export const useJobDataHandler = (
                 lazyFetch(flattendJobEntys.length);
             }
         }
-        if (sortByString) {
-            let indexValueMap: Record<number, number> = {};
+        return flattendJobEntys;
+    });
+    
+    const computeDisplayedData = computed((): flattendJobEnty[]  => {
+        let flattendJobEntys = computedFilterdJobData.value;
+        highlightSubstring.value = []
+        
+        if (sortByString && sortByString.value.key) {
+            // Sorts strings by 1) the longest common substring and 2) the total length 
+            // amount of substrings matches in the columns.
+            // Note: Not the whole substring must match, we consider 1/2 to be the minimum match
+
             // ensure that all columns are present
             const columns = computeLayout.value.map(layout => layout.key).filter(col => !sortByString.value.ignoreColumns.includes(col));
             const sortKey = sortByString.value.key
 
-
-            flattendJobEntys.sort((a, b) => {
+            // we create a sort map, to not loss track of the indeces after sorting
+            // we try to not rely on any specific colum of flattendJobEnty, even if we know that the key is present
+            const entriesSortMap: {job: flattendJobEnty, highlights: Record<string, HighlightSubstring[]>}[] 
+                = flattendJobEntys.map((entry) => {
+                let highlights: { [key: string]: HighlightSubstring[] } = {};
+                columns.forEach((col) => {   
+                    highlights[col] = longestCommonSubstring(String(entry[col]),
+                    sortKey,
+                    !sortByString.value.caseInsensitive)
+                });               
+                return { job: entry, highlights: highlights };
+            });
+            entriesSortMap.sort((a, b) => {
                 let aScore: number[] = [];
                 let bScore: number[] = [];
                 // itterate over all columns and add the longest common substring length to the score
                 columns.forEach((col) => {
-                    aScore.push(longestCommonSubstringLength(String(a[col]),
-                        sortKey,
-                        !sortByString.value.caseInsensitive));
-                    bScore.push(longestCommonSubstringLength(String(b[col]),
-                        sortKey,
-                        !sortByString.value.caseInsensitive))
+                    a.highlights[col].forEach((highlight) => {
+                        aScore.push(highlight.end - highlight.start);
+                    });
+                    b.highlights[col].forEach((highlight) => {
+                        bScore.push(highlight.end - highlight.start);
+                    });
                 });
-                // array with highest score first
-                // ToDo: check if simply adding the values together and returning the difference
-                // would be a good enough approximation
+                
+                // sort the scores in descending order
+                // longest common substring is the best match
                 aScore = aScore.sort((a, b) => b - a);
                 bScore = bScore.sort((a, b) => b - a);
                 let i = 0;
@@ -178,15 +210,22 @@ export const useJobDataHandler = (
                         return bScore[i] - aScore[i];
                     }
                 }
-                return 0;
+
+                // if the scores are equal, we sort by the total score
+                return aScore.reduce((acc, val) => acc + val, 0) 
+                    - bScore.reduce((acc, val) => acc + val, 0);
+            });
+            flattendJobEntys = entriesSortMap.map((entry, index) => {
+                highlightSubstring.value[index] = entry.highlights
+                return entry.job
             });
         }
-
         return flattendJobEntys;
     });
 
     return { 
         computeDisplayedData,
+        highlightSubstring,
         computeLayout,
         computeLayoutUnfiltered,
         computedAllFetched: computed(() => allFetched.value),

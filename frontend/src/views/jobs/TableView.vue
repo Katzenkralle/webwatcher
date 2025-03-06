@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTableMetaData, type TableLayout, DUMMY_JOB_ENTRY } from "@/composable/api/JobAPI";
-import { useJobDataHandler } from "@/composable/scripts/JobDataHandler";
-import { useFilterIterationContext, type AbstractCondition, type Group, type IterationContext} from "@/composable/scripts/FilterGroups";
+import { useJobDataHandler, type HighlightSubstring } from "@/composable/scripts/JobDataHandler";
+import { useFilterIterationContext} from "@/composable/scripts/FilterGroups";
 import Seperator from "@/components/reusables/SmallSeperator.vue";
 
 import router from "@/router";
@@ -142,6 +142,25 @@ const unsetSortByString = () => {
 const unsetPrimevueSort = () => {
   mainDataTable.value.$data.d_multiSortMeta = []
 }
+
+const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[]): {text: string, highlight: boolean}[] => {
+  highlighted = highlighted.sort((a, b) => a.end - b.end);
+  let i = 0;
+  let segments = []
+  highlighted.forEach((highlight) => {
+    if (highlight.start > i){
+      segments.push({text: text.slice(i, highlight.start), highlight: false});
+    }
+    segments.push({text: text.slice(highlight.start, highlight.end), highlight: true});
+    i = highlight.end;
+  });
+  if (i < text.length){
+    segments.push({text: text.slice(i), highlight: false});
+  }
+  console.log(highlighted, segments);
+  return segments;
+}
+
 </script>
 
 <template>
@@ -300,7 +319,23 @@ const unsetPrimevueSort = () => {
           </ColumnGroup>
 
           <template v-for="col in jobHandler?.computeLayout.value">
-              <Column :field="col.key"></Column>
+              <Column :field="col.key">
+                <template #body="slotProps">
+                    <template v-if="jobHandler?.highlightSubstring.value[slotProps.index] 
+                      && jobHandler?.highlightSubstring.value[slotProps.index][col.key]">
+                      <p>
+                        <template v-for="segment in getHighlightedSegments(String(slotProps.data[col.key]),
+                          jobHandler?.highlightSubstring.value[slotProps.index][col.key])">
+                          <span v-if="segment.highlight" class="text-error">{{ segment.text }}</span>
+                          <span v-else>{{ segment.text }}</span>
+                        </template>
+                      </p>
+                    </template>
+                    <template v-else>
+                      <p>{{ slotProps.data[col.key] }}</p>
+                    </template>
+                  </template>
+              </Column>
           </template>
           <Column field="vue_edit">
             <template #body="slotProps">
