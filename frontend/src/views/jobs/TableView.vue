@@ -157,7 +157,6 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
   if (i < text.length){
     segments.push({text: text.slice(i), highlight: false});
   }
-  console.log(highlighted, segments);
   return segments;
 }
 

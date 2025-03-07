@@ -55,27 +55,37 @@ const numEval = {
     ">=": (a: number, b: number) => a >= b,
 }
 
-const evaluateNumber = (condition: NumberCondition, entry: flattendJobEnty): boolean => {
+const evaluateNumber = (condition: NumberCondition, entry: flattendJobEnty): boolean|[boolean, Error] => {
     const getNumber = (testFor: NumberConditionTest): number => {
         if (testFor.mode === "const") {
             if (typeof testFor.value === "string") {
-                throw new Error("Invalid number in const for Condition");
+                throw new TypeError("Invalid number in const for Condition");
             }
             return Number(testFor.value);
         } else {
             if (!(Object.keys(entry).includes(String(testFor.value)))) {
-                throw new Error("Invalid column in Condition");
+                throw new ReferenceError("Invalid column in Condition");
             } else if (typeof entry[testFor.value] !== "number") {
-                throw new Error("Invalid type in column for Condition");
+                throw new TypeError("Invalid type in column for Condition");
             }
             return Number(entry[testFor.value]);
         }
     }
-    return numEval[condition.opperation](getNumber(condition.testFor1), getNumber(condition.testFor2));
+    try {
+        return numEval[condition.opperation](getNumber(condition.testFor1),
+            getNumber(condition.testFor2));
+    } catch (e) {
+        if (e instanceof ReferenceError || (e instanceof TypeError && e.message.includes("Invalid number"))) {
+            console.error(e + " evaluating to true");
+            return [true, e];
+        }
+        throw e;
+    }
+        
 }
-const evaluateString = (condition: StringCondition, entry: flattendJobEnty): boolean => {
+const evaluateString = (condition: StringCondition, entry: flattendJobEnty): boolean|[boolean, Error] => {
     if (!(Object.keys(entry).includes(condition.col))) {
-        throw new Error("Invalid column in Condition");
+        return [true, new ReferenceError("Invalid column in Condition")];
     }
     switch (condition.mode) {
         case "includes":
@@ -88,9 +98,9 @@ const evaluateString = (condition: StringCondition, entry: flattendJobEnty): boo
         default: return true;
     }
 }
-const evaluateBoolean = (condition: BooleanCondition, entry: flattendJobEnty): boolean => {
+const evaluateBoolean = (condition: BooleanCondition, entry: flattendJobEnty): boolean|[boolean, Error] => {
     if (!(Object.keys(entry).includes(condition.col))) {
-        throw new Error("Invalid column in Condition");
+        return [true, new ReferenceError("Invalid column in Condition")];
     }
     if (typeof entry[condition.col] === "boolean") {
         return entry[condition.col] === condition.testFor;
@@ -98,12 +108,12 @@ const evaluateBoolean = (condition: BooleanCondition, entry: flattendJobEnty): b
     return true
 }
 
-const evaluateType = (condition: TypeCondition, entry: flattendJobEnty): boolean => {
+const evaluateType = (condition: TypeCondition, entry: flattendJobEnty): boolean|[boolean, Error] => {
     switch (condition.testFor) {
         case "string": return typeof entry[condition.col] === "string";
         case "number": return typeof entry[condition.col] === "number";
         case "boolean": return typeof entry[condition.col] === "boolean";
-        default: return true;
+        default: return [true, new Error("Invalid column in Condition")];
     }
 }
 
@@ -113,7 +123,11 @@ const groupEvaluator = (group: Group, jobEntrys: flattendJobEnty[]): flattendJob
             if (groupOrCondition.type === "group") {
                 return groupEvaluator(groupOrCondition, [entry]).length > 0;
             } else {
-                const shouldNegate = (val: boolean) => groupOrCondition.negated ? !val : val;
+                const shouldNegate = (result: boolean|[boolean, err?: Error | undefined]) => {
+                    const val = result instanceof Array ? result[0] : result;
+                    const includesError = result instanceof Array && result[1] instanceof Error;
+                    return groupOrCondition.negated && !includesError ? !val : val
+                };
                 try { 
                     switch (groupOrCondition.condition.type) {
                         // Returns bool, error or true
@@ -131,7 +145,6 @@ const groupEvaluator = (group: Group, jobEntrys: flattendJobEnty[]): flattendJob
         if (evaluatedChildren.length === 0) {
             return true;
         }
-        console.debug("Evaluation:", evaluatedChildren);
         switch (group.connector) {
             case "AND": return evaluatedChildren.every((child) => child);
             case "OR": return evaluatedChildren.some((child) => child);
@@ -323,7 +336,7 @@ export const useFilterIterationContext = (
                     "value": ""
                 },
                 "testFor2": {
-                    "mode": "col",
+                    "mode": "const",
                     "value": ""
                 },
                 "opperation": "=="

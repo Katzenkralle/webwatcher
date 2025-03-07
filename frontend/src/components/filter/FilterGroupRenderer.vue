@@ -35,6 +35,8 @@ const rootDragRef: Ref<Group | AbstractCondition | null> = ref(null);
 
 const hoverAdditionArea = ref(false);
 
+const isInvalide = ref<Record<number, boolean>>({});
+
 const getDraggingInfo = () => {
   return props.dragInfo === undefined ? rootDragRef : props.dragInfo;
 };
@@ -170,20 +172,33 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
             </div>
             <div :class="{'dragging-placeholder w-full relative': true,
             'transform scale-80 !border-info ': getDraggingInfo().value?.type === 'condition'}">
-             <Button
-              icon="pi pi-times"
-              @click="groupIterator.removeFromFilterGroup(evaluatable.thisElement.value)"
-              severity="danger"
-              size="small"
-              class="absolute top-0 right-0 p-0 m-0 w-6 h-6"
-              />
+          
               <component
                 :is="getVueConditionComponent(evaluatable.thisElement.value.condition.type)"
                 :cond="evaluatable.thisElement.value.condition as any" 
                 :available-columns="props.jobHandler.getColumnsByType(
                     evaluatable.thisElement.value.condition.type
                   )" 
-                />
+                @isInvalide="(e: boolean) => isInvalide[index] = e"
+              >
+              <template #header>
+                <div class="flex flex-row-reverse items-center">
+                  <Button
+                  icon="pi pi-times"
+                  @click="groupIterator.removeFromFilterGroup(evaluatable.thisElement.value)"
+                  severity="danger"
+                  size="small"
+                  class="p-1"
+                  />
+                  <span
+                    class="flex flex-row text-warning items-center mx-2"
+                    v-if="isInvalide[index]">
+                    <i class="pi pi-exclamation-triangle mr-1"/>
+                    <p>Invalide Config: Ignoring</p>
+                  </span>
+                </div>
+              </template>  
+            </component>
             </div>
           </div>
         </div>
@@ -219,7 +234,7 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
     </div>
   </div>
 </template>
-<style lang="css" scoped>
+<style lang="css">
 @reference "@/assets/global.css";
 
 .condition-marker{
@@ -239,6 +254,9 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
   @apply p-1 flex flex-col items-center space-y-2 w-full
 }
 
+.header-condition-container {
+  @apply flex flex-wrap w-full justify-between;
+}
 
 
 .addition-area-enter-active {

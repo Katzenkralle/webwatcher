@@ -1,18 +1,27 @@
 <script setup lang="tsx">
 import { type TypeCondition } from "@/composable/scripts/FilterGroups";
 import Select  from "primevue/select";
+import { watchEffect } from "vue";
 
+const emit = defineEmits(['isInvalide'])
 const props = defineProps<{
     cond: TypeCondition;
     availableColumns: string[];
 }>();
+
+watchEffect(() => {
+    emit('isInvalide', !props.availableColumns.includes(props.cond.col));
+});
 
 </script>
 
 
 <template>
     <div class="inner-condition-container">
-        <h4>Type</h4>
+        <div class="header-condition-container">
+            <h4>Type</h4>
+            <slot name="header"></slot>
+        </div>
         <div class="grid grid-cols-3 justify-items-center">
             <Select
             @value-change="(e) => props.cond.col = e"
