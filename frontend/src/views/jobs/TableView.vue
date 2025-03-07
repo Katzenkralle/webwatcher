@@ -18,8 +18,10 @@ import Button from "primevue/button"
 import InputGroup from 'primevue/inputgroup';
 import Checkbox from 'primevue/checkbox';
 
-import ColumnGroup from 'primevue/columngroup';   // optional
-import Row from 'primevue/row';                   // optional
+import ColumnGroup from 'primevue/columngroup';  
+import Row from 'primevue/row';                  
+
+import ConfirmableButton from "@/components/reusables/ConfirmableButton.vue";
 
 import { ref, watch, onMounted, onUnmounted, computed, type Ref } from "vue";
 import type { MenuItem } from "primevue/menuitem";
@@ -167,6 +169,16 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
     <dev class="flex flex-col w-full h-full items-center" :key="currentJobId">
       <h1 class="mb-2 mt-5">{{ tableMetadata?.name }}</h1>
       <p class="bg-panel w-fit border-2 border-info rounded-lg p-2">{{ tableMetadata?.description }} - {{ tableMetadata?.executedLast }}</p>
+      
+    
+      <ConfirmableButton
+        button-label="Fetch all Data"
+        button-icon="pi pi-refresh"
+        confirm-message="Are you sure you want to fetch all data? This may take a while."
+        confirm-icon="pi pi-exclamation-triangle text-warning"
+        @confirm="() => jobHandler?.lazyFetch(0, true)"
+
+        />
       
       <div class="bg-panel m-4 border-2 border-primary rounded-lg p-2">
         <FilterGroupRenderer :jobHandler="jobHandler"/>

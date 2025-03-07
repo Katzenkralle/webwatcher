@@ -122,12 +122,12 @@ export const useJobDataHandler = (
         return computeLayoutUnfiltered.value.filter((layout) => !hiddenColumns.value.includes(layout.key));
     });
 
-    const lazyFetch = async(startAt: number|undefined = undefined) => {
+    const lazyFetch = async(startAt: number|undefined = undefined, all: boolean = false) => {
         startAt = startAt || Object.keys(localJobData.value).length;
         if (Object.keys(localJobData.value).length < startAt + fetchAmount.value && !allFetched.value) {
             localJobData.value = {
                 ...localJobData.value,
-                ...await apiHandler.fetchData([startAt, startAt + fetchAmount.value])
+                ...await apiHandler.fetchData(!all ? [startAt, startAt + fetchAmount.value] : undefined)
                     .then((data) => {
                         if (Object.keys(data).length < fetchAmount.value) {
                             allFetched.value = true;
@@ -139,6 +139,9 @@ export const useJobDataHandler = (
                         return {}
                     })
                 };
+        }
+        if (all) {
+            allFetched.value = true;
         }
     }
     const computedFilterdJobData = computed(() => {
