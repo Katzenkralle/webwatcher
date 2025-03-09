@@ -3,10 +3,10 @@ import { computed, onMounted, onUnmounted, ref, type Ref } from "vue";
 import Button from "primevue/button"
 import {useAuth, requireLogin} from "@/composable/api/Auth";
 import {useStatusMessage, useLoadingAnimation} from "@/composable/core/AppState";
-import { useFilterIterationContext, type IterationContext, type Group } from "@/composable/scripts/FilterGroups";
+import { useFilterIterationContext, type IterationContext, type Group } from "@/composable/jobs/FilterGroups";
 
 import FilterGroupRenderer from "../filter/FilterGroupRenderer.vue";
-import { useJobDataHandler } from "@/composable/scripts/JobDataHandler";
+import { useJobDataHandler } from "@/composable/jobs/JobDataHandler";
 
 const date = ref(new Date().toLocaleString());
 const user = ref<any>(null);

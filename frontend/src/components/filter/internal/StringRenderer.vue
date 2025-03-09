@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { type StringCondition } from "@/composable/scripts/FilterGroups";
+import { type StringCondition } from "@/composable/jobs/FilterGroups";
 import Select  from "primevue/select";
 import InputText from 'primevue/inputtext';
 import { watchEffect } from "vue";

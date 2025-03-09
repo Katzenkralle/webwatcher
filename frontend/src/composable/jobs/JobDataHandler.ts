@@ -1,7 +1,9 @@
-import {ref, computed, type Ref, watch, type ComputedRef} from 'vue';
-import { useJobData, type TableMetaData, type jobEnty, type TableLayout, DUMMY_JOB_ENTRY } from '../api/JobAPI';
-import type { IterationContext, Group as FilterGroup, Group, AbstractCondition } from './FilterGroups';
+import {ref, computed, type Ref, type ComputedRef} from 'vue';
+import { useJobData, type jobEnty, type TableLayout, DUMMY_JOB_ENTRY } from '../api/JobAPI';
+import type { IterationContext } from './FilterGroups';
 import { useStatusMessage } from '../core/AppState';
+import { useFilterIterationContext} from "@/composable/jobs/FilterGroups";
+
 /*
 global: refers to local data accessible from all components
 local: referce to data tat is shared by one use instance
@@ -52,7 +54,7 @@ function longestCommonSubstring(input: string, target: string, caseSensitive: bo
 export const useJobDataHandler = (
     jobId: number, 
     hiddenColumns: Ref<string[]> = ref([]),
-    fetchAmount: Ref<number>|ComputedRef<number> = ref(10),
+    fetchAmount: Ref<number>|ComputedRef<number>,
     sortByString: ComputedRef<sortByString> | undefined = undefined, // [key, [columns_NOT_to_sort_by]]
     filters: IterationContext|undefined = undefined,
     ) => {
@@ -60,18 +62,6 @@ export const useJobDataHandler = (
     const apiHandler = useJobData(jobId)
     const allFetched = ref(false);
     const highlightSubstring = ref<Record<number, Record<string, HighlightSubstring[]>>>({})
-
-    const init = async () => {
-        if (!(jobId in globalJobData)) {
-                globalJobData[jobId] = ref(await apiHandler.fetchData([0, fetchAmount.value]).catch(() => {
-                    useStatusMessage().newStatusMessage("Failed to fetch additional data", "danger");
-                    return []
-                }));
-        };
-        
-        localJobData.value = globalJobData[jobId].value;
-    }
-    init();
 
     const getColumnsByType = (type: string|undefined, includeHiddenColumns: boolean = true): string[] => {
         /*
@@ -237,4 +227,41 @@ export const useJobDataHandler = (
         lazyFetch,
         getColumnsByType
     };
+}
+
+export const useJobUiCreator = (jobId: number) => {
+    const intenalColums = [...Object.keys(DUMMY_JOB_ENTRY).filter((col) => col != 'context'), 'id'];
+
+    const hiddenColumns = ref<string[]>([]);
+    const fetchAmount = ref(10);
+    const page = ref(0);
+    const sortByString = ref<sortByString>({ key: "", ignoreColumns: [], caseInsensitive: true });
+
+    const mainDataTable = ref<any>(null);
+
+    const jobDataHandler = useJobDataHandler(jobId,
+        hiddenColumns,
+        computed(() => fetchAmount.value+1),
+        computed(() => sortByString.value),
+        useFilterIterationContext());
+    
+    const unsetSortByString = () => {
+        sortByString.value.key = "";
+        }
+
+    const unsetPrimevueSort = () => {
+        mainDataTable.value.$data.d_multiSortMeta = []
+    }
+
+    return {
+        jobDataHandler,
+        mainDataTable,
+        hiddenColumns,
+        fetchAmount,
+        intenalColums,
+        page,
+        sortByString,
+        unsetSortByString,
+        unsetPrimevueSort
+    }
 }

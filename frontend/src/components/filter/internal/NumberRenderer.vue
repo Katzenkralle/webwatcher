@@ -3,7 +3,7 @@ import { defineComponent, ref, watchEffect, defineProps, h } from "vue";
 import Select from "primevue/select";
 import InputNumber from "primevue/inputnumber";
 
-import { type NumberCondition, type NumberConditionTest } from "@/composable/scripts/FilterGroups";
+import { type NumberCondition, type NumberConditionTest } from "@/composable/jobs/FilterGroups";
 import type { TableLayout } from "@/composable/api/JobAPI";
 import type { RefSymbol } from "@vue/reactivity";
 

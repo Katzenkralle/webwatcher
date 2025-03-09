@@ -1,10 +1,10 @@
 <script setup lang="tsx">
-import type { IterationContext, AbstractCondition, Group } from "@/composable/scripts/FilterGroups";
+import type { IterationContext, AbstractCondition, Group } from "@/composable/jobs/FilterGroups";
 import BooleanRenderer from "./internal/BooleanRenderer.vue";
 import NumberRenderer from "./internal/NumberRenderer.vue";
 import StringRenderer from "./internal/StringRenderer.vue";
 import TypeRenderer from "./internal/TypeRenderer.vue";
-import type { useJobDataHandler } from "@/composable/scripts/JobDataHandler";
+import type { useJobDataHandler } from "@/composable/jobs/JobDataHandler";
 
 import { ref, defineProps, type Ref, computed, type ComputedRef } from "vue";
 import { Select, Button } from "primevue";

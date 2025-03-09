@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { type BooleanCondition } from "@/composable/scripts/FilterGroups";
+import { type BooleanCondition } from "@/composable/jobs/FilterGroups";
 import Select  from "primevue/select";
 import { watchEffect } from "vue";
 
