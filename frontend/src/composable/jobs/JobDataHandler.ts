@@ -1,7 +1,7 @@
 import {ref, computed, type Ref, type ComputedRef} from 'vue';
 import { useJobData, type jobEnty, type TableLayout, DUMMY_JOB_ENTRY } from '../api/JobAPI';
 import type { IterationContext } from './FilterGroups';
-import { useStatusMessage } from '../core/AppState';
+import { useLoadingAnimation, useStatusMessage } from '../core/AppState';
 import { useFilterIterationContext} from "@/composable/jobs/FilterGroups";
 
 /*
@@ -113,6 +113,7 @@ export const useJobDataHandler = (
     });
 
     const lazyFetch = async(startAt: number|undefined = undefined, all: boolean = false) => {
+        useLoadingAnimation().setState(true);
         startAt = startAt || Object.keys(localJobData.value).length;
         if (Object.keys(localJobData.value).length < startAt + fetchAmount.value && !allFetched.value) {
             localJobData.value = {
@@ -131,8 +132,10 @@ export const useJobDataHandler = (
                 };
         }
         if (all) {
+            useStatusMessage().newStatusMessage("All data fetched", "success");
             allFetched.value = true;
         }
+        useLoadingAnimation().setState(false);
     }
     const computedFilterdJobData = computed(() => {
         console.debug("Recomputed Display Data");

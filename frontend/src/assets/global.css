@@ -24,6 +24,10 @@
     --color-panel: var(--color-h-text);
     --color-panel-h: var(--color-h-text-h);
 
+    --color-h-panel-d: #626880;
+    --color-h-panel: #737994;
+    --color-h-panel-h: #949cbb;
+
     --color-app-d: #5fb9ad;
     --color-app: #81c8be;
     --color-app-h: #a6d8d1;

@@ -36,6 +36,7 @@ const allColumnsOptions =  computed(() =>
           placeholder="Search..."
           @value-change="(e) => emit('update:key', e)"
           size="small"
+          class="h-14"
           />
         <Button
           icon="pi pi-sliders-v"
@@ -51,10 +52,11 @@ const allColumnsOptions =  computed(() =>
                 :options="allColumnsOptions" 
                 optionLabel="label"
                 option-value="label"
-                filter 
+                filter
+                 filter-placeholder="Search Columns..." 
                 size="small"
                 inputId="sortByStringIgnoreColumns"
-                class="w-64 max-h-14"
+                class="w-64 h-14"
                 />
                 <label for="sortByStringIgnoreColumns">Excluded</label>
             </FloatLabel>

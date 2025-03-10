@@ -40,12 +40,12 @@ const allColumnsOptions =  computed(() =>
           size="small"
           overlayClass="hiddenColumnsMultiselect"
           inputId="hiddenColumnsMultiselect"
-          class="min-w-64 max-h-14"
+          class="min-w-64 h-14"
           >
           <template #header>
             <div class="flex flex-col items-center">
               <div class="flex flex-row justify-around my-2 w-full">
-                <label for="toggleAllInternalColumnsHidden" class="font-bold">Hide Internal</label>
+                <label for="toggleAllInternalColumnsHidden" class="font-bold">Hide Meta Data</label>
                 <ToggleSwitch
                   input-id="toggleAllInternalColumnsHidden"
                   :model-value="amountVisableInternalColumns < 1"

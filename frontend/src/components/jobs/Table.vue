@@ -138,13 +138,13 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
           type="header">
             <Row>
               <Column v-if="amountVisableInternalColumns" 
-                header="Internal Data" 
+                header="Meta Data" 
                 :colspan="amountVisableInternalColumns"
                 class="top-header border-r-2 h-min"
               />
               <Column v-if="props.jobHandler.jobDataHandler.computeLayout.value.length 
                 - amountVisableInternalColumns" 
-                header="External Data" 
+                header="Script Data" 
                 :colspan="props.jobHandler.jobDataHandler.computeLayout.value.length 
                 - amountVisableInternalColumns"
                 class="top-header border-r-2 h-min"
