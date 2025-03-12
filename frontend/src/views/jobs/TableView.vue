@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useTableMetaData } from "@/composable/api/JobAPI";
 import { useJobUiCreator } from "@/composable/jobs/JobDataHandler";
+import { useConfirm } from "primevue/useconfirm";
 
 import router from "@/router";
 
@@ -12,6 +13,7 @@ import StringSearch from "@/components/jobs/StringSearch.vue";
 import JobDataTable from "@/components/jobs/Table.vue";
 import JobMetaDisplay from "@/components/jobs/MetaData.vue";
 import SmallSeperator from "@/components/reusables/SmallSeperator.vue";
+import PopupDialog from "@/components/reusables/PopupDialog.vue";
 
 import Button  from "primevue/button";
 import Accordion from 'primevue/accordion';
@@ -22,6 +24,7 @@ import AccordionContent from 'primevue/accordioncontent';
 import { ref, watch, computed } from "vue";
 
 const currentJobId = ref(Number(router.currentRoute.value.params.id));
+const downloadSuccessPopup = ref();
 
 watch(
   () => router.currentRoute.value.params.id,
@@ -42,7 +45,6 @@ const tableMetadata = computed(() => {
 const jobHandler = computed(() => {
   return useJobUiCreator(currentJobId.value);
 });
-
 </script>
 
 <template>
@@ -108,6 +110,18 @@ const jobHandler = computed(() => {
           />
       </div>
 
+      <PopupDialog ref="downloadSuccessPopup"
+        title="Success"
+        message="Data was saved to file."
+        >
+        <template #footer>
+          <Button
+            label="Close"
+            size="small"
+            @click="() => downloadSuccessPopup?.closeDialog()"
+            />
+        </template>
+      </PopupDialog>
       <div class="flex flex-row space-x-2 ml-auto mr-4 my-2">
         <ConfirmableButton
             button-label="Fetch all Data"
@@ -121,7 +135,8 @@ const jobHandler = computed(() => {
           <Button
             label="Save data to file"
             icon="pi pi-download"
-            @click="(e) => {console.error('Not implemented yet')}"
+            @click="(e) => { jobHandler?.jobDataHandler.saveToFile('all')
+              .then(() => downloadSuccessPopup?.openDialog()) }"
             />
       </div>
 

@@ -219,6 +219,36 @@ export const useJobDataHandler = (
         return flattendJobEntys;
     });
 
+    const saveToFile = async (mode: 'all'|'visable') => {
+        // When supported by firefox, replace with File System API
+        try {
+            useLoadingAnimation().setState(true);
+            let data
+            if (mode === 'all') {
+                data = computeDisplayedData.value;
+            } else {
+                data = localJobData.value;
+            }
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${jobId}_${new Date().toISOString()}_${mode}Data_webwatcher.json`; // File name
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            }
+        catch (e) {
+            useStatusMessage().newStatusMessage("Failed to save data to file", "danger");
+            throw new Error("Failed to save data to file");;
+        }
+        finally {
+            useLoadingAnimation().setState(false);
+        }
+        }
+
     return { 
         computeDisplayedData,
         highlightSubstring,
@@ -227,6 +257,7 @@ export const useJobDataHandler = (
         computedAllFetched: computed(() => allFetched.value),
         localJobData,
         filters,
+        saveToFile,
         lazyFetch,
         getColumnsByType
     };

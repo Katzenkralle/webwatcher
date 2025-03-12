@@ -6,7 +6,9 @@ import {useStatusMessage, useLoadingAnimation} from "@/composable/core/AppState"
 import { useFilterIterationContext, type IterationContext, type Group } from "@/composable/jobs/FilterGroups";
 
 import FilterGroupRenderer from "../filter/FilterGroupRenderer.vue";
-import { useJobDataHandler } from "@/composable/jobs/JobDataHandler";
+import { useJobUiCreator } from "@/composable/jobs/JobDataHandler";
+
+import PopupDialog from "../reusables/PopupDialog.vue";
 
 const date = ref(new Date().toLocaleString());
 const user = ref<any>(null);
@@ -81,16 +83,20 @@ filterGroupHandler.addToFilterGroup({
             ]
         });
 
-const jobHandlerDemo = useJobDataHandler(0);
+const jobHandlerDemo = useJobUiCreator(0);
+const popupRef = ref();
 </script>
 
 <template>
+
+    <PopupDialog ref="popupRef" />
+
     <h1>Hello World</h1>
     <p>{{ user }}</p>
     <h3>Vue Test:</h3>
     <p>{{ date }}</p>
     <div class="bg-panel m-4 border-2 border-primary rounded-lg p-2">
-        <FilterGroupRenderer :jobHandler="jobHandlerDemo" :groupIterator="filterGroupHandler as IterationContext<Group>"/>
+        <FilterGroupRenderer :jobHandler="jobHandlerDemo.jobDataHandler" :groupIterator="filterGroupHandler as IterationContext<Group>" />
     </div>
 
     <Button 
@@ -119,6 +125,12 @@ const jobHandlerDemo = useJobDataHandler(0);
     <Button label="Logout"
             @click="() => {
                 requireLogin();
+            }"
+    />
+    <Button label="Open Dialog"
+            @click="() => {
+                console.log(popupRef);
+                popupRef.openDialog();
             }"
     />
     </div>
