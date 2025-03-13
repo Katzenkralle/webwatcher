@@ -11,6 +11,7 @@ import Row from 'primevue/row';
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 
+import EditEntryPopup from "./EditEntryPopup.vue";
 
 
 const props = defineProps<{
@@ -19,6 +20,7 @@ const props = defineProps<{
 
 const computedTableSize = ref<string>("85vh");
 
+const openEditor = ref<number|undefined>(undefined);
 
 
 let resizeObserver: MutationObserver | undefined = undefined
@@ -197,10 +199,21 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
           </template>
           <Column field="vue_edit">
             <template #body="slotProps">
+                <EditEntryPopup 
+                  v-if="openEditor === slotProps.data.id" 
+                  :can-modify-schema="true"
+                  :internal-columns="jobHandler.intenalColums"
+                  :layout="Object.assign({}, ...jobHandler.jobDataHandler.computeLayout.value 
+                    .map((col) => ({[col.key]: col.type})))"
+                  :entry-values="slotProps.data"
+                  @update="() => openEditor = undefined"
+                  @close="() => openEditor = undefined"
+                  />
               <div class="w-full h-full flex justify-center">
                 <SplitButton
                   icon="pi pi-eye"
                   size="small"
+                  @click="() => openEditor = slotProps.data.id"
                   :model="entryEditMenu(slotProps.data.id)"
                 />
               </div>

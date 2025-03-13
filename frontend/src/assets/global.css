@@ -321,6 +321,8 @@
         --p-message-contrast-outlined-color: var(--p-surface-0) !important;
         --p-message-contrast-outlined-border-color: var(--p-surface-0) !important;
         --p-message-contrast-simple-color: var(--p-surface-0) !important;
+
+        --p-tieredmenu-item-icon-color: var(--color-text) !important;
   }
 }
 .p-disabled{

@@ -7,6 +7,7 @@ const state = ref(false);
 const props = defineProps<{
     title?: string;
     message?: string;
+    passthrouClasses?: string
 }>();
 
 const openDialog = () => {
@@ -31,7 +32,7 @@ defineExpose({ openDialog, closeDialog });
         leave-to-class="opacity-0"
     >
         <div v-if="state" class="fixed inset-0 z-50 flex justify-center items-center bg-crust-d/90">
-            <div class="min-w-25 min-h-25 bg-panel rounded-lg p-5 m-auto flex flex-col items-center">
+            <div :class="`min-w-25 min-h-25 bg-panel rounded-lg p-5 m-auto flex flex-col items-center ${passthrouClasses ? passthrouClasses : ''}`">
                 <slot name="header">
                     <div class="grid grid-cols-3 place-items-center mb-2">
                         <h2 class="col-start-2 justify-self-center">{{ props.title ? props.title : "Dialog" }}</h2>

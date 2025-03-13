@@ -20,6 +20,7 @@ import Accordion from 'primevue/accordion';
 import AccordionPanel from 'primevue/accordionpanel';
 import AccordionHeader from 'primevue/accordionheader';
 import AccordionContent from 'primevue/accordioncontent';
+import { SplitButton } from "primevue";
 
 import { ref, watch, computed } from "vue";
 
@@ -132,12 +133,21 @@ const jobHandler = computed(() => {
             class="shrink-0"
             />
         
-          <Button
-            label="Save data to file"
+            <SplitButton
+            label="Export visible"
             icon="pi pi-download"
-            @click="(e) => { jobHandler?.jobDataHandler.saveToFile('all')
-              .then(() => downloadSuccessPopup?.openDialog()) }"
+            @click="() => { jobHandler?.jobDataHandler.saveToFile('visable', jobHandler?.hiddenColumns.value)
+                  .then(() => downloadSuccessPopup?.openDialog()) }"
+            :model="[
+              {
+                label: 'Export fetched',
+                icon: 'pi pi-download',
+                command: () => { jobHandler?.jobDataHandler.saveToFile('all')
+                  .then(() => downloadSuccessPopup?.openDialog()) }
+              }
+            ]"
             />
+
       </div>
 
     </dev>

@@ -219,15 +219,24 @@ export const useJobDataHandler = (
         return flattendJobEntys;
     });
 
-    const saveToFile = async (mode: 'all'|'visable') => {
+    const saveToFile = async (mode: 'all'|'visable', constrainColumn: string[] = []) => {
         // When supported by firefox, replace with File System API
         try {
             useLoadingAnimation().setState(true);
             let data
             if (mode === 'all') {
-                data = computeDisplayedData.value;
-            } else {
                 data = localJobData.value;
+            } else {
+                data = computeDisplayedData.value;
+                data = data.map((entry) => {
+                    return Object.keys(entry).reduce((acc: Record<string, any>, key) => {
+                        if (constrainColumn.includes(key)) {
+                            return acc;
+                        }
+                        acc[key] = entry[key];
+                        return acc;
+                    }, {} as Record<string, any>);
+                });
             }
             const blob = new Blob([JSON.stringify(data)], { type: 'application/octet-stream' });
             const url = URL.createObjectURL(blob);
