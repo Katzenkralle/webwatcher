@@ -107,8 +107,8 @@ const getElementForColumn = defineComponent({
         })
     
         if (availableTypes) {
-            return () => h('div', {class: 'space-y-2 flex flex-col items-center w-[80%]'}, [
-                h('div',  {class: 'flex flex-row justify-around items-center w-full'},[
+            return () => h('div', {class: 'space-y-2 flex flex-col items-center w-[95%] md:w-[80%]'}, [
+                h('div',  {class: 'flex flex-row justify-between items-center w-full'},[
                 slots.default ? slots.default() : h("a"),
                 h('h4', subprops.column),
                     h(Select, { 
@@ -154,16 +154,16 @@ const waitEmitClose = () => {
     <PopupDialog
         ref="popup"    
         :title="props.readonly ?  'Entry Details' : 'Edit Details'"
-        passthrou-classes="w-3/4 max-h-[95%] overflow-scroll"
+        passthrou-classes="w-full h-full md:w-3/4 md:max-h-[95%] overflow-scroll"
         :hide-seperator="true"
         @cancel="waitEmitClose"
         @submit="(submited) => {submited ? submitChanges() : ''; waitEmitClose()}"
     >
         <template #default>
-            <div class="w-full flex flex-col mt-4">
+            <div class="w-full mt-4">
                 <div class="section-container bg-panel-h rounded-2xl pt-2 pb-1">
                     <div class="rotation-box">
-                        <h5>Internal Data</h5>
+                        <h5>Meta Data</h5>
                     </div>
                     <div class="editor-box">
                         <template v-for="key in Object.keys(layout).filter(key => internalColumns.includes(key))"> 
@@ -178,7 +178,7 @@ const waitEmitClose = () => {
 
                 <div class="section-container bg-panel-h/70 rounded-2xl pt-1 pb-2 mt-2">
                     <div class="rotation-box">
-                        <h5>External Data</h5>
+                        <h5>Script Data</h5>
                     </div>
                     <div class="editor-box">
                         <template v-for="key in externalColumns">
@@ -205,7 +205,9 @@ const waitEmitClose = () => {
         </template>
 
         <template v-if="props.readonly" #footer>
-            <Button label="Cancel" @click="waitEmitClose" icon="pi pi-times" class="mr-2" />
+            <dev class="h-full w-full justify-end flex flex-row">
+                <Button label="Cancel" @click="waitEmitClose" icon="pi pi-times" size="small" class="mr-2" />
+            </dev>
         </template>
     </PopupDialog>
 </template>
@@ -214,10 +216,10 @@ const waitEmitClose = () => {
 @reference "@/assets/global.css";
 
 .section-container {
-    @apply flex flex-row
+    @apply flex flex-row overflow-x-scroll
 }
 .rotation-box {
-    @apply rotate-90 w-40 h-18 flex justify-center self-center
+    @apply [writing-mode:vertical-lr] flex justify-center self-center text-center ml-2
 }
 .rotation-box > * {
     @apply justify-center self-center

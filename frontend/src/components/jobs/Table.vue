@@ -41,7 +41,7 @@ const initTableSizeObserver = () => {
         : props.jobHandler.fetchAmount.value;
       const sizeOfOne = (watchElement.clientHeight - headerSize)/elementsOnPage;
       const tableSize = (sizeOfOne *  props.jobHandler.fetchAmount.value)  + headerSize;
-      computedTableSize.value = tableSize > document.body.clientHeight * 0.85 ? "85vh" : `${tableSize}px`;
+      computedTableSize.value = tableSize > window.innerHeight * 0.85 ? "85vh" : `${tableSize}px`;
     });
     resizeObserver.observe(watchElement, { attributes: true, childList: true, subtree: true });
   }

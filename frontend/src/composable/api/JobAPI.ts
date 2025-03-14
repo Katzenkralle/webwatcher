@@ -78,7 +78,7 @@ export function useTableMetaData() {
                                 executedLast: 0,
                                 forbidDynamicSchema: false,
                                 expectedReturnSchema: {
-                                    "some": "string",
+                                    "some": "string|number",
                                     "aNumber": 1
                                 }
                             }
@@ -178,6 +178,16 @@ export const useJobData = (jobId: number) => {
                         })).reduce((acc, entry) => {
                             return { ...acc, ...entry };
                         }, {} as Record<number, jobEnty>);
+                        data[15] = {
+                            timestamp: 0,
+                            runtime: 0,
+                            result: "CATS_AND_DOGS",
+                            scriptFailure: false,
+                            context: {
+                                "some": 0,
+                                "aNumber": 1
+                            }
+                        }
                         return resolve(Object.keys(data).filter((key) =>{
                             const index = parseInt(key)
                             return (range ? index >= Number(range[0]) && index < Number(range[1]) : true)
