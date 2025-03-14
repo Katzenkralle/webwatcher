@@ -53,8 +53,8 @@ function longestCommonSubstring(input: string, target: string, caseSensitive: bo
 
 export const useJobDataHandler = (
     jobId: number, 
-    hiddenColumns: Ref<string[]> = ref([]),
     fetchAmount: Ref<number>|ComputedRef<number>,
+    hiddenColumns: Ref<string[]> = ref([]),
     sortByString: ComputedRef<sortByString> | undefined = undefined, // [key, [columns_NOT_to_sort_by]]
     filters: IterationContext|undefined = undefined,
     ) => {
@@ -281,12 +281,13 @@ export const useJobUiCreator = (jobId: number) => {
     const sortByString = ref<sortByString>({ key: "", ignoreColumns: [], caseInsensitive: true });
 
     const mainDataTable = ref<any>(null);
+    const filterContext = useFilterIterationContext();
 
     const jobDataHandler = useJobDataHandler(jobId,
-        hiddenColumns,
         computed(() => fetchAmount.value+1),
+        hiddenColumns,
         computed(() => sortByString.value),
-        useFilterIterationContext());
+        filterContext);
     
     const unsetSortByString = () => {
         sortByString.value.key = "";
@@ -304,6 +305,7 @@ export const useJobUiCreator = (jobId: number) => {
         intenalColums,
         page,
         sortByString,
+        filterContext,
         unsetSortByString,
         unsetPrimevueSort
     }

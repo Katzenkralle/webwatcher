@@ -171,6 +171,7 @@ export type IterationContext<T extends Group | AbstractCondition = Group | Abstr
     removeFromFilterGroup: (evaluatable?: Group|AbstractCondition|null, justReturnIndex?: boolean) => number;
     applyFiltersOnData: (data: flattendJobEnty[], group?: Group|null) => flattendJobEnty[];
     safeJsonStringify: () => string;
+    replaceRoot: (newGroup: Group) => void;
 };
 
 export const useFilterIterationContext = (
@@ -233,6 +234,17 @@ export const useFilterIterationContext = (
         addParents(evaluatable, parent);
         parent.evaluatable.push(evaluatable);
     }
+
+    const replaceRoot = (newGroup: Group) => {
+        let children = newGroup.evaluatable;
+        let newMaster = newGroup
+        newMaster.parent = null;
+        newMaster.evaluatable = [];
+        children.forEach((child) => {
+            addToFilterGroup(child, newMaster);
+        });
+        root.value = newMaster;
+    } 
 
     const exchangePosition = <T extends Group | AbstractCondition>(elemA: T, elemB: T) => {
         if (elemA === elemB) {
@@ -377,7 +389,7 @@ export const useFilterIterationContext = (
     const safeJsonStringify = (): string => {
         return JSON.stringify(root.value, (key, value) => {
             if (key === "parent") {
-                return "[circulare]";
+                return null;
             }
             return value;
         }, 4);
@@ -390,6 +402,7 @@ export const useFilterIterationContext = (
         evaluatables,
         iter,
         addToFilterGroup,
+        replaceRoot,
         getStandartEvaluable,
         exchangePosition,
         changeParent,

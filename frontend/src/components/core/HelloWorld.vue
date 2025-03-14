@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref, type Ref } from "vue";
 import Button from "primevue/button"
 import {useAuth, requireLogin} from "@/composable/api/Auth";
 import {useStatusMessage, useLoadingAnimation} from "@/composable/core/AppState";
-import { useFilterIterationContext, type IterationContext, type Group } from "@/composable/jobs/FilterGroups";
+import { useFilterIterationContext, type IterationContext } from "@/composable/jobs/FilterGroups";
 
 import FilterGroupRenderer from "../filter/FilterGroupRenderer.vue";
 import { useJobUiCreator } from "@/composable/jobs/JobDataHandler";
@@ -85,6 +85,61 @@ filterGroupHandler.addToFilterGroup({
 
 const jobHandlerDemo = useJobUiCreator(0);
 const popupRef = ref();
+
+const testString = `{
+    "type": "group",
+    "connector": "AND",
+    "evaluatable": [
+        {
+            "type": "group",
+            "connector": "OR",
+            "evaluatable": [
+                {
+                    "type": "condition",
+                    "negated": true,
+                    "condition": {
+                        "type": "number",
+                        "testFor1": {
+                            "value": 1,
+                            "mode": "const"
+                        },
+                        "testFor2": {
+                            "value": "col_name",
+                            "mode": "col"
+                        },
+                        "opperation": ">"
+                    },
+                    "parent": null
+                }
+            ],
+            "parent": null
+        },
+        {
+            "connector": "XOR",
+            "evaluatable": [
+                {
+                    "condition": {
+                        "type": "number",
+                        "testFor1": {
+                            "mode": "col",
+                            "value": ""
+                        },
+                        "testFor2": {
+                            "mode": "const",
+                            "value": ""
+                        },
+                        "opperation": "=="
+                    },
+                    "negated": false,
+                    "type": "condition",
+                    "parent": null
+                }
+            ],
+            "type": "group",
+            "parent": null
+        }
+    ]
+}`;
 </script>
 
 <template>
@@ -131,6 +186,13 @@ const popupRef = ref();
             @click="() => {
                 console.log(popupRef);
                 popupRef.openDialog();
+            }"
+    />
+    <Button label="Test Load Stringifyed Groups"
+            @click="() => {
+                filterGroupHandler.replaceRoot(
+                    JSON.parse(testString) as Group
+                )
             }"
     />
     </div>

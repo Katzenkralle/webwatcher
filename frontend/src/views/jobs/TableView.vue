@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTableMetaData } from "@/composable/api/JobAPI";
 import { useJobUiCreator } from "@/composable/jobs/JobDataHandler";
-import { useConfirm } from "primevue/useconfirm";
+import { jobUserDisplayConfig } from "@/composable/jobs/UserConfig";
 
 import router from "@/router";
 
@@ -14,12 +14,15 @@ import JobDataTable from "@/components/jobs/Table.vue";
 import JobMetaDisplay from "@/components/jobs/MetaData.vue";
 import SmallSeperator from "@/components/reusables/SmallSeperator.vue";
 import PopupDialog from "@/components/reusables/PopupDialog.vue";
+import FilterSelector from "@/components/filter/FilterSelector.vue";
+
 
 import Button  from "primevue/button";
 import Accordion from 'primevue/accordion';
 import AccordionPanel from 'primevue/accordionpanel';
 import AccordionHeader from 'primevue/accordionheader';
 import AccordionContent from 'primevue/accordioncontent';
+
 import { SplitButton } from "primevue";
 
 import { ref, watch, computed } from "vue";
@@ -27,12 +30,16 @@ import { ref, watch, computed } from "vue";
 const currentJobId = ref(Number(router.currentRoute.value.params.id));
 const downloadSuccessPopup = ref();
 
+
 watch(
   () => router.currentRoute.value.params.id,
   (newVal) => {
     if (!newVal) return;
     try {
-      currentJobId.value = Number(newVal);
+      if (currentJobId.value && currentJobId.value !== Number(newVal)) {
+        currentJobId.value = Number(newVal);
+        jobHandler = useJobUiCreator(currentJobId.value);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -43,9 +50,16 @@ const tableMetadata = computed(() => {
   return useTableMetaData().getTaleMetaData(currentJobId.value);
 });
 
-const jobHandler = computed(() => {
-  return useJobUiCreator(currentJobId.value);
+
+// This cannot be compute, if it would be, random recomputations would happen
+// when pressing some buttons - houres wasted: 2
+let jobHandler = useJobUiCreator(currentJobId.value);
+
+const userConfig = computed(() => {
+  return jobUserDisplayConfig(currentJobId.value);
 });
+
+
 </script>
 
 <template>
@@ -53,7 +67,6 @@ const jobHandler = computed(() => {
     <dev class="flex flex-col w-full h-full items-center" :key="currentJobId">
       <h1 class="mb-2 mt-5">Job Data & Managment</h1>
 
-      
       <Accordion 
         class="w-full max-w-256 mb-2"
         :value="['0']" 
@@ -73,16 +86,24 @@ const jobHandler = computed(() => {
         <AccordionPanel value="1">
             <AccordionHeader>Logical Filters</AccordionHeader>
               <AccordionContent>
-                <div class="content-box">
-                  <FilterGroupRenderer :jobHandler="jobHandler.jobDataHandler"/>
-                </div>
+                <div class="content-box flex flex-col">
+                    <FilterSelector
+                      :filterContext="jobHandler.filterContext"
+                      :filterConfig="userConfig"
+                      />
+                    <SmallSeperator 
+                      class="my-2 mx-auto" 
+                      :is-dashed="true"/>
+                    <FilterGroupRenderer 
+                      :jobHandler="jobHandler.jobDataHandler"/>
+              </div>
               </AccordionContent>
         </AccordionPanel>
 
         <AccordionPanel value="2">
             <AccordionHeader>View Options</AccordionHeader>
               <AccordionContent>
-                <div class="content-box">
+                <div class="content-box shrinkable">
                   <ColumnSelection
                     :hiddenColumns="jobHandler?.hiddenColumns.value"
                     :allColumns="jobHandler.jobDataHandler.computeLayoutUnfiltered.value"
@@ -181,13 +202,17 @@ const jobHandler = computed(() => {
     p-2 
     w-full 
     max-w-256 
-    flex 
-    flex-col 
-    md:flex-row 
     justify-between 
-    space-y-2 
-    md:space-y-0 
     overflow-x-scroll 
     overflow-y-hidden;
 }
+
+.shrinkable {
+  @apply flex 
+    flex-col 
+    md:flex-row
+    space-y-2 
+    md:space-y-0      
+}
+
 </style>
