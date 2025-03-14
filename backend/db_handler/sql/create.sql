@@ -5,6 +5,16 @@ CREATE TABLE IF NOT EXISTS web_users (
     PRIMARY KEY (username)
 );
 
+CREATE TABLE IF NOT EXISTS job_display_user_config (
+    username VARCHAR(255),
+    job_id INT,
+    filter_config JSON,
+    graph_config JSON,
+    FOREIGN KEY (username) REFERENCES web_users(username) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (job_id) REFERENCES job_list(job_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY (username,job_id)
+);
+
 CREATE TABLE IF NOT EXISTS script_list (
     fs_path VARCHAR(255),
     name VARCHAR(255) NOT NULL UNIQUE,
