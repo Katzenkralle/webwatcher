@@ -8,6 +8,7 @@ const props = defineProps<{
     title?: string;
     message?: string;
     passthrouClasses?: string
+    hideSeperator?: boolean
 }>();
 
 const openDialog = () => {
@@ -47,7 +48,8 @@ defineExpose({ openDialog, closeDialog });
                 <slot>
                     <p class="w-full">{{ props.message ? props.message : "Are you sure?" }}</p>
                 </slot>
-                <SmallSeperator class="my-2" />
+                <SmallSeperator v-if="!props.hideSeperator" class="my-2" />
+                <a v-else class="my-2"></a>
                 <slot name="footer">
                     <div class="flex flex-row w-full justify-end space-x-2">
                         <Button 

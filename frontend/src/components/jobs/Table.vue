@@ -20,7 +20,7 @@ const props = defineProps<{
 
 const computedTableSize = ref<string>("85vh");
 
-const openEditor = ref<number|undefined>(undefined);
+const openEditor = ref<{id: number|undefined, readonly: boolean}>({id: undefined, readonly: true});
 
 
 let resizeObserver: MutationObserver | undefined = undefined
@@ -64,7 +64,12 @@ const entryEditMenu = (forId: number | [number, number]): MenuItem[] => {
     {
       label: 'Edit',
       command: () => {
-        useStatusMessage().newStatusMessage(`Edit: ${forId}`, "info")
+        if (typeof forId === 'number'){
+          openEditor.value = {id: forId, readonly: false}
+        }
+        else {
+          useStatusMessage().newStatusMessage(`Cannot bluk edit entries `, "warn")
+        }
       }
     },
     {
@@ -200,20 +205,22 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
           <Column field="vue_edit">
             <template #body="slotProps">
                 <EditEntryPopup 
-                  v-if="openEditor === slotProps.data.id" 
+                  v-if="openEditor.id === slotProps.data.id" 
                   :can-modify-schema="true"
                   :internal-columns="jobHandler.intenalColums"
                   :layout="Object.assign({}, ...jobHandler.jobDataHandler.computeLayout.value 
                     .map((col) => ({[col.key]: col.type})))"
+                  :readonly="openEditor.readonly"
                   :entry-values="slotProps.data"
-                  @update="() => openEditor = undefined"
-                  @close="() => openEditor = undefined"
+                  @update="(obj) => {console.debug(obj, 'ToDo: send me to the backend'); openEditor.id = undefined}"
+                  @close="() =>  openEditor.id = undefined"
                   />
+
               <div class="w-full h-full flex justify-center">
                 <SplitButton
                   icon="pi pi-eye"
                   size="small"
-                  @click="() => openEditor = slotProps.data.id"
+                  @click="() => openEditor = {id: slotProps.data.id, readonly: true}"
                   :model="entryEditMenu(slotProps.data.id)"
                 />
               </div>

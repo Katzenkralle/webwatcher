@@ -15,6 +15,7 @@ const props = defineProps<{
     entryValues: Record<string, any>,
     internalColumns: string[],
     canModifySchema: boolean,
+    readonly: boolean
 }>();
 const emits = defineEmits(['update', 'close']);
 
@@ -61,6 +62,7 @@ const getElementForColumn = defineComponent({
                             h(Textarea, {
                                 class: "w-full",
                                 inputId: `${subprops.column}-string`,
+                                readonly: props.readonly,
                                 modelValue: moduleValue.value as string,
                                 "onUpdate:modelValue": (e: string) => moduleValue.value = e
                             })
@@ -74,6 +76,7 @@ const getElementForColumn = defineComponent({
                             h(InputNumber, {
                                 class: "w-full",
                                 inputId: `${subprops.column}-number`,
+                                readonly: props.readonly,
                                 modelValue: moduleValue.value as number,
                                 "onUpdate:modelValue": (e: number) => moduleValue.value = e
                             })
@@ -87,6 +90,7 @@ const getElementForColumn = defineComponent({
                             h(Checkbox, {
                                 class: 'mr-2',
                                 id: `${subprops.column}-boolean`,
+                                readonly: props.readonly,
                                 modelValue: moduleValue.value as boolean,
                                 binary: true,
                                 "onUpdate:modelValue": (e: boolean) => moduleValue.value = e
@@ -135,18 +139,25 @@ const submitChanges = () => {
             reconstruction["context"][key] = writableEntryValues.value[key]
         }
     })
-    console.log(reconstruction)
+    emits('update', reconstruction)
 }
 
+const waitEmitClose = () => {
+    popup.value.closeDialog();
+    setTimeout(() => {
+        emits('close')
+    }, 500)
+}
 </script>
 
 <template>
     <PopupDialog
         ref="popup"    
-        title="Edit Entry"
+        :title="props.readonly ?  'Entry Details' : 'Edit Details'"
         passthrou-classes="w-3/4 max-h-[95%] overflow-scroll"
-        @cancel="emits('close')"
-        @submit="() => submitChanges()"
+        :hide-seperator="true"
+        @cancel="waitEmitClose"
+        @submit="(submited) => {submited ? submitChanges() : ''; waitEmitClose()}"
     >
         <template #default>
             <div class="w-full flex flex-col mt-4">
@@ -176,7 +187,7 @@ const submitChanges = () => {
                                 class="mx-auto"
                                 :moduleValue="writableEntryValues[key]"
                                 @on-update:model-value="(e) => writableEntryValues[key] = e">
-                                <template v-if="props.canModifySchema" #default>
+                                <template v-if="props.canModifySchema && !props.readonly" #default>
                                     <Button
                                     icon="pi pi-times"
                                     severity="danger"
@@ -191,6 +202,10 @@ const submitChanges = () => {
                     </div>
                 </div>
             </div>
+        </template>
+
+        <template v-if="props.readonly" #footer>
+            <Button label="Cancel" @click="waitEmitClose" icon="pi pi-times" class="mr-2" />
         </template>
     </PopupDialog>
 </template>
