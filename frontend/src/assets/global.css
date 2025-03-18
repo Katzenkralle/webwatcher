@@ -1,10 +1,9 @@
 @import url("./fonts.css");
 @import "tailwindcss";
-@layer base, primevue, components, utilities, theme;
+@import './components.css';
 
-@layer components {
-    @import './components.css';
-}
+@layer base, primevue, utilities, theme;
+
 
 @layer theme {
   @theme {

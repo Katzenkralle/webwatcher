@@ -37,6 +37,10 @@ main, header, footer {
     @apply w-full;
 }
 
+.subsection {
+    @apply bg-panel w-fit border-2 border-info rounded-lg p-2;
+}
+
 button:disabled {
     @apply !cursor-not-allowed;
   }
