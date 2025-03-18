@@ -1,9 +1,10 @@
 <script setup lang="tsx">
-import { type StringCondition } from "@/composable/scripts/FilterGroups";
-import type { TableLayout } from "@/composable/api/JobAPI";
+import { type StringCondition } from "@/composable/jobs/FilterGroups";
 import Select  from "primevue/select";
 import InputText from 'primevue/inputtext';
+import { watchEffect } from "vue";
 
+const emit = defineEmits(['isInvalide'])
 const props = defineProps<{
     cond: StringCondition;
     availableColumns: string[];
@@ -14,12 +15,20 @@ const modeAlias = {
     'exact_match': "Exact Match",
     'regex': "RegEx"
 }
+
+watchEffect(() => {
+    emit('isInvalide', !props.availableColumns.includes(props.cond.col));
+});
+
 </script>
 
 
 <template>
     <div class="inner-condition-container">
-        <h4>String</h4>
+        <div class="header-condition-container">
+            <h4>String</h4>
+            <slot name="header"></slot>
+        </div>
         <div class="grid grid-cols-2 gap-4">
             <Select
             size="small"

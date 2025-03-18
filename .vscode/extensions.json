@@ -5,6 +5,7 @@
         "bradlc.vscode-tailwindcss",
         "csstools.postcss",
         "esbenp.prettier-vscode",
-        "visualstudioexptteam.vscodeintellicode"
+        "visualstudioexptteam.vscodeintellicode",
+        "ms-python.debugpy"
     ]
 }

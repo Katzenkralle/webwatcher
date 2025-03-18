@@ -3,10 +3,12 @@ import { computed, onMounted, onUnmounted, ref, type Ref } from "vue";
 import Button from "primevue/button"
 import {useAuth, requireLogin} from "@/composable/api/Auth";
 import {useStatusMessage, useLoadingAnimation} from "@/composable/core/AppState";
-import { useFilterIterationContext, type IterationContext, type Group } from "@/composable/scripts/FilterGroups";
+import { useFilterIterationContext, type IterationContext } from "@/composable/jobs/FilterGroups";
 
 import FilterGroupRenderer from "../filter/FilterGroupRenderer.vue";
-import { useJobDataHandler } from "@/composable/scripts/JobDataHandler";
+import { useJobUiCreator } from "@/composable/jobs/JobDataHandler";
+
+import PopupDialog from "../reusables/PopupDialog.vue";
 
 const date = ref(new Date().toLocaleString());
 const user = ref<any>(null);
@@ -81,16 +83,75 @@ filterGroupHandler.addToFilterGroup({
             ]
         });
 
-const jobHandlerDemo = useJobDataHandler(0);
+const jobHandlerDemo = useJobUiCreator(0);
+const popupRef = ref();
+
+const testString = `{
+    "type": "group",
+    "connector": "AND",
+    "evaluatable": [
+        {
+            "type": "group",
+            "connector": "OR",
+            "evaluatable": [
+                {
+                    "type": "condition",
+                    "negated": true,
+                    "condition": {
+                        "type": "number",
+                        "testFor1": {
+                            "value": 1,
+                            "mode": "const"
+                        },
+                        "testFor2": {
+                            "value": "col_name",
+                            "mode": "col"
+                        },
+                        "opperation": ">"
+                    },
+                    "parent": null
+                }
+            ],
+            "parent": null
+        },
+        {
+            "connector": "XOR",
+            "evaluatable": [
+                {
+                    "condition": {
+                        "type": "number",
+                        "testFor1": {
+                            "mode": "col",
+                            "value": ""
+                        },
+                        "testFor2": {
+                            "mode": "const",
+                            "value": ""
+                        },
+                        "opperation": "=="
+                    },
+                    "negated": false,
+                    "type": "condition",
+                    "parent": null
+                }
+            ],
+            "type": "group",
+            "parent": null
+        }
+    ]
+}`;
 </script>
 
 <template>
+
+    <PopupDialog ref="popupRef" />
+
     <h1>Hello World</h1>
     <p>{{ user }}</p>
     <h3>Vue Test:</h3>
     <p>{{ date }}</p>
     <div class="bg-panel m-4 border-2 border-primary rounded-lg p-2">
-        <FilterGroupRenderer :jobHandler="jobHandlerDemo" :groupIterator="filterGroupHandler as IterationContext<Group>"/>
+        <FilterGroupRenderer :jobHandler="jobHandlerDemo.jobDataHandler" :groupIterator="filterGroupHandler as IterationContext<Group>" />
     </div>
 
     <Button 
@@ -119,6 +180,19 @@ const jobHandlerDemo = useJobDataHandler(0);
     <Button label="Logout"
             @click="() => {
                 requireLogin();
+            }"
+    />
+    <Button label="Open Dialog"
+            @click="() => {
+                console.log(popupRef);
+                popupRef.openDialog();
+            }"
+    />
+    <Button label="Test Load Stringifyed Groups"
+            @click="() => {
+                filterGroupHandler.replaceRoot(
+                    JSON.parse(testString) as Group
+                )
             }"
     />
     </div>

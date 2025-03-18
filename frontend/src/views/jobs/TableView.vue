@@ -1,31 +1,48 @@
 <script setup lang="ts">
-import { useTableMetaData, type TableMetaData } from "@/composable/api/JobAPI";
-import { useJobDataHandler } from "@/composable/scripts/JobDataHandler";
-import { useFilterIterationContext, type AbstractCondition, type Group, type IterationContext} from "@/composable/scripts/FilterGroups";
+import { useTableMetaData } from "@/composable/api/JobAPI";
+import { useJobUiCreator } from "@/composable/jobs/JobDataHandler";
+import { jobUserDisplayConfig } from "@/composable/jobs/UserConfig";
+
 import router from "@/router";
 
-import FilterGroupRenderer from "@/components/filter/FilterGroupRenderer.vue";
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import ColumnGroup from 'primevue/columngroup';   // optional
-import Row from 'primevue/row';                   // optional
+import FilterGroupRenderer from "@/components/filter/FilterGroupRenderer.vue";              
 
-import { ref, watch, onMounted, computed, type Ref } from "vue";
+import ConfirmableButton from "@/components/reusables/ConfirmableButton.vue";
+import ColumnSelection from "@/components/jobs/ColumnSelection.vue";
+import StringSearch from "@/components/jobs/StringSearch.vue";
+import JobDataTable from "@/components/jobs/Table.vue";
+import JobMetaDisplay from "@/components/jobs/MetaData.vue";
+import SmallSeperator from "@/components/reusables/SmallSeperator.vue";
+import PopupDialog from "@/components/reusables/PopupDialog.vue";
+import FilterSelector from "@/components/filter/FilterSelector.vue";
+
+
+import Button  from "primevue/button";
+import Accordion from 'primevue/accordion';
+import AccordionPanel from 'primevue/accordionpanel';
+import AccordionHeader from 'primevue/accordionheader';
+import AccordionContent from 'primevue/accordioncontent';
+
+import { SplitButton } from "primevue";
+
+import { ref, watch, computed } from "vue";
 
 const currentJobId = ref(Number(router.currentRoute.value.params.id));
+const downloadSuccessPopup = ref();
 
-let filter = useFilterIterationContext();
 
 watch(
   () => router.currentRoute.value.params.id,
   (newVal) => {
     if (!newVal) return;
     try {
-      currentJobId.value = Number(newVal);
+      if (currentJobId.value && currentJobId.value !== Number(newVal)) {
+        currentJobId.value = Number(newVal);
+        jobHandler = useJobUiCreator(currentJobId.value);
+      }
     } catch (e) {
       console.error(e);
     }
-    filter = useFilterIterationContext(); // Reset the filter
   }
 );
 
@@ -33,27 +50,169 @@ const tableMetadata = computed(() => {
   return useTableMetaData().getTaleMetaData(currentJobId.value);
 });
 
-const jobHandler = computed(() => {
-  return useJobDataHandler(currentJobId.value, filter);
+
+// This cannot be compute, if it would be, random recomputations would happen
+// when pressing some buttons - houres wasted: 2
+let jobHandler = useJobUiCreator(currentJobId.value);
+
+const userConfig = computed(() => {
+  return jobUserDisplayConfig(currentJobId.value);
 });
+
 
 </script>
 
 <template>
   <main>
     <dev class="flex flex-col w-full h-full items-center" :key="currentJobId">
-      <h1 class="mb-2 mt-5">{{ tableMetadata?.name }}</h1>
-      <p class="bg-panel w-fit border-2 border-info rounded-lg p-2">{{ tableMetadata?.description }} - {{ tableMetadata?.executedLast }}</p>
-      
-      <div class="bg-panel m-4 border-2 border-primary rounded-lg p-2">
-        <FilterGroupRenderer :jobHandler="jobHandler"/>
+      <h1 class="mb-2 mt-5">Job Data & Managment</h1>
+
+      <Accordion 
+        class="w-full max-w-256 mb-2"
+        :value="['0']" 
+        multiple
+        unstyled>
+
+        <AccordionPanel value="0">
+            <AccordionHeader>Overview</AccordionHeader>
+              <AccordionContent>
+                <JobMetaDisplay 
+                  v-if="tableMetadata"
+                  :metaData="tableMetadata"
+                  class="max-w-256" />
+              </AccordionContent>
+        </AccordionPanel>
+
+        <AccordionPanel value="1">
+            <AccordionHeader>Logical Filters</AccordionHeader>
+              <AccordionContent>
+                <div class="content-box flex flex-col">
+                    <FilterSelector
+                      :filterContext="jobHandler.filterContext"
+                      :filterConfig="userConfig"
+                      />
+                    <SmallSeperator 
+                      class="my-2 mx-auto" 
+                      :is-dashed="true"/>
+                    <FilterGroupRenderer 
+                      :jobHandler="jobHandler.jobDataHandler"/>
+              </div>
+              </AccordionContent>
+        </AccordionPanel>
+
+        <AccordionPanel value="2">
+            <AccordionHeader>View Options</AccordionHeader>
+              <AccordionContent>
+                <div class="content-box shrinkable">
+                  <ColumnSelection
+                    :hiddenColumns="jobHandler?.hiddenColumns.value"
+                    :allColumns="jobHandler.jobDataHandler.computeLayoutUnfiltered.value"
+                    :visableColumns="jobHandler.jobDataHandler.computeLayout.value"
+                    :internalColumns="jobHandler.intenalColums"
+                    @update:hiddenColumns="(e) => { if (jobHandler) 
+                        jobHandler.hiddenColumns.value = e }"
+                    />
+
+                  <StringSearch
+                    :mutSortByString="jobHandler?.sortByString.value"
+                    :allColumns="jobHandler.jobDataHandler.computeLayoutUnfiltered.value"
+                    @update:key="() => jobHandler.unsetPrimevueSort() "
+                    class="shrink-0"
+                    />
+                </div>
+              </AccordionContent>
+        </AccordionPanel>
+      </Accordion>
+
+        
+      <div class="flex flex-col w-full h-full items-center">
+        <SmallSeperator class="my-4" :is-dashed="true"/>
+        <JobDataTable
+          :jobHandler="jobHandler"
+          />
       </div>
-      
-      <DataTable :value="jobHandler?.computeDisplayedData.value"  tableStyle="min-width: 50rem">
-          <template v-for="col in jobHandler?.computeLayout.value">
-              <Column :field="col.key" :header="`${col.key} (${col.type})`"></Column>
-          </template>  
-      </DataTable>
+
+      <PopupDialog ref="downloadSuccessPopup"
+        title="Success"
+        message="Data was saved to file."
+        >
+        <template #footer>
+          <Button
+            label="Close"
+            size="small"
+            @click="() => downloadSuccessPopup?.closeDialog()"
+            />
+        </template>
+      </PopupDialog>
+      <div class="flex flex-row space-x-2 ml-auto mr-4 my-2">
+        <ConfirmableButton
+            button-label="Fetch all Data"
+            button-icon="pi pi-refresh"
+            confirm-message="Are you sure you want to fetch all data? This may take a while."
+            confirm-icon="pi pi-exclamation-triangle text-warning"
+            @confirm="() => jobHandler?.jobDataHandler.lazyFetch(0, true)"
+            />
+        
+            <SplitButton
+            label="Export visible"
+            icon="pi pi-download"
+            @click="() => { jobHandler?.jobDataHandler.saveToFile('visable', jobHandler?.hiddenColumns.value)
+                  .then(() => downloadSuccessPopup?.openDialog()) }"
+            :model="[
+              {
+                label: 'Export fetched',
+                icon: 'pi pi-download',
+                command: () => { jobHandler?.jobDataHandler.saveToFile('all')
+                  .then(() => downloadSuccessPopup?.openDialog()) }
+              }
+            ]"
+            />
+
+      </div>
+
     </dev>
   </main>
 </template>
+
+<style lang="css">
+@reference "@/assets/global.css";
+
+
+.p-accordioncontent-content {
+  @apply flex justify-center;
+}
+
+.p-accordionheader{
+  @apply text-xl font-semibold underline underline-offset-3 mb-1 cursor-pointer;
+}
+
+.p-accordionpanel:not(:last-child) {
+  @apply border-b-2 border-h-panel pb-2;
+}
+.p-accordionpanel:not(:first-child) {
+  @apply pt-1;
+}
+
+.content-box {
+  @apply 
+    bg-panel 
+    border-2 
+    border-primary 
+    rounded-lg 
+    p-2 
+    w-full 
+    max-w-256 
+    justify-between 
+    overflow-x-scroll 
+    overflow-y-hidden;
+}
+
+.shrinkable {
+  @apply flex 
+    flex-col 
+    md:flex-row
+    space-y-2 
+    md:space-y-0      
+}
+
+</style>

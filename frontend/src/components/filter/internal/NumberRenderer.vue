@@ -1,12 +1,13 @@
 <script setup lang="tsx">
-import { defineComponent, ref, computed, defineProps, h, type Ref } from "vue";
+import { defineComponent, ref, watchEffect, defineProps, h } from "vue";
 import Select from "primevue/select";
 import InputNumber from "primevue/inputnumber";
 
-import { type NumberCondition, type NumberConditionTest } from "@/composable/scripts/FilterGroups";
+import { type NumberCondition, type NumberConditionTest } from "@/composable/jobs/FilterGroups";
 import type { TableLayout } from "@/composable/api/JobAPI";
 import type { RefSymbol } from "@vue/reactivity";
 
+const emit = defineEmits(['isInvalide'])
 const props = defineProps<{ 
     cond: NumberCondition; 
     availableColumns: string[]; 
@@ -25,7 +26,7 @@ const TestSelectionVnode = defineComponent({
             default: false,
         }
     },
-    emits: ['update:modelValue'], // Declare emitted event
+    emits: ['update:modelValue', 'update:modeState'], // Declare emitted event
 
     setup(subProps, { emit }) { // Accept the emit function
         const selectedTestMode = ref(subProps.data.mode);
@@ -46,10 +47,19 @@ const TestSelectionVnode = defineComponent({
             };
             if (subProps.hotUpdate) {
                 subProps.data.mode = emittedValue.mode;
-                subProps.data.value = emittedValue.value ? emittedValue.value : "";
+                subProps.data.value = typeof emittedValue.value === "number" || emittedValue.value 
+                    ? emittedValue.value : "";
             }
             emit('update:modelValue', emittedValue); // Emit value to the parent
         };
+        const emitInvalide = (invalide: boolean) => {
+            emit('update:modeState', invalide);
+        };
+
+        watchEffect(() => {
+            emitInvalide(valueTestX.col.value === null && selectedTestMode.value === "col"   
+                || (valueTestX.const.value === null && selectedTestMode.value === "const"));
+        });
 
         return () =>
             h('div', { class: 'grid grid grid-cols-2 gap-4 w-full' }, [
@@ -95,13 +105,19 @@ const TestSelectionVnode = defineComponent({
     }
 });
 
-
+const isInvalide = ref([false, false]);
+watchEffect(() => {
+    emit('isInvalide', isInvalide.value.some((e) => e));
+});
 </script>
 
 <template>
     <div class="inner-condition-container">
-        <h4>Number Condition</h4>
-        <TestSelectionVnode :data="props.cond.testFor1" :hot-update="true" @update:model-value="(e) => console.log(e)" />
+        <div class="header-condition-container">
+            <h4>Number</h4>
+            <slot name="header"></slot>
+        </div>
+        <TestSelectionVnode :data="props.cond.testFor1" :hot-update="true" @update:mode-state="(e) => isInvalide[0] = e"/>
         <div class="grid justify-items-center  grid-cols-5 w-full px-3">
             <div class="seperator"/>
             <Select 
@@ -112,7 +128,7 @@ const TestSelectionVnode = defineComponent({
                 placeholder="Select Operation" />
             <div class="seperator"/>
         </div>
-        <TestSelectionVnode :data="props.cond.testFor2" :hot-update="true" @update:model-value="(e) => console.log(e)"/>
+        <TestSelectionVnode :data="props.cond.testFor2" :hot-update="true" @update:mode-state="(e) => isInvalide[1] = e"/>
     </div>
 </template>
 
