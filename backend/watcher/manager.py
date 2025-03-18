@@ -4,6 +4,9 @@ import threading
 import sys
 import asyncio
 
+from typing_extensions import Dict
+
+
 # Proposed DB Managert for  to let Watchers add Rows to mongo db
 class DbManager:
     def __init__(self, tareget: int, schema: Dict[str, str]):
@@ -45,7 +48,7 @@ class MainThread(threading.Thread):
 
     def run(self):
         module = importlib.import_module(self.module_name)
-        main_instance = module.Main()
+        main_instance = module.ScriptMain()
         self.result = main_instance.run()
 
 def delete_script(module_name):
@@ -79,7 +82,10 @@ class WatcherManager:
 
     Also handels timed execution of watchers, and registers/deleates them by request in the database.
     """
-    pass
+    def __init__(self):
+        pass
+    async def run(self):
+        ...
 
 if __name__ == "__main__":
     script_name = "script"  # Name of the script without .py extension
