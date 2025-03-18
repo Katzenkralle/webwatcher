@@ -30,6 +30,11 @@ class ScriptValidationResult:
     available_parameters: list[Parameter]
     supports_static_schema: bool
 
+@strawberry.type
+class Message:
+    message: str
+    status: ResultType
+
 
 
 UserResult = Annotated[Union[DbUser, ErrorMessage], strawberry.union("UserResult")]

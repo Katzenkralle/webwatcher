@@ -1,3 +1,72 @@
+# Idea for watcher call
+import importlib
+import threading
+import sys
+import asyncio
+
+# Proposed DB Managert for  to let Watchers add Rows to mongo db
+class DbManager:
+    def __init__(self, tareget: int, schema: Dict[str, str]):
+        self.__schema: Dict[str, str] = schema
+        self.__target: int = tareget
+        self.__data: Dict[str, any] = {}
+        self.__db = None
+
+    def __check_datatype(self, k, v):
+        if k not in self.__schema:
+            raise ValueError(f'Key {k} not in schema')
+        if self.__schema[k] != type(v):
+            raise ValueError(f'Key {k} has wrong datatype')
+
+    @property
+    def data(self):
+        return self.__data
+
+    @data.setter
+    def data(self, row: Dict[str, any]):
+        for k, v in row.items():
+            self.__check_datatype(k, v)
+        self.__data.update(row)
+
+    def __enter__(self):
+        # open connection to db
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # close connection to db, execute transaction
+        pass
+
+
+class MainThread(threading.Thread):
+    def __init__(self, module_name):
+        threading.Thread.__init__(self)
+        self.module_name = module_name
+        self.result = None
+
+    def run(self):
+        module = importlib.import_module(self.module_name)
+        main_instance = module.Main()
+        self.result = main_instance.run()
+
+def delete_script(module_name):
+    if module_name in sys.modules:
+        try:
+            del sys.modules[module_name]
+            print(f"Module {module_name} has been removed from cache.")
+        except KeyError:
+            print(f"Module {module_name} is not in cache.")
+
+async def run_main_threads(script_name, num_threads):
+    threads = []
+    for _ in range(num_threads):
+        main_thread = MainThread(script_name)
+        main_thread.start()
+        threads.append(main_thread)
+
+    for thread in threads:
+        thread.join()
+        print(thread.result)
+
 
 class WatcherManager: 
     """
@@ -11,3 +80,12 @@ class WatcherManager:
     Also handels timed execution of watchers, and registers/deleates them by request in the database.
     """
     pass
+
+if __name__ == "__main__":
+    script_name = "script"  # Name of the script without .py extension
+
+    # Run multiple instances of MainThread asynchronously
+    asyncio.run(run_main_threads(script_name, 5))
+
+    # Delete the script and remove the module from cache
+    delete_script(script_name)
