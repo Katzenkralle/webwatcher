@@ -15,14 +15,6 @@ class ResultType(Enum):
     TIMEOUT = "timeout"
     CATS_AND_DOGS = "cats_and_dogs"
 
-@dataclasses.dataclass
-class JobEntry:
-    timestamp: int
-    script_runtime: int
-    result: ResultType
-    script_failure: bool
-    context: dict[str, any]
-
 
 class Watcher(ABC):
     """

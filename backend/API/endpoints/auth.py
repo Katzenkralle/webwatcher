@@ -15,7 +15,7 @@ import json
 from functools import wraps
 
 from db_handler.maria_schemas import DbUser
-from ..gql_types import ErrorMessage
+from ..gql_base_types import Message
 from configurator import Config
 
 hash_context = CryptContext(schemes=["bcrypt"])
@@ -68,7 +68,7 @@ async def get_current_user(user: Annotated[DbUser | None, Depends(get_current_us
 
 def user_guard(reject_unauth: any = None, use_http_exception: bool = False):
     if not reject_unauth:
-        reject_unauth = ErrorMessage(message="Unauthorized. You must be loged in to do this.", status="auth_error")
+        reject_unauth = Message(message="Unauthorized. You must be loged in to do this.", status="auth_error")
     def user_guard_decorator(fn: callable):
         @wraps(fn)
         async def wrapper(*args, **kwargs):
@@ -81,7 +81,7 @@ def user_guard(reject_unauth: any = None, use_http_exception: bool = False):
 
 def admin_guard(reject_unauth: any = None, reject_user: any = None, use_http_exception: bool = False):
     if not reject_user:
-        reject_user = ErrorMessage(message="Insufficient permissions.", status="premission_error")
+        reject_user = Message(message="Insufficient permissions.", status="premission_error")
     def admin_guard_decorator(fn: callable):
         @wraps(fn)
         @user_guard(reject_unauth, use_http_exception)

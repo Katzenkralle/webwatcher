@@ -5,8 +5,8 @@ from typing_extensions import Optional
 
 
 from backend.API.endpoints.auth import admin_guard
-from backend.API.gql_types import ScriptValidationResult, Parameter, Message
-
+from backend.API.gql_base_types import ScriptValidationResult, Parameter, Message
+from backend.API.gql_types import script_content_result
 
 @strawberry.type
 class Mutation:
@@ -29,5 +29,14 @@ class Mutation:
     @admin_guard
     def delete_script(self, name: str) -> Message:
         pass
+
+
+@strawberry.type
+class Query:
+    @strawberry.field
+    @admin_guard
+    def scripts_metadata(self, supports_static_schema: Optional[bool]) -> script_content_result:
+        pass
+
 
     
