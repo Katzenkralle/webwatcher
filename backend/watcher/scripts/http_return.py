@@ -1,4 +1,4 @@
-from base import Watcher
+from backend.watcher.base import Watcher
 import aiohttp
 from http.client import responses
 
