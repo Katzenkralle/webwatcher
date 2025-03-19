@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 import dataclasses
 from enum import Enum
 
+from API.gql_base_types import JobEntry
+
+
 class ResultType(Enum):
     SUCCESS = "success"
     AUTH_ERROR = "auth_error"
