@@ -1,0 +1,90 @@
+import strawberry
+from enum import Enum
+from typing import Annotated, Union, Optional
+
+from db_handler.maria_schemas import *
+from watcher.base import ResultType as BaseResultType
+from utility.toolbox import extend_enum
+
+from backend.db_handler import DbUser
+
+class JsonStr(str):
+    pass
+
+# Helper types
+@strawberry.type
+class PaginationInput:
+    max: int
+    start_element: int
+
+@strawberry.type
+class Parameter:
+    key: str
+    value: str
+
+@extend_enum(BaseResultType)
+@strawberry.enum
+class ResultType(Enum):
+    pass
+
+# Base types
+@strawberry.type
+class User:
+    username: str
+    password: Optional[str]
+    is_admin: bool
+
+@strawberry.type()
+class UserJobDisplayConfig:
+    filter: str # JSON
+    group: str # JSON
+
+@strawberry.type
+class Message:
+    message: str
+    status: ResultType
+
+@strawberry.type
+class ScriptContent:
+    name: str
+    description: str
+    modify_at: int
+    available_parameters: list[Parameter]
+    static_schema: list[Parameter]
+
+@strawberry.type
+class ScriptValidationResult:
+    valid: bool
+    available_parameters: list[Parameter]
+    supports_static_schema: bool
+
+@strawberry.interface
+class JobFullInfo:
+    id: int
+
+@strawberry.type
+class JobMetaData(JobFullInfo):
+    name: str
+    description: str
+    enabled: bool
+    execute_timer: int
+    executed_last: int
+    forbid_dynamic_schema: bool
+    expected_return_schema: Optional[JsonStr]
+
+@strawberry.type
+class JobSettings(JobFullInfo):
+    parameters: list[Parameter]
+
+@strawberry.type
+class JobEntry:
+    call_id: int
+    timestamp: int
+    runtime: int
+    result: ResultType
+    script_failure: bool
+    context: JsonStr
+
+
+
+UserResult = Annotated[Union[DbUser, Message], strawberry.union("UserResult")]
