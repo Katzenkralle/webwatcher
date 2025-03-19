@@ -21,11 +21,12 @@ class BaseResultType(Enum):
     TIMEOUT = "timeout"
     CATS_AND_DOGS = "cats_and_dogs"
 
+@strawberry.type
 class JsonStr(str):
     pass
 
 # Helper types
-@strawberry.type
+@strawberry.input
 class PaginationInput:
     max: int
     start_element: int

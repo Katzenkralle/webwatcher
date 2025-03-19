@@ -6,6 +6,7 @@ from fastapi import APIRouter, Request, Depends
 from .endpoints import auth
 from .endpoints import users
 from .endpoints import test
+from .endpoints import scripts
 
 async def get_context(request:Request, user = Depends(auth.get_current_user_or_none)):
     return {
@@ -15,8 +16,8 @@ async def get_context(request:Request, user = Depends(auth.get_current_user_or_n
 
 def get_routes():
     # Registering the endpoints
-    gql_querys = merge_types("ComboQuery", (test.Query, users.Query,))
-    gql_mutations = merge_types("ComboMutation", (users.Mutation,))
+    gql_querys = merge_types("ComboQuery", (test.Query, users.Query, scripts.Query))
+    gql_mutations = merge_types("ComboMutation", (users.Mutation, scripts.Mutation))
     gql_schema = Schema(query=gql_querys, mutation=gql_mutations)
     
     # Creating the GQL router, providing context
