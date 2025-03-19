@@ -16,6 +16,7 @@ class JobsMetaDataList:
     jobs: list[JobMetaData]
 
 jobs_metadata_result = JobsMetaDataList | Message
+job_metadata_result = JobMetaData | Message
 jobs_settings_result = JobSettings | Message
 
 @strawberry.type
