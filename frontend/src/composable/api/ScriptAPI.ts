@@ -9,6 +9,7 @@ export interface ScriptMeta {
     // name: string; is returned by the query, we put it as key in the dict
     fsPath: string;
     description: string;
+    modifyedAt: string;
     staticSchema: Record<string, any>; // expected return schema of the script
     availableParameters: Record<string, string>; //  input parameters for the script
 }
@@ -98,12 +99,14 @@ export async function fetchScripts() {
         globalScriptData.value = {
             script1: {
                 fsPath: '/path/to/script1',
+                modifyedAt: '1742369540',
                 description: 'Description of script1',
                 staticSchema: {},
                 availableParameters: {}
             },
             script2:{
                 fsPath: '/path/to/script2',
+                modifyedAt: '1742369540',
                 description: 'Description of script2',
                 staticSchema: {"test": "string", "data": "int"},
                 availableParameters: { "test": "string", "data": "int"}
@@ -111,6 +114,15 @@ export async function fetchScripts() {
         };
         useStatusMessage().newStatusMessage("Error fetching scripts", "danger");
     });
+}
+
+export async function getAllScripts() {
+    if(!Object.keys(globalScriptData.value).length) {
+        console.log("fetching scripts");
+        await fetchScripts();
+    }
+    console.log("returning scripts", globalScriptData.value);
+    return globalScriptData.value;
 }
 
 export function useScriptAPI() {

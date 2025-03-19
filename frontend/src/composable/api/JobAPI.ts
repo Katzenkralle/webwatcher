@@ -11,7 +11,7 @@ export interface TableMetaData {
     executeTimer: number;
     executedLast: number;
     forbidDynamicSchema: boolean;
-    expectedReturnSchema: any;
+    expectedReturnSchema: Record<string, string>;
 }
 
 export type TableLayout = {
@@ -23,7 +23,7 @@ let globalTableMetaData: Ref<TableMetaData[]> = ref([]);
 
 export function useTableMetaData() {
 
-    const fetchTableMetaData = (): Promise<Boolean> => {
+    const fetchAllMetaData = async (): Promise<TableMetaData[]> => {
         return new Promise(async (resolve, reject) => {
             const query = `
             query {
@@ -54,12 +54,12 @@ export function useTableMetaData() {
                 switch (key) {
                     case "jobsMetaDataList":
                         globalTableMetaData.value = response.data[key]
-                        return resolve(true)
+                        return resolve(response.data[key])
                     default:
                         globalTableMetaData.value = [
                             {
                                 id: 0,
-                                name: "TestTable",
+                                name: "Tabke",
                                 script: "TestScript",
                                 description: "Hello World",
                                 enabled: false,
@@ -70,7 +70,7 @@ export function useTableMetaData() {
                             },
                             {
                                 id: 1,
-                                name: "TestTable2",
+                                name: "Entry",
                                 script: "TestScript2",
                                 description: "Hello World2",
                                 enabled: false,
@@ -79,11 +79,11 @@ export function useTableMetaData() {
                                 forbidDynamicSchema: false,
                                 expectedReturnSchema: {
                                     "some": "string|number",
-                                    "aNumber": 1
+                                    "aNumber": "number"
                                 }
                             }
                         ]
-                        return resolve(true)
+                        return resolve(globalTableMetaData.value)
 
                     }
                 reportError(response)                
@@ -92,18 +92,59 @@ export function useTableMetaData() {
         });
     }
 
-    const getTaleMetaData = (id: number|undefined) => {
-        return globalTableMetaData.value.find((table) => table.id === id);
+    const getTaleMetaData = async  (id: number|undefined): Promise<TableMetaData> => {
+        const localElntry =  globalTableMetaData.value.find((table) => table.id === id);
+        if(localElntry) {
+            return new Promise((resolve) => resolve(localElntry));
+        }
+        return fetchAllMetaData().then((data) => {
+            const entry = data.filter((table) => table.id === id)[0];
+            if(entry) {
+                return entry;
+            }
+            throw new Error("Table not found");
+        });
     }
 
-    const updateTableMetaData = (data: TableMetaData) => {
-        console.debug("Not jet implemented")
+    const deleteTableMetaData = (id: number) => {
+        const query = `
+            mutation {
+                deleteJob(id: ${id}) {
+                    __typename
+                    ... on ErrorMessage {
+                        message
+                        status
+                    }
+                    ... on jobsMetaDataResult {
+                        jobs {
+                        id
+                        name
+                        script
+                        description
+                        enabled
+                        executeTimer
+                        executedLast
+                        forbidDynamicSchema
+                        expectedReturnSchema
+                        }
+                    }
+                }`;
+        queryGql(query).then((response) => {
+            const key = response.keys[0];
+            switch (key) {
+                case "jobsMetaDataList":
+                    globalTableMetaData.value = response.data[key]
+                    break;
+                default:
+                    reportError(response)
+            }
+        });
     }
-
+    
     return { 
-        fetchTableMetaData,
+        fetchTableMetaData: fetchAllMetaData,
         getTaleMetaData,
-        updateTableMetaData,
+        deleteTableMetaData,
         localTableMetaData: globalTableMetaData
      }
     

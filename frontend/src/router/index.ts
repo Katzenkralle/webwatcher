@@ -6,6 +6,7 @@ import NotFound from '@/views/core/NotFound.vue'
 import ScriptUpload from '@/views/scripts/UploadScript.vue'
 import Login from '@/views/core/Login.vue'
 import ScriptOverview from '@/views/scripts/ScriptOverview.vue'
+import CreateJob from '@/views/jobs/CreateJob.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -30,6 +31,14 @@ const router = createRouter({
       path: '/table/:id(\\d+)',
       name: 'table',
       component: TableView,
+      meta: {
+        requiresAuth: true,
+      }
+    },
+    {
+      path: '/job/create/:id(\\w+)?',
+      name: 'createJob',
+      component: CreateJob,
       meta: {
         requiresAuth: true,
       }

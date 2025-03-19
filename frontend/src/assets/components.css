@@ -41,6 +41,10 @@ main, header, footer {
     @apply bg-panel w-fit border-2 border-info rounded-lg p-2;
 }
 
+.main_content {
+    @apply flex flex-col items-center max-w-256 space-y-4;
+}
+
 button:disabled {
     @apply !cursor-not-allowed;
   }

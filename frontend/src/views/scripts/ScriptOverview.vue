@@ -21,7 +21,7 @@ const formattedGlobalScriptData = computed(() =>
 
 <template>
     <main class="flex justify-center">
-        <div class="flex flex-col items-center max-w-256 space-y-4">
+        <div class="main_content">
             <h1>Script Overview</h1>
             <p class="subsection"> Here, you can upload new Watcher-Scripts, which can then be converted into Jobs.
                 Additionally, the description and script of already uploaded ones may be edited.
@@ -55,6 +55,7 @@ const formattedGlobalScriptData = computed(() =>
                             <span v-else>No</span>
                         </template>
                     </Column>
+                    <Column field="modifyedAt" header="Last Modyfied"></Column>
                     <Column header="Edit/Delete">
                         <template #body="slotProps">
                             <div class="space-x-2">
