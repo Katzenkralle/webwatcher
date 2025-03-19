@@ -88,7 +88,7 @@ class WatcherManager:
         ...
 
 if __name__ == "__main__":
-    script_name = "script"  # Name of the script without .py extension
+    script_name = ".script.http_return"  # Name of the script without .py extension
 
     # Run multiple instances of MainThread asynchronously
     asyncio.run(run_main_threads(script_name, 5))

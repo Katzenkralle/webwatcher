@@ -3,10 +3,23 @@ from enum import Enum
 from typing import Annotated, Union, Optional
 
 from db_handler.maria_schemas import *
-from watcher.base import ResultType as BaseResultType
+
 from utility.toolbox import extend_enum
 
 from backend.db_handler import DbUser
+
+class BaseResultType(Enum):
+    SUCCESS = "success"
+    AUTH_ERROR = "auth_error"
+    PERMISSION_ERROR = "permission_error"
+    FAILURE = "failure"
+    NETWORK_ERROR = "network_error"
+    WARNING = "warning"
+    OK = "ok"
+    NOT_OK = "not_ok"
+    UNHEALTHY = "unhealthy"
+    TIMEOUT = "timeout"
+    CATS_AND_DOGS = "cats_and_dogs"
 
 class JsonStr(str):
     pass

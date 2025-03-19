@@ -1,22 +1,6 @@
 from abc import ABC, abstractmethod
-import dataclasses
-from enum import Enum
 
 from API.gql_base_types import JobEntry
-
-
-class ResultType(Enum):
-    SUCCESS = "success"
-    AUTH_ERROR = "auth_error"
-    PERMISSION_ERROR = "permission_error"
-    FAILURE = "failure"
-    NETWORK_ERROR = "network_error"
-    WARNING = "warning"
-    OK = "ok"
-    NOT_OK = "not_ok"
-    UNHEALTHY = "unhealthy"
-    TIMEOUT = "timeout"
-    CATS_AND_DOGS = "cats_and_dogs"
 
 
 class Watcher(ABC):
