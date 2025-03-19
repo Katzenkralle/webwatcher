@@ -81,7 +81,7 @@ def user_guard(reject_unauth: any = None, use_http_exception: bool = False):
 
 def admin_guard(reject_unauth: any = None, reject_user: any = None, use_http_exception: bool = False):
     if not reject_user:
-        reject_user = Message(message="Insufficient permissions.", status="premission_error")
+        reject_user = Message(message="Insufficient permissions.", status="permission_error")
     def admin_guard_decorator(fn: callable):
         @wraps(fn)
         @user_guard(reject_unauth, use_http_exception)
