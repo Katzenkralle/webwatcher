@@ -10,6 +10,8 @@ import { useJobUiCreator } from "@/composable/jobs/JobDataHandler";
 
 import PopupDialog from "../reusables/PopupDialog.vue";
 
+import GraphContainer from  "@/components/Graph/GraphContainer.vue";
+
 const date = ref(new Date().toLocaleString());
 const user = ref<any>(null);
 
@@ -145,6 +147,9 @@ const testString = `{
 <template>
 
     <PopupDialog ref="popupRef" />
+
+    <GraphContainer :jobId="0"></GraphContainer>
+
 
     <h1>Hello World</h1>
     <p>{{ user }}</p>
