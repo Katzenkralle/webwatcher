@@ -8,7 +8,7 @@ from API.gql_base_types import JobEntry
 class ResultType(Enum):
     SUCCESS = "success"
     AUTH_ERROR = "auth_error"
-    PREMISSION_ERROR = "premission_error"
+    PERMISSION_ERROR = "permission_error"
     FAILURE = "failure"
     NETWORK_ERROR = "network_error"
     WARNING = "warning"
