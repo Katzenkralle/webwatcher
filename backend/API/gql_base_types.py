@@ -6,7 +6,7 @@ from db_handler.maria_schemas import *
 
 from utility.toolbox import extend_enum
 
-from backend.db_handler import DbUser
+from db_handler import DbUser
 
 class BaseResultType(Enum):
     SUCCESS = "success"
