@@ -4,7 +4,7 @@ import os
 
 @dataclass
 class App:
-    host: str = "127.0.0.1"
+    host: str = "0.0.0.0"
     port: int = 7000
     dev_mode: bool = False
     log_level: str = "info"
@@ -13,7 +13,7 @@ class App:
 
 @dataclass
 class SqlConnection:
-    host: str = "0.0.0.0"
+    host: str = "maria"
     port: int = 3306
     user: str = "root"
     password: str = "webwatcher"
@@ -21,7 +21,7 @@ class SqlConnection:
     
 @dataclass
 class MongoConnection:
-    connection_string: str = "mongodb://localhost:27017"
+    connection_string: str = "mongodb://root:webwatcher@mongo:27017"
 
 @dataclass
 class Crypto:

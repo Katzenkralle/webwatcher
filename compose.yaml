@@ -1,0 +1,71 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongodb/mongodb-community-server:latest
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=webwatcher
+    profiles: ["production", "dev"]
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - internal
+
+  maria:
+    image: mariadb:latest
+    profiles: ["production", "dev"]
+    environment:
+      - MARIADB_USER=root
+      - MARIADB_ROOT_PASSWORD=webwatcher
+    volumes:
+      - maria_data:/var/lib/mysql
+    networks:
+      - internal
+
+  webwatcher:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: katzenkralle/webwatcher:latest 
+    profiles: ["production"]
+    networks:
+      - internal
+      - global
+      - reverse-proxy
+    ports:
+      - "8080:8080"
+  webwatcher-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    image: katzenkralle/webwatcher:dev 
+    profiles: ["dev"]
+    networks:
+      - internal
+      - global
+    ports:
+      - "3306:3306"
+      - "27017:27017"
+      - "7000-8080:7000-8080"
+    volumes:
+      - maria_data:/mounted_maria
+      - mongo_data:/mounted_mongo
+
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  global:
+    driver: bridge
+    internal: false
+  reverse-proxy:
+    external: true
+
+volumes:
+  mongo_data:
+    driver: local
+  maria_data:
+    driver: local

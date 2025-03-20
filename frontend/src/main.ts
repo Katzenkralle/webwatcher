@@ -1,3 +1,4 @@
+import './assets/global.css'
 import Lara from "@primevue/themes/lara";
 
 import { createApp } from 'vue'

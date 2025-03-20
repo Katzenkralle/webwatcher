@@ -9,9 +9,11 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 // https://vite.dev/config/
 export default defineConfig({
   server: {
-    proxy: {
-      '/auth': 'http://localhost:7001',
-      '/gql': 'http://localhost:7001',
+  port: 8079,
+  host: "0.0.0.0",
+  proxy: {
+      '/auth': 'http://localhost:7000',
+      '/gql': 'http://localhost:7000',
     }
   },
   plugins: [
