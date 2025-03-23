@@ -8,7 +8,7 @@ export interface TableMetaData {
     script: string;
     description: string;
     enabled: boolean;
-    executeTimer: number;
+    executeTimer: string;
     executedLast: number;
     forbidDynamicSchema: boolean;
     expectedReturnSchema: Record<string, string>;
@@ -63,7 +63,7 @@ export function useTableMetaData() {
                                 script: "TestScript",
                                 description: "Hello World",
                                 enabled: false,
-                                executeTimer: 0,
+                                executeTimer: "0",
                                 executedLast: 0,
                                 forbidDynamicSchema: false,
                                 expectedReturnSchema: {}
@@ -74,7 +74,7 @@ export function useTableMetaData() {
                                 script: "TestScript2",
                                 description: "Hello World2",
                                 enabled: false,
-                                executeTimer: 0,
+                                executeTimer: "0",
                                 executedLast: 0,
                                 forbidDynamicSchema: false,
                                 expectedReturnSchema: {
