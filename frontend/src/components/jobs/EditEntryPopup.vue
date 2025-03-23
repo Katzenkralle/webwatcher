@@ -115,6 +115,7 @@ const getElementForColumn = defineComponent({
                         options: availableTypes.split('|').map((elem) => {return {label: elem}}),
                         optionLabel: "label",
                         optionValue: "label",
+                        disabled: props.readonly,
                         modelValue: selectedType.value,
                         'onUpdate:modelValue': (val: string) => selectedType.value = val 
                     }),
@@ -206,7 +207,12 @@ const waitEmitClose = () => {
 
         <template v-if="props.readonly" #footer>
             <dev class="h-full w-full justify-end flex flex-row">
-                <Button label="Cancel" @click="waitEmitClose" icon="pi pi-times" size="small" class="mr-2" />
+                <Button 
+                    label="Cancel" 
+                    @click="waitEmitClose" 
+                    icon="pi pi-times" 
+                    size="small" 
+                    class="mr-2 max-h-12" />
             </dev>
         </template>
     </PopupDialog>
