@@ -3,7 +3,7 @@ import strawberry
 from strawberry.file_uploads import Upload
 from typing_extensions import Optional
 
-from API.gql_base_types import PaginationInput, ResultType, JsonStr
+from backend.API.gql_base_types import PaginationInput, ResultType, JsonStr
 from backend.API.endpoints.auth import admin_guard, user_guard
 from backend.API.gql_base_types import ScriptValidationResult, Parameter, Message
 from backend.API.gql_types import script_content_result, jobs_metadata_result, jobs_settings_result, jobs_entry_result, \

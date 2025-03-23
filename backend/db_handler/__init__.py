@@ -1,2 +1,2 @@
-from .mongo_core import *
-from .maria_core import *
+from backend.db_handler.mongo_core import MongoDbHandler
+from backend.db_handler.maria_core import MariaDbHandler

@@ -1,12 +1,11 @@
 import mariadb
 import asyncio
 
-from .misc import libroot
-from .misc import read_sql_blocks
-from .maria_schemas import DbUser
+from backend.db_handler.misc import libroot, read_sql_blocks
+from backend.db_handler.maria_schemas import DbUser
 
-from utility import DEFAULT_LOGGER as logger
-from configurator import Config
+from backend.utility import DEFAULT_LOGGER as logger
+from backend.configurator import Config
 
 
 

@@ -1,1 +1,1 @@
-from .config import Config
+from backend.configurator.config import Config

@@ -1,4 +1,4 @@
-from base import Watcher
+from backend.watcher.base import Watcher
 
 class ScriptMain(Watcher):
     def __init__(self, config: dict[str, any]):

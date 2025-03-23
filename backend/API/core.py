@@ -3,10 +3,7 @@ from strawberry.tools import merge_types
 from strawberry.schema import Schema
 from fastapi import APIRouter, Request, Depends
 
-from .endpoints import auth
-from .endpoints import users
-from .endpoints import test
-from .endpoints import scripts
+from backend.API.endpoints import auth, users, test, scripts
 
 async def get_context(request:Request, user = Depends(auth.get_current_user_or_none)):
     return {

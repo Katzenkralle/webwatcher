@@ -1,5 +1,5 @@
 import pymongo
-from utility import DEFAULT_LOGGER as logger
+from backend.utility import DEFAULT_LOGGER as logger
 import logging
 
 class MongoDbHandler:

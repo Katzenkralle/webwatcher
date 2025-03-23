@@ -1,5 +1,5 @@
 from dataclasses import fields, dataclass
-from utility import DEFAULT_LOGGER as logger
+from backend.utility import DEFAULT_LOGGER as logger
 import os
 
 @dataclass
