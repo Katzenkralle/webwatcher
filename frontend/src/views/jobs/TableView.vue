@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTableMetaData } from "@/composable/api/JobAPI";
-import { useJobUiCreator } from "@/composable/jobs/JobDataHandler";
+import { useJobDataHandler, useJobUiCreator } from "@/composable/jobs/JobDataHandler";
 import { jobUserDisplayConfig } from "@/composable/jobs/UserConfig";
 
 import router from "@/router";
@@ -23,37 +23,45 @@ import AccordionPanel from 'primevue/accordionpanel';
 import AccordionHeader from 'primevue/accordionheader';
 import AccordionContent from 'primevue/accordioncontent';
 
-import { SplitButton } from "primevue";
+import { ProgressSpinner, SplitButton } from "primevue";
 
 import { ref, watch, computed } from "vue";
 
 const currentJobId = ref(Number(router.currentRoute.value.params.id));
 const downloadSuccessPopup = ref();
 
+const tableMetadata = ref();
 
-watch(
-  () => router.currentRoute.value.params.id,
-  (newVal) => {
-    if (!newVal) return;
+
+const changeJob = (newVal: any) => {
+  if (!newVal) return;
     try {
-      if (currentJobId.value && currentJobId.value !== Number(newVal)) {
-        currentJobId.value = Number(newVal);
-        jobHandler = useJobUiCreator(currentJobId.value);
+      let newId = Number(newVal);
+      console.log("New Job ID: ", newId, "Current Job ID: ", currentJobId.value);
+      if (!currentJobId.value || (currentJobId.value && currentJobId.value !== newId)) {
+        currentJobId.value = newId;
+        jobHandler = useJobUiCreator(newId);
+        useTableMetaData().getTaleMetaData(newId).then((data) => {
+          tableMetadata.value = data;
+        });
       }
     } catch (e) {
       console.error(e);
     }
-  }
-);
+  };
 
-const tableMetadata = computed(() => {
-  return useTableMetaData().getTaleMetaData(currentJobId.value);
-});
-
+watch(
+  () => router.currentRoute.value.params.id,
+  (newVal) => {
+    changeJob(newVal);
+  });
 
 // This cannot be compute, if it would be, random recomputations would happen
 // when pressing some buttons - houres wasted: 2
 let jobHandler = useJobUiCreator(currentJobId.value);
+useTableMetaData().getTaleMetaData(currentJobId.value).then((data) => {
+    tableMetadata.value = data;
+  });
 
 const userConfig = computed(() => {
   return jobUserDisplayConfig(currentJobId.value);
@@ -114,9 +122,10 @@ const userConfig = computed(() => {
                     />
 
                   <StringSearch
+                    v-if="jobHandler.sortByString.value"
                     :mutSortByString="jobHandler?.sortByString.value"
                     :allColumns="jobHandler.jobDataHandler.computeLayoutUnfiltered.value"
-                    @update:key="() => jobHandler.unsetPrimevueSort() "
+                    @update:key="() => jobHandler?.unsetPrimevueSort() "
                     class="shrink-0"
                     />
                 </div>
