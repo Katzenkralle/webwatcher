@@ -1,6 +1,6 @@
-import { ref, resolveComponent, type Ref} from 'vue';
+import { ref, type Ref} from 'vue';
 import { useStatusMessage } from '../core/AppState';
-import { queryGql, reportError, type ErrorTypes } from "@/composable/api/GqlHandler" 
+import { queryGql, reportError, type ErrorTypes } from "@/composable/api/QueryHandler" 
 
 export interface TableMetaData {
     id: number;
@@ -19,136 +19,128 @@ export type TableLayout = {
     type: string;
 };
 
-let globalTableMetaData: Ref<TableMetaData[]> = ref([]);
+export let globalTableMetaData: Ref<TableMetaData[]> = ref([]);
 
-export function useTableMetaData() {
 
-    const fetchAllMetaData = async (): Promise<TableMetaData[]> => {
-        return new Promise(async (resolve, reject) => {
-            const query = `
-            query {
-                jobsMetaDataResult {
-                    __typename
-                    ... on jobsMetaDataList {
-                        jobs {
-                        id
-                        name
-                        script
-                        description
-                        enabled
-                        executeTimer
-                        executedLast
-                        forbidDynamicSchema
-                        expectedReturnSchema
-                        }
-                    }
-                    ... on ErrorMessage {
-                        message
-                        status
+
+export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
+    return new Promise(async (resolve, reject) => {
+        const query = `
+        query {
+            jobsMetaDataResult {
+                __typename
+                ... on jobsMetaDataList {
+                    jobs {
+                    id
+                    name
+                    script
+                    description
+                    enabled
+                    executeTimer
+                    executedLast
+                    forbidDynamicSchema
+                    expectedReturnSchema
                     }
                 }
+                ... on ErrorMessage {
+                    message
+                    status
+                }
             }
-            `;
-            queryGql(query).then((response) => {
-                const key = response.keys[0];
-                switch (key) {
-                    case "jobsMetaDataList":
-                        globalTableMetaData.value = response.data[key]
-                        return resolve(response.data[key])
-                    default:
-                        globalTableMetaData.value = [
-                            {
-                                id: 0,
-                                name: "Tabke",
-                                script: "TestScript",
-                                description: "Hello World",
-                                enabled: false,
-                                executeTimer: "0",
-                                executedLast: 0,
-                                forbidDynamicSchema: false,
-                                expectedReturnSchema: {}
-                            },
-                            {
-                                id: 1,
-                                name: "Entry",
-                                script: "TestScript2",
-                                description: "Hello World2",
-                                enabled: false,
-                                executeTimer: "0",
-                                executedLast: 0,
-                                forbidDynamicSchema: false,
-                                expectedReturnSchema: {
-                                    "some": "string|number",
-                                    "aNumber": "number"
-                                }
-                            }
-                        ]
-                        return resolve(globalTableMetaData.value)
-
-                    }
-                reportError(response)                
-                return reject(response)
-            })
-        });
-    }
-
-    const getTaleMetaData = async  (id: number|undefined): Promise<TableMetaData> => {
-        const localElntry =  globalTableMetaData.value.find((table) => table.id === id);
-        if(localElntry) {
-            return new Promise((resolve) => resolve(localElntry));
         }
-        return fetchAllMetaData().then((data) => {
-            const entry = data.filter((table) => table.id === id)[0];
-            if(entry) {
-                return entry;
-            }
-            throw new Error("Table not found");
-        });
-    }
-
-    const deleteTableMetaData = (id: number) => {
-        const query = `
-            mutation {
-                deleteJob(id: ${id}) {
-                    __typename
-                    ... on ErrorMessage {
-                        message
-                        status
-                    }
-                    ... on jobsMetaDataResult {
-                        jobs {
-                        id
-                        name
-                        script
-                        description
-                        enabled
-                        executeTimer
-                        executedLast
-                        forbidDynamicSchema
-                        expectedReturnSchema
-                        }
-                    }
-                }`;
+        `;
         queryGql(query).then((response) => {
             const key = response.keys[0];
             switch (key) {
                 case "jobsMetaDataList":
                     globalTableMetaData.value = response.data[key]
-                    break;
+                    return resolve(response.data[key])
                 default:
-                    reportError(response)
-            }
-        });
-    }
-    
-    return { 
-        fetchTableMetaData: fetchAllMetaData,
-        getTaleMetaData,
-        deleteTableMetaData,
-        localTableMetaData: globalTableMetaData
-     }
-    
+                    globalTableMetaData.value = [
+                        {
+                            id: 0,
+                            name: "Tabke",
+                            script: "TestScript",
+                            description: "Hello World",
+                            enabled: false,
+                            executeTimer: "0",
+                            executedLast: 0,
+                            forbidDynamicSchema: false,
+                            expectedReturnSchema: {}
+                        },
+                        {
+                            id: 1,
+                            name: "Entry",
+                            script: "TestScript2",
+                            description: "Hello World2",
+                            enabled: false,
+                            executeTimer: "0",
+                            executedLast: 0,
+                            forbidDynamicSchema: false,
+                            expectedReturnSchema: {
+                                "some": "string|number",
+                                "aNumber": "number"
+                            }
+                        }
+                    ]
+                    return resolve(globalTableMetaData.value)
+
+                }
+            reportError(response)                
+            return reject(response)
+        })
+    });
 }
+
+export const getJobMetaData = async  (id: number|undefined): Promise<TableMetaData> => {
+    const localElntry =  globalTableMetaData.value.find((table) => table.id === id);
+    if(localElntry) {
+        return new Promise((resolve) => resolve(localElntry));
+    }
+    return fetchAllJobMetaData().then((data) => {
+        const entry = data.filter((table) => table.id === id)[0];
+        if(entry) {
+            return entry;
+        }
+        throw new Error("Table not found");
+    });
+}
+
+export const deleteJob = (id: number) => {
+    const query = `
+        mutation {
+            deleteJob(id: ${id}) {
+                __typename
+                ... on ErrorMessage {
+                    message
+                    status
+                }
+                ... on jobsMetaDataResult {
+                    jobs {
+                    id
+                    name
+                    script
+                    description
+                    enabled
+                    executeTimer
+                    executedLast
+                    forbidDynamicSchema
+                    expectedReturnSchema
+                    }
+                }
+            }`;
+    queryGql(query).then((response) => {
+        const key = response.keys[0];
+        switch (key) {
+            case "jobsMetaDataList":
+                globalTableMetaData.value = response.data[key]
+                break;
+            default:
+                reportError(response)
+        }
+    });
+}
+
    
 
 export interface jobEnty {	timestamp: number
@@ -247,5 +239,3 @@ export const useJobData = (jobId: number) => {
     return { fetchData }
 }
 
-// This is not good practice, but itll work for now
-useTableMetaData().fetchTableMetaData();

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTableMetaData } from "@/composable/api/JobAPI";
+import { getJobMetaData } from "@/composable/api/JobAPI";
 import { useJobDataHandler, useJobUiCreator } from "@/composable/jobs/JobDataHandler";
 import { jobUserDisplayConfig } from "@/composable/jobs/UserConfig";
 
@@ -41,7 +41,7 @@ const changeJob = (newVal: any) => {
       if (!currentJobId.value || (currentJobId.value && currentJobId.value !== newId)) {
         currentJobId.value = newId;
         jobHandler = useJobUiCreator(newId);
-        useTableMetaData().getTaleMetaData(newId).then((data) => {
+        getJobMetaData(newId).then((data) => {
           tableMetadata.value = data;
         });
       }
@@ -59,7 +59,7 @@ watch(
 // This cannot be compute, if it would be, random recomputations would happen
 // when pressing some buttons - houres wasted: 2
 let jobHandler = useJobUiCreator(currentJobId.value);
-useTableMetaData().getTaleMetaData(currentJobId.value).then((data) => {
+getJobMetaData(currentJobId.value).then((data) => {
     tableMetadata.value = data;
   });
 

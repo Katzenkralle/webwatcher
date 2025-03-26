@@ -1,6 +1,6 @@
 import { AUTH_ENDPOINT } from "@/main"
 import router from "@/router";
-import { queryGql, type GQLResponse } from "./GqlHandler";
+import { queryGql, type GQLResponse } from "./QueryHandler";
 
 export interface AuthResponse {
     access_token: string;

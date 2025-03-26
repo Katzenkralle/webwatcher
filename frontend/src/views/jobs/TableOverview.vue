@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTableMetaData, type TableMetaData } from "@/composable/api/JobAPI";
+import { globalTableMetaData, fetchAllJobMetaData, deleteJob, type TableMetaData } from "@/composable/api/JobAPI";
 import Card from 'primevue/card';
 import Button from "primevue/button";
 import AutoComplete from 'primevue/autocomplete';
@@ -15,18 +15,18 @@ import { useStatusMessage } from "@/composable/core/AppState";
 const suggestedItems = ref<TableMetaData[]>([]);
 
 onMounted(async () => {
-  let a = await useTableMetaData().fetchTableMetaData();
+  let a = await fetchAllJobMetaData();
   console.log(a);
   suggestedItems.value = a
 });
 
 const recomputeSugestions = (search: string) => {
   if (search === ""){
-    return suggestedItems.value = useTableMetaData().localTableMetaData.value;
+    return suggestedItems.value = globalTableMetaData.value;
   }
   else {
     suggestedItems.value =
-      Object.values(useTableMetaData().localTableMetaData.value).filter(
+      Object.values(globalTableMetaData.value).filter(
         (entry) => entry.name.includes(search)
       );
     }
@@ -67,7 +67,7 @@ const elementColor = computed((): string[] => {
         <Button
           label="Create Job"
           icon="pi pi-plus"
-          @click="() => router.push('/job/create/')"
+          @click="() => router.push('/jobs/create/')"
           />
       </div>
 
@@ -113,16 +113,16 @@ const elementColor = computed((): string[] => {
                   button-class="p-button-danger"
                   confirm-message="Are you sure you want to delete this job?"
                   confirm-icon="pi pi-exclamation-triangle"
-                  @confirm="() => useTableMetaData().deleteTableMetaData(element.id)"
+                  @confirm="() => deleteJob(element.id)"
 
                 />
-                <router-link :to="`/job/create/${element.id}`">
+                <router-link :to="`/jobs/create/${element.id}`">
                   <Button
                   icon="pi pi-pencil"
                   severity="warn"
                   />
                 </router-link>
-                <router-link :to="`/table/${element.id}`">
+                <router-link :to="`/jobs/table/${element.id}`">
                   <Button
                     icon="pi pi-search"
                     severity="success"
@@ -135,7 +135,7 @@ const elementColor = computed((): string[] => {
       </div>
 
       <div class="w-full">
-        <a v-if="suggestedItems !== useTableMetaData().localTableMetaData.value"
+        <a v-if="suggestedItems !== globalTableMetaData"
           class="text-warning">
           Some tables where filtered out...
         </a>

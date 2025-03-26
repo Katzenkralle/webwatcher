@@ -16,7 +16,7 @@ import { globalScriptData } from '@/composable/api/ScriptAPI';
 import router from '@/router';
 
 import { useLoadingAnimation, useStatusMessage} from "@/composable/core/AppState";
-import { useScriptAPI, type ScriptValidationResult, type ScriptMeta } from "@/composable/api/ScriptAPI";
+import { validateFile, submitScript, type ScriptValidationResult, type ScriptMeta } from "@/composable/api/ScriptAPI";
 import "@/components/reusables/GoBack.vue";
 
 
@@ -60,7 +60,7 @@ const onFileSelect = (file_event: FileUploadSelectEvent) => {
     fileStatus.value.severity = 'warn';
     fileStatus.value.summary = 'Validating File...';
     fileStatus.value.availableParameters = {};
-    useScriptAPI().validateFile(file_event.files[0], currentScriptName.value)
+    validateFile(file_event.files[0], currentScriptName.value)
         .then((response: ScriptValidationResult) => {
             if (response.valid) {
                 fileStatus.value = {severity: 'success',
@@ -74,7 +74,7 @@ const onFileSelect = (file_event: FileUploadSelectEvent) => {
 }
 
 const onSubmit = () => {
-    useScriptAPI().submitScript(nameStatus.field, discription.value).then(() => {
+    submitScript(nameStatus.field, discription.value).then(() => {
         useStatusMessage().newStatusMessage('Script submitted.', 'success');
         router.push('/scripts');
     }).catch((error) => {

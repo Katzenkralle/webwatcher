@@ -4,7 +4,7 @@ import router from '@/router';
 
 import { CronPrime } from '@vue-js-cron/prime'
 
-import { useTableMetaData, type TableMetaData } from '@/composable/api/JobAPI';
+import { getJobMetaData, type TableMetaData } from '@/composable/api/JobAPI';
 import { useStatusMessage } from '@/composable/core/AppState';
 import { getAllScripts } from '@/composable/api/ScriptAPI';
 
@@ -60,12 +60,12 @@ const refreshJobMetaData = (id: string|string[]|undefined) => {
     let jobId: number =  Number(id);
   
     console.log('jobId', jobId);
-    useTableMetaData().getTaleMetaData(Number(id)).then((data: TableMetaData) => {
+    getJobMetaData(Number(id)).then((data: TableMetaData) => {
             jobMetaData.value = data;
             isEdit.value = true;
         }).catch((error) => {
             useStatusMessage().newStatusMessage('Job not found.', 'danger');
-            router.push('/tables');
+            router.push('/jobs');
         });
     }
 

@@ -51,9 +51,15 @@ export function queryGql(query: string): Promise<GQLResponse> {
 }
 
 
-export function reportError(gql: GQLResponse, includeDataErrors: boolean = true) {
+export function reportError(gql: GQLResponse|Error, includeDataErrors: boolean = true) {
     const statusMessage = useStatusMessage(true);
     
+    if (gql instanceof Error) {
+        statusMessage.newStatusMessage(gql.message, "danger");
+        statusMessage.fireBatch();
+        return;
+    }
+
     for (let error of gql.errors) {
         statusMessage.newStatusMessage(error.message, "danger");
     }

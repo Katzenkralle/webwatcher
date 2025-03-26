@@ -58,7 +58,10 @@ const getElementForColumn = defineComponent({
                 case 'string':
                     return h(FloatLabel, { variant: "in", class: 'w-full'  }, {
                         default: () => [
-                            h('label', { for: `${subprops.column}-string` }, "String"),
+                            h('label', { for: `${subprops.column}-string` }, [
+                                props.readonly ? h('span', {class: 'text-warning mr-2'}, 'Readonly') : '', 
+                                "String"
+                            ]),
                             h(Textarea, {
                                 class: "w-full",
                                 inputId: `${subprops.column}-string`,
@@ -72,7 +75,10 @@ const getElementForColumn = defineComponent({
                 case 'number':
                     return h(FloatLabel, { variant: "in", class: 'w-full' }, {
                         default: () => [
-                            h('label', { for: `${subprops.column}-number`, class: 'z-10' }, "Number"),
+                            h('label', { for: `${subprops.column}-number`, class: "z-10" }, [
+                                props.readonly ? h('span', {class: 'text-warning mr-2'}, 'Readonly') : '', 
+                                "Number"
+                            ]),
                             h(InputNumber, {
                                 class: "w-full",
                                 inputId: `${subprops.column}-number`,
@@ -85,7 +91,10 @@ const getElementForColumn = defineComponent({
 
                 case 'boolean':
                     return h("div", {class: 'w-full flex flex-col bg-crust p-2 rounded-lg border-info border-1 hover:border-app'}, [
-                        h('label', { for: `${subprops.column}-boolean`, class: 'text-info mb-3' }, "Boolean"),
+                        h('label', { for: `${subprops.column}-boolean`, class: 'text-info text-sm mb-3' }, [
+                                props.readonly ? h('span', {class: 'text-warning mr-2'}, 'Readonly') : '', 
+                                "Boolean"
+                            ]),    
                         h('div', {class: 'flex flex-row items-center'}, [
                             h(Checkbox, {
                                 class: 'mr-2',

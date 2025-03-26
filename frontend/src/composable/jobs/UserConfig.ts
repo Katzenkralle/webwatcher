@@ -1,5 +1,5 @@
 import { ref, watch } from "vue";
-import { queryGql } from "../api/GqlHandler";
+import { queryGql, reportError } from "../api/QueryHandler";
 import { useStatusMessage } from "../core/AppState";
 
 import { type Group as FilterGroup } from "@/composable/jobs/FilterGroups";
@@ -35,10 +35,10 @@ export const jobUserDisplayConfig = (id: number) => {
                     graph.value = response.data.userJobConfig.graph;
                     break;
                 default:
-                    throw new Error(response.data.userJobConfig.message);
+                    throw response;
             }
         }).catch((error) => {
-            useStatusMessage().newStatusMessage(error.message, "danger");
+            reportError(error);
         });
     }
 
@@ -59,9 +59,9 @@ export const jobUserDisplayConfig = (id: number) => {
                 useStatusMessage().newStatusMessage(response.data.message, "success");
                 return;        
             }
-            throw new Error(response.data.message);
+            throw response;
         }).catch((error) => {
-            useStatusMessage().newStatusMessage(error.message, "danger");
+            reportError(error);
         });
     }
 

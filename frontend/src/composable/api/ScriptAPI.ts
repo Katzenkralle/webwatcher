@@ -1,4 +1,4 @@
-import { queryGql } from "./GqlHandler";
+import { queryGql, reportError } from "./QueryHandler";
 import { useLoadingAnimation, useStatusMessage } from "../core/AppState";
 import { ref } from "vue";
 
@@ -36,7 +36,8 @@ const setScriptMetaData = (data: (ScriptMeta & { name: string})[]) => {
 
 export async function deleteScript(name: string) {
     useLoadingAnimation().setState(true);
-    const mutation = `mutation {
+    const mutation = `
+    mutation {
         deleteScript(
             name: ${name}
         ) {
@@ -52,7 +53,7 @@ export async function deleteScript(name: string) {
                 status
             }
           }
-        }`   
+    }`;   
     queryGql(mutation).then((response) => {
         if (response.keys[0] === "jobsMetaData") {
             setScriptMetaData(response.data as (ScriptMeta & { name: string})[]);
@@ -95,7 +96,7 @@ export async function fetchScripts() {
             default:
                 throw new Error("Error fetching scripts");
         }
-    }).catch(() => {
+    }).catch((e) => {
         globalScriptData.value = {
             script1: {
                 fsPath: '/path/to/script1',
@@ -112,7 +113,7 @@ export async function fetchScripts() {
                 availableParameters: { "test": "string", "data": "int"}
             }
         };
-        useStatusMessage().newStatusMessage("Error fetching scripts", "danger");
+        reportError(e);
     });
 }
 
@@ -125,76 +126,63 @@ export async function getAllScripts() {
     return globalScriptData.value;
 }
 
-export function useScriptAPI() {
-    async function validateFile(file: File, associatedScript?: String): Promise<ScriptValidationResult> {
-        const formData = new FormData();
-        // we trasfer the files in the gql request with base64 encoding for
-        // they will be small an this is a simple way to do it
-        const mutation = `
-            mutation(
-                file: ${toBase64(file)},
-                ${associatedScript ? "associatedScript: " + associatedScript : ""}
-            ) {
-                valid
+export async function validateFile(file: File, associatedScript?: String): Promise<ScriptValidationResult> {
+    const formData = new FormData();
+    // we trasfer the files in the gql request with base64 encoding for
+    // they will be small an this is a simple way to do it
+    const mutation = `
+        mutation(
+            file: ${toBase64(file)},
+            ${associatedScript ? "associatedScript: " + associatedScript : ""}
+        ) {
+            valid
+            availableParameters
+            supportsStaticSchema
+            }
+        )`;
+    
+    return queryGql(mutation).then((response) => {
+        if(response.errors) {
+            throw response;
+        }
+        return response.data as ScriptValidationResult;
+    }).catch((e) => {
+        reportError(e);
+        return { valid: false, availableParameters: {}, supportsStaticSchema: false} as ScriptValidationResult;
+    });
+}
+export async function submitScript(name: String, discription: String): Promise<void> {
+    useLoadingAnimation().setState(true);
+    const mutation = `mutation {
+        submitScript(
+            name: ${name},
+            description: ${discription}
+        ) {
+            __typename
+            ... on jobsMetaData {
+                fsPath
+                description
+                staticSchema
                 availableParameters
-                supportsStaticSchema
-                }
-            )`;
-        
+            }
+            ... on ErrorMessage {
+                message
+                status
+            }
+        }
+            `
+    return new Promise((resolve, reject) => {
         return queryGql(mutation).then((response) => {
-            if(response.errors) {
-                console.error(response.errors);
-                throw new Error("Error validating file:" + JSON.stringify(response.errors));
-            }
-            return response.data as ScriptValidationResult;
+            if (response.keys[0] === "jobsMetaData") {
+                setScriptMetaData(response.data as (ScriptMeta & { name: string})[]);
+                resolve();
+            } 
+            throw response
         }).catch((e) => {
-            useStatusMessage().newStatusMessage(e, "danger");
-            return { valid: false, availableParameters: {}, supportsStaticSchema: false} as ScriptValidationResult;
+            reportError(e);
+            reject();
+        }).finally(() => {
+            useLoadingAnimation().setState(false);
         });
-    }
-    async function submitScript(name: String, discription: String): Promise<void> {
-        useLoadingAnimation().setState(true);
-        const mutation = `mutation {
-            submitScript(
-                name: ${name},
-                description: ${discription}
-            ) {
-                __typename
-                ... on jobsMetaData {
-                    fsPath
-                    description
-                    staticSchema
-                    availableParameters
-                }
-                ... on ErrorMessage {
-                    message
-                    status
-                }
-            }
-                `
-        return new Promise((resolve, reject) => {
-            return queryGql(mutation).then((response) => {
-                if (response.keys[0] === "jobsMetaData") {
-                    setScriptMetaData(response.data as (ScriptMeta & { name: string})[]);
-                    resolve();
-                } 
-                if(response.errors) {
-                    console.error(response.errors);
-                    throw new Error("Error submitting script:" + JSON.stringify(response.errors));
-                }
-                throw new Error(response.data.message);
-            }).catch((e) => {
-                useStatusMessage().newStatusMessage(e, "danger");
-                reject();
-            }).finally(() => {
-                useLoadingAnimation().setState(false);
-            });
-        });
-    }
-
-    return {
-        validateFile,
-        submitScript
-    };
-
+    });
 }

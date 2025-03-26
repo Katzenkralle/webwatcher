@@ -20,7 +20,7 @@ const router = createRouter({
       }
     },
     {
-      path: '/tables',
+      path: '/jobs',
       name: 'tables',
       component: TableOverview,
       meta: {
@@ -28,7 +28,7 @@ const router = createRouter({
       }
     },
     {
-      path: '/table/:id(\\d+)',
+      path: '/jobs/table/:id(\\d+)',
       name: 'table',
       component: TableView,
       meta: {
@@ -36,7 +36,7 @@ const router = createRouter({
       }
     },
     {
-      path: '/job/create/:id(\\w+)?',
+      path: '/jobs/create/:id(\\w+)?',
       name: 'createJob',
       component: CreateJob,
       meta: {
