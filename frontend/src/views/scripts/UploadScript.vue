@@ -17,7 +17,6 @@ import router from '@/router';
 
 import { useLoadingAnimation, useStatusMessage} from "@/composable/core/AppState";
 import { validateFile, submitScript, type ScriptValidationResult, type ScriptMeta } from "@/composable/api/ScriptAPI";
-import "@/components/reusables/GoBack.vue";
 
 
 
@@ -43,11 +42,12 @@ const computedScript = computed((): undefined | ScriptMeta  => {
     } else if (currentScriptName.value === '') {
         return undefined;
     }
+    console.log('computedScript', thisScript);
     fileStatus.value = {severity: 'success',
         summary: 'File present on the Server.',
         availableParameters: thisScript.availableParameters,
         valid: false,
-        supportsStaticSchema: thisScript.staticSchema !== undefined};
+        supportsStaticSchema: thisScript.staticSchema !== undefined && Object.keys(thisScript.staticSchema).length > 0};
     nameStatus.field = currentScriptName.value;
     nameStatus.severity = 'success';
     nameStatus.summary = '';
@@ -110,7 +110,6 @@ const computedScriptParamTable = computed(() => {
 
 <template>
     <main class="flex flex-col items-center w-screen">
-            <GoBack />
             <h1>{{currentScriptName ? "Edit Script" : "Upload Script"}}</h1>
             <form class="card flex flex-col">
                     <div class="input-box">
@@ -173,6 +172,8 @@ const computedScriptParamTable = computed(() => {
                                 <p class="italic">The available parameters</p>
                             </template>
                         </DataTable>
+                        <a v-if="fileStatus.supportsStaticSchema" class="text-success">Can be used with static schema</a>
+                        <a v-else class="text-warning">Cannot be used with static schema</a>
                     </div>
                 </div>
                 <div class="input-box">

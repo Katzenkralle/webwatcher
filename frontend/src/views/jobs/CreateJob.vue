@@ -4,9 +4,9 @@ import router from '@/router';
 
 import { CronPrime } from '@vue-js-cron/prime'
 
-import { getJobMetaData, type TableMetaData } from '@/composable/api/JobAPI';
+import { getJobMetaData, updateOrCreateJob, type TableMetaData } from '@/composable/api/JobAPI';
 import { useStatusMessage } from '@/composable/core/AppState';
-import { getAllScripts } from '@/composable/api/ScriptAPI';
+import { getAllScripts, globalScriptData } from '@/composable/api/ScriptAPI';
 
 import InlineMessage from 'primevue/inlinemessage';
 import Select from 'primevue/select';
@@ -15,14 +15,11 @@ import Textarea from 'primevue/textarea';
 import InputText from 'primevue/inputtext';
 import InputSwitch from 'primevue/inputswitch';
 
-import InputGroup from 'primevue/inputgroup';
-import InputGroupAddon from 'primevue/inputgroupaddon';
-
 
 const isEdit = ref<boolean>(false);
 const jobMetaData = ref<TableMetaData>(
     {
-    id: 0,
+    id: -1,
     name: "",
     script: "",
     description: "",
@@ -119,10 +116,21 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
                 <label for="scriptSelector">Script</label>
                 <Select 
                     id="scriptSelector"
+                    v-model:model-value="jobMetaData.script"
                     :options="availableScriptsOptions"
+                    @change="() => {jobMetaData.forbidDynamicSchema = false}"
                     placeholder="Where do I run?"
                     option-label="name"
                     option-value="name"/>              
+            </div>
+
+            <div class="input-box"
+                v-if="globalScriptData[jobMetaData.script]?.staticSchema && Object.keys(globalScriptData[jobMetaData.script].staticSchema).length > 0">
+                <label for="forbidDynamicSchema">Forbid Dynamic Schema</label>
+                <div class="flex flex-row items-center">
+                    <InputSwitch id="forbidDynamicSchema" v-model="jobMetaData.forbidDynamicSchema" />
+                    <a class="text-md text-info ml-2">Will I be restricted?</a>
+                </div>
             </div>
 
             <div class="input-box">
@@ -147,7 +155,16 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
                 <Button
                     label="Save"
                     security="success"
-                    @click="console.log('Save')"
+                    @click="() => {
+                        updateOrCreateJob(jobMetaData)
+                            .then(() => {
+                                useStatusMessage().newStatusMessage('Job saved.', 'success');
+                                router.push('/jobs');
+                            })
+                            .catch((error) => {
+                                useStatusMessage().newStatusMessage('Job could not be saved.', 'danger');
+                            });
+                    }"
                 />
             </div>
         </div>

@@ -60,7 +60,7 @@ export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
                         {
                             id: 0,
                             name: "Tabke",
-                            script: "TestScript",
+                            script: "script1",
                             description: "Hello World",
                             enabled: false,
                             executeTimer: "0",
@@ -71,12 +71,12 @@ export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
                         {
                             id: 1,
                             name: "Entry",
-                            script: "TestScript2",
+                            script: "script2",
                             description: "Hello World2",
                             enabled: false,
                             executeTimer: "0",
                             executedLast: 0,
-                            forbidDynamicSchema: false,
+                            forbidDynamicSchema: true,
                             expectedReturnSchema: {
                                 "some": "string|number",
                                 "aNumber": "number"
@@ -106,7 +106,7 @@ export const getJobMetaData = async  (id: number|undefined): Promise<TableMetaDa
     });
 }
 
-export const deleteJob = (id: number) => {
+export const deleteJob = async(id: number) => {
     const query = `
         mutation {
             deleteJob(id: ${id}) {
@@ -141,6 +141,56 @@ export const deleteJob = (id: number) => {
     });
 }
 
+export const updateOrCreateJob = async(entry: TableMetaData): Promise<void> => {
+    const query = `
+        mutation {
+            createOrModifyJob(
+                ${entry.id >= 0 ? `id: ${entry.id},` : ``}
+                name: "${entry.name}",
+                script: "${entry.script}",
+                description: "${entry.description}",
+                enabled: ${entry.enabled},
+                forbidDynamicSchema: ${entry.forbidDynamicSchema},
+                executeTimer: "${entry.executeTimer}",
+                expectedReturnSchema: ${JSON.stringify(entry.expectedReturnSchema)}
+            ) {
+                __typename
+                ... on ErrorMessage {
+                    message
+                    status
+                }
+                ... on jobsMetaDataResult {
+                    jobs {
+                    id
+                    name
+                    script
+                    description
+                    enabled
+                    executeTimer
+                    executedLast
+                    forbidDynamicSchema
+                    expectedReturnSchema
+                    }
+                }
+            }`;
+    return new Promise((resolve, reject) => {
+        queryGql(query).then((response) => {
+            const key = response.keys[0];
+            switch (key) {
+                case "jobsMetaDataList":
+                    globalTableMetaData.value = response.data[key];
+                    resolve();
+                    break;
+                default:
+                    reportError(response);
+                    reject(response);
+            }
+        }).catch((error) => {
+            reportError(error);
+            reject();
+        });
+    });
+}
    
 
 export interface jobEnty {	timestamp: number
