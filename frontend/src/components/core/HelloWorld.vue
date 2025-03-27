@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref, type Ref } from "vue";
 import Button from "primevue/button"
 import {useAuth, requireLogin} from "@/composable/api/Auth";
 import {useStatusMessage, useLoadingAnimation} from "@/composable/core/AppState";
-import { useFilterIterationContext, type IterationContext } from "@/composable/jobs/FilterGroups";
+import { useFilterIterationContext, type IterationContext, type Group } from "@/composable/jobs/FilterGroups";
 
 import FilterGroupRenderer from "../filter/FilterGroupRenderer.vue";
 import { useJobUiCreator } from "@/composable/jobs/JobDataHandler";

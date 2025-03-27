@@ -6,7 +6,7 @@ from db_handler.maria_schemas import *
 from watcher.base import ResultType as BaseResultType
 from utility.toolbox import extend_enum
 
-from backend.db_handler import DbUser
+from db_handler import DbUser
 
 
 @strawberry.type

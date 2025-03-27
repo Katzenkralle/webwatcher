@@ -2,31 +2,32 @@
 import { useGraphHandler } from "@/composable/Graphs/GraphHandler"
 import {defineProps, ref, computed} from "vue"
 
-import { MultiSelect } from 'primevue';
+import { MultiSelect, Select } from 'primevue';
 
 const props = defineProps<{
     jobId: number
     }>()
 
 const selectedCols = ref([])    
-const selectedRows = ref([])    
+const selectedRows = ref([]) 
+const selectedChart = ref<string[]>([])
 
 
 
-const graphHandler = useGraphHandler(props.jobId, selectedCols, selectedRows)
-console.log(graphHandler.dataHandler.computeLayoutUnfiltered.value)
+const graphHandler = useGraphHandler(props.jobId,ref("row"), selectedCols, selectedRows, selectedChart)
 
 const computedSelectOptionsCols = computed(() => {
-    console.log(graphHandler.dataHandler.computeLayoutUnfiltered.value)
     return graphHandler.dataHandler.computeLayoutUnfiltered.value.map((element) => {
             return {"label": element.key}
         })
     })
 
-const computedSelectOptionsChart = computed(() => {
-    return 
-    
+const computedSelectOptionsCharts = computed(() => {
+    return graphHandler.chartsOptions.value.map((element) => {
+        return {"label": element}
     })
+    })
+
 
 
 </script>
@@ -35,21 +36,23 @@ const computedSelectOptionsChart = computed(() => {
     <h1>TEST</h1>
     <MultiSelect 
         v-model:model-value="selectedCols"
-        @update:model-value="(newVal) => {console.log(newVal)}"
+        @update:model-value="(newVal)  => {console.log(newVal)}"
         :options="computedSelectOptionsCols"
-        optionLabel="Select Cols"
+        optionLabel="label"
         option-value="label" 
     />
-    <MultiSelect
+    
+    <Select
         v-model:model-value="selectedChart"
-        @update:model-value=""
-        :options="computedSelectOptionsChart"
-        optionLabel="Seleced Chart"
-        option-value="label" 
-        :maxSelectedLabels="1"
-        :showSelectAll="false"
-
+        @update:model-value="(newVal) => {console.log(newVal)}"
+        :options="computedSelectOptionsCharts"
+        optionLabel="label"
+        option-value="label"
     />
+   
+
+   
+    
 </template>
 
 <style scoped>
