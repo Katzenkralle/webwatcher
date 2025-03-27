@@ -59,17 +59,20 @@ const elementColor = computed((): string[] => {
       </p>
       <SmallSeperator :is-dashed="true" class="mb-10"/>
       <div class="w-full flex flex-wrap justify-between items-end">
-        <AutoComplete
-          :suggestions="Object.values(suggestedItems).map((entry) => entry.name)"
-          placeholder="Search for a table"
-          @update:model-value ="(e) => recomputeSugestions(e)"
-          />
+        <h3 class="self-end">Added Jobs:</h3>
         <Button
           label="Create Job"
           icon="pi pi-plus"
           @click="() => router.push('/jobs/create/')"
           />
       </div>
+      <AutoComplete
+          :suggestions="Object.values(suggestedItems).map((entry) => entry.name)"
+          placeholder="Search for a table"
+          @update:model-value ="(e) => recomputeSugestions(e)"
+            class="w-full"
+            inputClass="w-full"
+        />
 
       <div class="flex flex-wrap justify-center">
         <template v-for="element, index in suggestedItems" :key="element.id">
