@@ -7,6 +7,7 @@ import asyncio
 from typing_extensions import Dict, Any
 
 from .errors import ScriptException
+from webw_serv import CONFIG
 
 # Proposed DB Managert for  to let Watchers add Rows to mongo db
 class DbManager:
@@ -42,11 +43,11 @@ class DbManager:
 
 
 class MainThread(threading.Thread):
-    def __init__(self, module_name, config: dict[str, Any]):
+    def __init__(self, module_name, config: dict[str, Any] = {}):
         threading.Thread.__init__(self)
-        self.module_name = module_name
+        self.module_name = CONFIG.MODULE_PREFIX + module_name
         self.result = None
-        self.package = "webw_serv"
+        self.package = CONFIG.PACKAGE_NAME
         self.config = config
 
     def run(self):
@@ -91,6 +92,10 @@ class WatcherManager:
     def __init__(self):
         pass
     async def run(self):
+        ...
+
+    @staticmethod
+    def get_metadata(module_name):
         ...
 
 def manager_main():

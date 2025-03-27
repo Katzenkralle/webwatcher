@@ -18,11 +18,12 @@ class ScriptMain(Watcher):
                     "status_code": response.status,
                     "description": responses.get(response.status, "Unknown Status")}
 
-
-    def get_config_schema(self) -> dict[str, str] | None:
+    @staticmethod
+    def get_config_schema() -> dict[str, str] | None:
         return {"url":"str"}
 
-    def get_return_schema(self) -> dict[str, str] | None:
+    @staticmethod
+    def get_return_schema() -> dict[str, str] | None:
         return {
             "url": "str",
             "status_code": "int",
