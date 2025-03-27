@@ -49,6 +49,7 @@ services:
     ports:
       - "3306:3306"
       - "27017:27017"
+      - "22:22"
       - "7000-8080:7000-8080"
     volumes:
       - maria_data:/mounted_maria
