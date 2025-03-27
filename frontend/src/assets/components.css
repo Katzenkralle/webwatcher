@@ -1,6 +1,6 @@
 
 main {
-    @apply min-h-[96vh] relative;
+    @apply min-h-[96vh] w-full relative;
 }
 
 main, header, footer {
@@ -26,15 +26,72 @@ main, header, footer {
 }
 
 .input-box {
-    @apply my-2 flex flex-col bg-panel px-4 py-2 rounded-lg
+    @apply my-2 flex flex-col bg-panel px-4 py-2 rounded-lg space-y-2 w-full;
 }
 
-.input-box label {
+.input-box > label {
     @apply text-xl mb-2 underline decoration-1 underline-offset-4
+}
+
+.input-box > .p-floatlabel div,
+.input-box > .p-floatlabel input {
+    @apply w-full
 }
 
 .p-password-input {
     @apply w-full;
+}
+
+.subsection {
+    @apply bg-panel w-full border-2 border-info rounded-lg p-2;
+}
+
+.main_content {
+    @apply flex flex-col items-center max-w-256 space-y-4;
+}
+
+.p-accordioncontent-content {
+    @apply flex justify-center;
+  }
+  
+.p-accordionheader{
+@apply text-xl font-semibold underline underline-offset-3 mb-1 cursor-pointer;
+}
+
+.p-accordionpanel:not(:last-child) {
+@apply border-b-2 border-h-panel pb-2;
+}
+.p-accordionpanel:not(:first-child) {
+@apply pt-1;
+}
+
+.content-box {
+@apply 
+    bg-panel 
+    border-2 
+    border-primary 
+    rounded-lg 
+    p-2 
+    w-full 
+    max-w-256 
+    justify-between 
+    overflow-x-scroll 
+    overflow-y-hidden;
+}
+
+.row-based-table {
+    @apply flex flex-row overflow-hidden justify-around items-center p-2;
+}
+.row-based-table:nth-of-type(odd) {
+    @apply bg-panel-h
+}
+
+.row-based-table > div {
+    @apply flex flex-col mr-2;
+}
+
+.color-change-trans {
+    @apply transition-colors duration-300;
 }
 
 button:disabled {
@@ -43,7 +100,7 @@ button:disabled {
   
 
 h1 {
-    @apply text-4xl font-bold;
+    @apply text-4xl font-bold mt-5 mb-2;
 }
 h2 {
     @apply text-3xl font-bold;

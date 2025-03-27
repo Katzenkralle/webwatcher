@@ -225,7 +225,7 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
               <i class="pi pi-plus p-1 invisible"/>
             </div>
           </Transition>
-          <i :class="{'absolute pi pi-plus p-1 bg-success text-h-text rounded-full cursor-pointer': true,
+          <i :class="{'absolute pi pi-plus p-1 bg-(--p-primary-700) text-h-text rounded-full cursor-pointer': true,
           ' transition-all ease-in-out duration-900 transform top-[50%] -translate-y-1/2': true,
           'right-[50%] translate-x-1/2': !hoverAdditionArea,
           'right-[0]': hoverAdditionArea }" 

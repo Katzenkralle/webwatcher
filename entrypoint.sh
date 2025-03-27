@@ -1,87 +1,32 @@
 #!/bin/bash
 
-# Consider using "supervisor"
-
-# Function to check if a service is running and start it if not
-check_and_start_service() {
-    local start_command="$1"
-    local app_name="$2"
-    local additional_cmd="$3"
-    local i=0
-    if ! ps -e | grep -q "$app_name"; then
-        echo "$app_name is not running, starting it"
-        [ -n "$additional_cmd" ] && eval "$additional_cmd"
-        eval "$start_command" &
-        i=0
-        while ! ps -e | grep -q "$app_name"; do
-            sleep 1
-            i=$((i + 1))
-            if [ $i -gt 10 ] && [ "$DEV" != 'true' ]; then
-                echo "$app_name failed to start"
-                exit 1
-            fi
-        done
-    else
-        echo "$app_name is already running"
-    fi
+# handle SIGTERM
+cleanup() {
+    echo "Stopping container..."
+    pkill -TERM -P $$  # Send SIGTERM to all child processes
+    sleep 10   # Wait for all child processes to exit
+    echo "Shutdown complete."
+    exit 0
 }
 
-# MariaDB/MySQL
-check_and_start_service "mariadbd" "mariadbd" "rm /data/mariadb/data/aria_log_control"
+# Trap SIGTERM signal
+trap cleanup SIGTERM
 
-# MongoDB
-check_and_start_service "su mongo_starter -c 'mongod --config /webwatcher/conf/mongod.conf'" "mongod"
 
-# Nginx
-check_and_start_service "nginx" "nginx"
-
-while ! mysqladmin ping -u root --socket=/data/mariadb/maria_sockert.sock --silent; do
-    echo "Waiting for MariaDB"
-    sleep 1
-done
-echo "MariaDB is ready, ensuring root password is set"
-mysql -u root --socket=/data/mariadb/maria_sockert.sock -e 'SET PASSWORD FOR "root"@"localhost" = PASSWORD("webwatcher");'
-
-if [ "$DEV" = 'true' ]; then
-    if [ -f /devsetup ]; then
-        echo "Development mode, already setup"
-    else
-        echo "Development mode, installing additional packages and reposetorys"
-        echo "The forntend will NOT served automatically NOR will the backend start"
-
-        curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | tee /etc/apt/trusted.gpg.d/mongodb.asc
-        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/debian buster/mongodb-org/6.0 main" | \
-                tee /etc/apt/sources.list.d/mongodb-org-6.0.list
-
-        apt-get update
-        apt-get install build-essential git mongocli -y
-        
-        echo "Installing remote ssh server"
-        apt-get install openssh-server -y
-        echo "Setting up ssh server for localhost only"
-        passwd -d root
-	ssh-keygen -A
-        echo "sshd: ALL" > /etc/hosts.deny
-        echo "sshd: localhost" > /etc/hosts.allow
-        cat >/etc/ssh/sshd_config <<EOL
-PermitRootLogin yes
-ListenAddress localhost
-PasswordAuthentication yes
-PermitEmptyPasswords yes
-Subsystem       sftp    /usr/lib/ssh/sftp-server
-EOL
-
-        touch /devsetup
-    fi
-
+if [ "$DEV" ]; then
+    echo "Running in development mode"
     echo "Starting ssh server"
-    /sbin/sshd -f /etc/ssh/sshd_config
-else
-    echo "Production mode, not implemented"
-    exit 1
-fi
+    /sbin/sshd -f /etc/ssh/sshd_config &
 
-echo "Running endless loop to keep container running"
-while true; do
-    sleep 1000
-done
+    # Keep the script running and listen for signals
+    echo "entering while loop"
+    while true; do 
+        sleep 1
+    done
+else
+    nginx -g "daemon off;" &
+    echo "Running in production mode"
+    echo "Starting webwatcher"
+    cd /webwatcher
+    python3 -m webw_serv
+fi

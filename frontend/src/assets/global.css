@@ -1,10 +1,9 @@
 @import url("./fonts.css");
 @import "tailwindcss";
-@layer base, primevue, components, utilities, theme;
+@import './components.css';
 
-@layer components {
-    @import './components.css';
-}
+@layer base, primevue, utilities, theme;
+
 
 @layer theme {
   @theme {
@@ -14,11 +13,11 @@
 
     --color-h-text-d: #15161e;
     --color-h-text: #292c3c;
-    --color-h-text-h: #3e425b;
+    --color-h-text-h: #484d6a;
 
     --color-base-d: #1f222e;
     --color-base: #303446;
-    --color-base-h: #3e435b;
+    --color-base-h: #484f6a;
 
     --color-panel-d: var(--color-h-text-d);
     --color-panel: var(--color-h-text);
@@ -52,9 +51,17 @@
     --color-info: #8caaee;
     --color-info-h: #bccdf5;
 
-    --color-special-d: #f4f4f4;
+    --color-special-d: #b271da;
     --color-special: #ca9ee6;
-    --color-special-h: #b271da;
+    --color-special-h: #f4f4f4;
+
+    --color-fun-d: #ee91d5;
+    --color-fun: #f4b8e4;
+    --color-fun-h: #f8d3ee;
+
+    --color-deep-d:  #ea7e48;
+    --color-deep: #ef9f76;
+    --color-deep-h: #f4bfa4;  
 
     --color-primary: var(--color-info); /* + selection */
     --color-primary-contrast: var(--color-h-text);
@@ -93,238 +100,33 @@
   }
 }
 
-@layer primevue {
-  .p-message-danger {
-    /* Due to a bug in primevue the this dose not exist by default*/
-    background: var(--p-message-error-background);
-    outline-color: var(--p-message-error-border-color);
-    color: var(--p-message-error-color);
-    box-shadow: var(--p-message-error-shadow);
-  }
-    :root {
-        --p-text: var(--color-text) !important;
-        --p-base: var(--color-panel) !important;
-        --p-crust: var(--color-crust) !important;
-        --p-sub-text: var(--color-text-d) !important;
-        --p-disabled-text: var(--color-text-d) !important;
-        --p-sub-base: var(--color-base-d) !important;
-        --p-bright-base: var(--color-base-h) !important;
-
-        --p-inputgroup-addon-background: var(--color-panel) !important;
-
-        --p-primary-0: var(--color-base) !important;
-        --p-primary-50: var(--color-h-text-d) !important;
-        --p-primary-100: var(--color-crust) !important;
-        --p-primary-200: var(--color-crust-d) !important;
-        --p-primary-300: var(--color-h-text-d) !important;
-        --p-primary-400: var(--color-h-text) !important;
-        --p-primary-500: var(--color-crust-d) !important;
-        --p-primary-600: var(--color-h-text-d) !important;
-        --p-primary-700: var(--color-base) !important;
-        --p-primary-800: var(--color-panel-h) !important;
-        --p-primary-900: var(--color-crust) !important;
-        --p-primary-950: var(--color-surface-500) !important;
-        
-        --p-surface-0: var(--color-text) !important;
-        --p-surface-50: var(--color-info-d) !important;
-        --p-surface-100: var(--color-info) !important;
-        --p-surface-200: var(--color-info-d) !important;
-        --p-surface-300: var(--color-success) !important; 
-        --p-surface-400: var(--color-info) !important;/* success border */
-        --p-surface-500: var(--color-crust) !important;
-        --p-surface-600: var(--color-info) !important;/* border hover */
-        --p-surface-700: var(--color-app) !important;/* border inactive */ 
-        --p-surface-800: var(--color-panel-h) !important;/* table seperator */
-        --p-surface-900: var(--color-crust) !important;/* bg table */ 
-        --p-surface-950: var(--color-crust) !important;/* bg input */
-    
-        --p-primary-color: var(--color-app) !important;
-        --p-primary-contrast-color: var(--color-h-text) !important;
-        --p-primary-hover-color: var(--color-app-h) !important;
-        --p-primary-active-color: var(--color-app) !important;
-        --p-highlight-background: color-mix(in srgb,var(--color-app),transparent 84%) !important;
-        --p-highlight-focus-background: color-mix(in srgb,var(--color-app),transparent 76%) !important;
-        --p-highlight-color: rgba(255,255,255,.87) !important;
-        --p-highlight-focus-color: rgba(255,255,255,.87) !important;
-        --p-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--p-primary-color),transparent 80%) !important;
-        --p-mask-background: rgba(0,0,0,0.6) !important;
-        --p-mask-color: var(--p-surface-200) !important;
-        --p-form-field-background: var(--p-surface-950) !important;
-        --p-form-field-disabled-background: var(--color-base-h) !important;
-        --p-form-field-filled-background: var(--p-surface-800) !important;
-        --p-form-field-filled-hover-background: var(--p-surface-800) !important;
-        --p-form-field-filled-focus-background: var(--p-surface-950) !important;
-        --p-form-field-border-color: var(--p-surface-600) !important;
-        --p-form-field-hover-border-color: var(--p-primary-color) !important;
-        --p-form-field-focus-border-color: var(--p-primary-color) !important;
-        --p-form-field-invalid-border-color: var(--p-red-300) !important;
-        --p-form-field-color: var(--p-surface-0) !important;
-        --p-form-field-disabled-color: var(--p-surface-400) !important;
-        --p-form-field-placeholder-color: var(--p-surface-400) !important;
-        --p-form-field-invalid-placeholder-color: var(--p-red-400) !important;
-        --p-form-field-float-label-color: var(--p-surface-400) !important;
-        --p-form-field-float-label-focus-color: var(--p-primary-color) !important;
-        --p-form-field-float-label-active-color: var(--p-surface-400) !important;
-        --p-form-field-float-label-invalid-color: var(--p-form-field-invalid-placeholder-color) !important;
-        --p-form-field-icon-color: var(--p-surface-400) !important;
-        --p-form-field-shadow: none !important;
-        --p-text-color: var(--p-surface-0) !important;
-        --p-text-hover-color: var(--p-surface-0) !important;
-        --p-text-muted-color: var(--p-surface-400) !important;
-        --p-text-hover-muted-color: var(--p-surface-300) !important;
-        --p-content-background: var(--p-surface-900) !important;
-        --p-content-hover-background: var(--p-surface-800) !important;
-        --p-content-border-color: var(--p-surface-700) !important;
-        --p-content-color: var(--p-text-color) !important;
-        --p-content-hover-color: var(--p-text-hover-color) !important;
-        --p-overlay-select-background: var(--p-surface-900) !important;
-        --p-overlay-select-border-color: var(--p-surface-700) !important;
-        --p-overlay-select-color: var(--p-text-color) !important;
-        --p-overlay-popover-background: var(--p-surface-900) !important;
-        --p-overlay-popover-border-color: var(--p-surface-700) !important;
-        --p-overlay-popover-color: var(--p-text-color) !important;
-        --p-overlay-modal-background: var(--p-surface-900) !important;
-        --p-overlay-modal-border-color: var(--p-surface-700) !important;
-        --p-overlay-modal-color: var(--p-text-color) !important;
-        --p-list-option-focus-background: var(--p-surface-800) !important;
-        --p-list-option-selected-background: var(--p-highlight-background) !important;
-        --p-list-option-selected-focus-background: var(--p-highlight-focus-background) !important;
-        --p-list-option-color: var(--p-text-color) !important;
-        --p-list-option-focus-color: var(--p-text-hover-color) !important;
-        --p-list-option-selected-color: var(--p-highlight-color) !important;
-        --p-list-option-selected-focus-color: var(--p-highlight-focus-color) !important;
-        --p-list-option-icon-color: var(--p-surface-500) !important;
-        --p-list-option-icon-focus-color: var(--p-surface-400) !important;
-        --p-list-option-group-background: transparent !important;
-        --p-list-option-group-color: var(--p-text-color) !important;
-        --p-navigation-item-focus-background: var(--p-surface-800) !important;
-        --p-navigation-item-active-background: var(--p-surface-800) !important;
-        --p-navigation-item-color: var(--p-text-color) !important;
-        --p-navigation-item-focus-color: var(--p-text-hover-color) !important;
-        --p-navigation-item-active-color: var(--p-text-hover-color) !important;
-        --p-navigation-item-icon-color: var(--p-surface-500) !important;
-        --p-navigation-item-icon-focus-color: var(--p-surface-400) !important;
-        --p-navigation-item-icon-active-color: var(--p-surface-400) !important;
-        --p-navigation-submenu-label-background: transparent !important;
-        --p-navigation-submenu-label-color: var(--p-text-color) !important;
-        --p-navigation-submenu-icon-color: var(--p-surface-500) !important;
-        --p-navigation-submenu-icon-focus-color: var(--p-surface-400) !important;
-        --p-navigation-submenu-icon-active-color: var(--p-surface-400) !important;
-
-        --p-datatable-sort-icon-hover-color: var(--color-app) !important;
-        --p-datatable-header-cell-hover-background: color-mix(in srgb, var(--color-app), transparent 84%) !important;
-
-        --p-toggleswitch-background: var(--color-crust) !important;
-        --p-toggleswitch-hover-background: var(--color-crust-h) !important;
-        --p-toggleswitch-handle-background: var(--color-app) !important;
-        --p-toggleswitch-handle-hover-background: var(--color-app-h) !important;
-        /*--p-toggleswitch-checked*/
-        --p-toggleswitch-border-color: var(--color-app) !important;
-        --p-toggleswitch-hover-border-color: var(--color-app-h) !important;
-
-        --p-inlinemessage-info-background: color-mix(in srgb,var(--color-info),transparent 84%) !important;
-        --p-inlinemessage-info-border-color: color-mix(in srgb,var(--color-info),transparent 84%) !important;
-        --p-inlinemessage-info-color: var(--color-info) !important;
-        --p-inlinemessage-info-shadow: none !important;
-        --p-inlinemessage-success-background: color-mix(in srgb,var(--color-text),transparent 84%) !important;
-        --p-inlinemessage-success-border-color: color-mix(in srgb,var(--color-text),transparent 84%) !important;
-        --p-inlinemessage-success-color: var(--color-text) !important;
-        --p-inlinemessage-success-shadow: none !important;
-        --p-inlinemessage-warn-background: color-mix(in srgb,var(--color-warning),transparent 84%) !important;
-        --p-inlinemessage-warn-border-color: color-mix(in srgb,var(--color-warning),transparent 84%) !important;
-        --p-inlinemessage-warn-color: var(--color-warning) !important;
-        --p-inlinemessage-warn-shadow: none !important;
-        --p-inlinemessage-error-background: color-mix(in srgb,var(--color-error),transparent 84%) !important;
-        --p-inlinemessage-error-border-color: color-mix(in srgb,var(--color-error),transparent 84%) !important;
-        --p-inlinemessage-error-color: var(--color-error) !important;
-        --p-inlinemessage-error-shadow: none !important;
-        --p-inlinemessage-secondary-background: var(--p-panel) !important;
-        --p-inlinemessage-secondary-border-color: var(--p-panel) !important;
-        --p-inlinemessage-secondary-color: var(--p-panel) !important;
-        --p-inlinemessage-secondary-shadow: none !important;
-        --p-inlinemessage-contrast-background: var(--p-crust) !important;
-        --p-inlinemessage-contrast-border-color: var(--p-crust) !important;
-        --p-inlinemessage-contrast-color: var(--p-crust) !important;
-        --p-inlinemessage-contrast-shadow: none !important;
-
-        --p-inlinemessage-info-background: color-mix(in srgb,var(--color-info),transparent 84%) !important;
-        --p-inlinemessage-info-border-color: color-mix(in srgb,var(--color-info),transparent 84%) !important;
-        --p-inlinemessage-info-color: var(--color-info) !important;
-        --p-inlinemessage-info-shadow: none !important;
-        --p-inlinemessage-success-background: color-mix(in srgb,var(--color-success),transparent 84%) !important;
-        --p-inlinemessage-success-border-color: color-mix(in srgb,var(--color-success),transparent 84%) !important;
-        --p-inlinemessage-success-color: var(--color-success) !important;
-        --p-inlinemessage-success-shadow: none !important;
-        --p-inlinemessage-warn-background: color-mix(in srgb,var(--color-warning),transparent 84%) !important;
-        --p-inlinemessage-warn-border-color: color-mix(in srgb,var(--color-warning),transparent 84%) !important;
-        --p-inlinemessage-warn-color: var(--color-warning) !important;
-        --p-inlinemessage-warn-shadow: none !important;
-        --p-inlinemessage-error-background: color-mix(in srgb,var(--color-error),transparent 84%) !important;
-        --p-inlinemessage-error-border-color: color-mix(in srgb,var(--color-error),transparent 84%) !important;
-        --p-inlinemessage-error-color: var(--color-error) !important;
-        --p-inlinemessage-error-shadow: none !important;
-        --p-inlinemessage-secondary-background: var(--color-panel) !important;
-        --p-inlinemessage-secondary-border-color: var(--color-panel) !important;
-        --p-inlinemessage-secondary-color: var(--color-panel) !important;
-        --p-inlinemessage-secondary-shadow: none !important;
-        --p-inlinemessage-contrast-background: var(--p-crust) !important;
-        --p-inlinemessage-contrast-border-color: var(--p-crust) !important;
-        --p-inlinemessage-contrast-color: var(--p-crust) !important;
-        --p-inlinemessage-contrast-shadow: none !important;
-
-        --p-message-info-background: color-mix(in srgb,var(--color-info),transparent 84%) !important;
-        --p-message-info-border-color: transparent !important;
-        --p-message-info-color: var(--color-info) !important;
-        --p-message-info-shadow: none !important;
-        --p-message-info-close-button-hover-background: rgba(255,255,255,0.05) !important;
-        --p-message-info-close-button-focus-ring-color: var(--p-focus-ring-color) !important;
-        --p-message-info-close-button-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--color-info),transparent 80%) !important;
-        --p-message-info-outlined-color: var(--color-info) !important;
-        --p-message-info-outlined-border-color: var(--color-info) !important;
-        --p-message-info-simple-color: var(--color-info) !important;
-        --p-message-success-background: color-mix(in srgb,var(--color-success),transparent 84%) !important;
-        --p-message-success-border-color: transparent !important;
-        --p-message-success-color: var(--color-success) !important;
-        --p-message-success-shadow: none !important;
-        --p-message-success-close-button-hover-background: rgba(255,255,255,0.05) !important;
-        --p-message-success-close-button-focus-ring-color: var(--p-focus-ring-color) !important;
-        --p-message-success-close-button-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--color-success),transparent 80%) !important;
-        --p-message-success-outlined-color: var(--color-success) !important;
-        --p-message-success-outlined-border-color: var(--color-success) !important;
-        --p-message-success-simple-color: var(--color-success) !important;
-        --p-message-warn-background: color-mix(in srgb,var(--color-warning),transparent 84%) !important;
-        --p-message-warn-border-color: transparent !important;
-        --p-message-warn-color: var(--color-warning) !important;
-        --p-message-warn-shadow: none !important;
-        --p-message-warn-close-button-hover-background: rgba(255,255,255,0.05) !important;
-        --p-message-warn-close-button-focus-ring-color: var(--p-focus-ring-color) !important;
-        --p-message-warn-close-button-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--color-warning),transparent 80%) !important;
-        --p-message-warn-outlined-color: var(--color-warning) !important;
-        --p-message-warn-outlined-border-color: var(@layer base, primevue, components, utilities, theme; error) !important;
-        --p-message-secondary-background: var(--p-surface-800) !important;
-        --p-message-secondary-border-color: transparent !important;
-        --p-message-secondary-color: var(--p-surface-300) !important;
-        --p-message-secondary-shadow: none !important;
-        --p-message-secondary-close-button-hover-background: var(--p-surface-700) !important;
-        --p-message-secondary-close-button-focus-ring-color: var(--p-focus-ring-color) !important;
-        --p-message-secondary-close-button-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--p-surface-300),transparent 80%) !important;
-        --p-message-secondary-outlined-color: var(--p-surface-400) !important;
-        --p-message-secondary-outlined-border-color: var(--p-surface-400) !important;
-        --p-message-secondary-simple-color: var(--p-surface-400) !important;
-        --p-message-contrast-background: var(--p-surface-0) !important;
-        --p-message-contrast-border-color: transparent !important;
-        --p-message-contrast-color: var(--p-surface-950) !important;
-        --p-message-contrast-shadow: none !important;
-        --p-message-contrast-close-button-hover-background: var(--p-surface-100) !important;
-        --p-message-contrast-close-button-focus-ring-color: var(--p-focus-ring-color) !important;
-        --p-message-contrast-close-button-focus-ring-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--p-surface-950),transparent 80%) !important;
-        --p-message-contrast-outlined-color: var(--p-surface-0) !important;
-        --p-message-contrast-outlined-border-color: var(--p-surface-0) !important;
-        --p-message-contrast-simple-color: var(--p-surface-0) !important;
-
-        --p-tieredmenu-item-icon-color: var(--color-text) !important;
-  }
+.p-button-danger:not(.p-button-outlined) {
+  @apply bg-error-d text-h-text border-error-d hover:bg-error hover:border-error hover:text-h-text;
 }
+.p-button-warn:not(.p-button-outlined) {
+  @apply bg-warning-d text-h-text border-warning-d hover:bg-warning hover:border-warning hover:text-h-text;
+}
+.p-button-success:not(.p-button-outlined) {
+  @apply bg-success-d text-h-text border-success-d hover:bg-success hover:border-success hover:text-h-text;
+}
+.p-button-info:not(.p-button-outlined) {
+  @apply bg-info-d text-h-text border-info-d hover:bg-info hover:border-info hover:text-h-text;
+}
+.p-button-primary:not(.p-button-outlined) {
+  @apply bg-base-d text-h-text border-base-d  hover:bg-base-d hover:border-base-d hover:text-h-text;
+}
+.p-button-secondary:not(.p-button-outlined) {
+  @apply bg-h-panel-d text-h-text border-h-panel-d hover:bg-h-panel hover:border-h-panel hover:text-h-text;
+}
+
+.p-message-danger {
+  /* Due to a bug in primevue the this dose not exist by default*/
+  background: var(--p-message-error-background);
+  outline-color: var(--p-message-error-border-color);
+  color: var(--p-message-error-color);
+  box-shadow: var(--p-message-error-shadow);
+}
+
 .p-disabled{
   @apply !cursor-not-allowed [pointer-events:auto];
 }

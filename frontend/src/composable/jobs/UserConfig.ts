@@ -1,5 +1,5 @@
 import { ref, watch } from "vue";
-import { queryGql } from "../api/GqlHandler";
+import { queryGql, reportError } from "../api/QueryHandler";
 import { useStatusMessage } from "../core/AppState";
 
 import { type Group as FilterGroup } from "@/composable/jobs/FilterGroups";
@@ -10,7 +10,6 @@ export const jobUserDisplayConfig = (id: number) => {
 
     watch(filter, (value) => {
         console.debug("ToDo: Filter changed, Sync with  db", value);
-        console.log(value);
     }, { deep: true });
 
     const loacConfigs = async () => {
@@ -18,7 +17,7 @@ export const jobUserDisplayConfig = (id: number) => {
             { 
             userJobConfig {
                 __typename
-                ... on ErrorMessage {
+                ... on Message {
                     message
                     status
                 }
@@ -29,16 +28,16 @@ export const jobUserDisplayConfig = (id: number) => {
 
             }
         }`).then((response) => {
-            switch (response.keys[0]) {
+            switch (response.providedTypes[0].type) {
                 case "userJobConfig":
                     filter.value = response.data.userJobConfig.filter;
                     graph.value = response.data.userJobConfig.graph;
                     break;
                 default:
-                    throw new Error(response.data.userJobConfig.message);
+                    throw response;
             }
         }).catch((error) => {
-            useStatusMessage().newStatusMessage(error.message, "danger");
+            reportError(error);
         });
     }
 
@@ -55,13 +54,13 @@ export const jobUserDisplayConfig = (id: number) => {
                 }
             }
         `).then((response) => {
-            if (response.keys[0] == "Message" && response.data.status === "SUCCESS") {
+            if (response.providedTypes[0].type == "Message" && response.data.status === "SUCCESS") {
                 useStatusMessage().newStatusMessage(response.data.message, "success");
                 return;        
             }
-            throw new Error(response.data.message);
+            throw response;
         }).catch((error) => {
-            useStatusMessage().newStatusMessage(error.message, "danger");
+            reportError(error);
         });
     }
 

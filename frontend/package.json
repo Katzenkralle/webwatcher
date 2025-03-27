@@ -1,6 +1,8 @@
 {
   "name": "webwatcher_web",
   "version": "0.0.1",
+  "repository": "https://github.com/Katzenkralle/webwatcher",
+  "license": "GPL-3.0-only",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,9 +17,11 @@
   "dependencies": {
     "@primevue/themes": "^4.2.5",
     "@tailwindcss/vite": "^4.0.6",
+    "@vue-js-cron/prime": "^1.0.1",
     "chart.js": "^4.4.8",
     "primeicons": "^7.0.0",
     "primevue": "^4.2.5",
+    "qrcode-vue3": "^1.7.1",
     "tailwind": "^4.0.0",
     "vue": "^3.5.13",
     "vue-chartjs": "^5.3.2",
@@ -42,6 +46,7 @@
     "typescript": "~5.6.3",
     "vite": "^6.0.1",
     "vite-plugin-vue-devtools": "^7.6.5",
+    "vite-svg-loader": "^5.1.0",
     "vue-tsc": "^2.1.10"
   }
 }

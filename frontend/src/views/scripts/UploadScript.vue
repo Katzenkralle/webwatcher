@@ -12,41 +12,74 @@ import InputGroupAddon from 'primevue/inputgroupaddon';
 
 
 import {ref, watch, reactive, computed} from 'vue';
+import { globalScriptData } from '@/composable/api/ScriptAPI';
+import router from '@/router';
 
-import { useLoadingAnimation} from "@/composable/core/AppState";
-import { useScriptAPI, type ScriptValidation } from "@/composable/api/ScriptAPI";
-import "@/components/reusables/GoBack.vue";
+import { useLoadingAnimation, useStatusMessage} from "@/composable/core/AppState";
+import { validateFile, submitScript, type ScriptValidationResult, type ScriptMeta } from "@/composable/api/ScriptAPI";
+import NavButtons from '@/components/reusables/NavButtons.vue';
 
-// reactive needed for deep watch
-const nameStatus = reactive<{field: string, severity: string, summary: string, blacklist: string[]}>({field: '', severity: 'warn', summary: 'Should be provided.', blacklist: []});
+
+
+// Input field value
+const nameStatus = reactive<{field: string, severity: string, summary: string, blacklist: string[]}>
+    ({field: '', severity: 'warn', summary: 'Should be provided.', blacklist: []});
 const discription = ref('');
+const fileStatus = ref<ScriptValidationResult & {severity: string, summary: string} >
+    ({severity: 'warn',
+        summary: 'A file must be provided.',
+        availableParameters: {},
+        valid: false,
+        supportsStaticSchema: false}        
+   );
 
-const fileStatus = ref<{severity: string, summary: string, params: [string, string][]}>({severity: 'error', summary: 'A file must be provided.', params: []});
+// unknown if creating a new script
+const currentScriptName = ref(String(router.currentRoute.value.params.name) || '');
+const computedScript = computed((): undefined | ScriptMeta  => {
+    const thisScript = globalScriptData.value[currentScriptName.value];
+    if(!thisScript && currentScriptName.value !== '') {
+        useStatusMessage().newStatusMessage('Script not found.', 'danger');
+        router.push('/scripts');
+    } else if (currentScriptName.value === '') {
+        return undefined;
+    }
+    fileStatus.value = {severity: 'success',
+        summary: 'File present on the Server.',
+        availableParameters: thisScript.availableParameters,
+        valid: false,
+        supportsStaticSchema: thisScript.staticSchema !== undefined && Object.keys(thisScript.staticSchema).length > 0};
+    nameStatus.field = currentScriptName.value;
+    nameStatus.severity = 'success';
+    nameStatus.summary = '';
+    return thisScript;
+});
+
 
 const onFileSelect = (file_event: FileUploadSelectEvent) => {
     useLoadingAnimation().setState(true);
-    fileStatus.value = {severity: 'warn', summary: 'Validating File...',  params: []};
-    useScriptAPI().validateFile(file_event.files[0]).then((response: ScriptValidation) => {
-        if (response.valid) {
-            fileStatus.value = {severity: 'success', summary: 'File is valid.', params: response.parameters};
-        } else {
-            fileStatus.value = {severity: 'error', summary: 'File is invalid.',  params: []};
-        }
+    fileStatus.value.severity = 'warn';
+    fileStatus.value.summary = 'Validating File...';
+    fileStatus.value.availableParameters = {};
+    validateFile(file_event.files[0], currentScriptName.value)
+        .then((response: ScriptValidationResult) => {
+            if (response.valid) {
+                fileStatus.value = {severity: 'success',
+                    summary: 'File is valid.',
+                    ...response};
+            } else {
+                fileStatus.value = {severity: 'error', summary: 'File is invalid.',  ...response};
+            }
         useLoadingAnimation().setState(false);
     });
 }
 
 const onSubmit = () => {
-    useLoadingAnimation().setState(true);
-    useScriptAPI().submitScript(nameStatus.field).then((response) => {
-        if (response) {
-            useLoadingAnimation().setState(false);
-
-        } else {
-            fileStatus.value = {severity: 'error', summary: 'An error occured.', params: []};
-        }
-        useLoadingAnimation().setState(false);
-    });
+    submitScript(nameStatus.field, discription.value).then(() => {
+        useStatusMessage().newStatusMessage('Script submitted.', 'success');
+        router.push('/scripts');
+    }).catch((error) => {
+        useStatusMessage().newStatusMessage('Script could not be submitted.', 'danger');
+    })
 }
 
 watch(nameStatus, (newVal) => {
@@ -64,43 +97,67 @@ watch(nameStatus, (newVal) => {
 });
 
 let noErrors = computed(() => {
-    return (nameStatus.severity === 'success' || nameStatus.severity === 'warn')  && fileStatus.value.severity === 'success';
+    return (nameStatus.severity === 'success' 
+        || nameStatus.severity === 'warn')  
+        && fileStatus.value.severity === 'success';
+});
+
+const computedScriptParamTable = computed(() => {
+    return Object.entries(fileStatus.value.availableParameters).map(([name, type]) => ({0: name, 1: type}));
 });
 
 </script>
 
 <template>
     <main class="flex flex-col items-center w-screen">
-            <GoBack />
-            <h1>Upload Script</h1>
-            <form class="card flex flex-col">
+            <div class="card flex flex-col">
+                <div class="grid grid-cols-3 items-center">
+                    <NavButtons />
+                    <h1>{{currentScriptName ? "Edit Script" : "Upload Script"}}</h1>
+                </div>
+
                     <div class="input-box">
                         <label for="scriptName">Script Name</label>
-                        <InputText id="scriptName" aria-describedby="scriptNameHelp" v-model="nameStatus.field" />
+                        <InputText 
+                            id="scriptName" 
+                            :disabled="currentScriptName !== ''"
+                            aria-describedby="scriptNameHelp"
+                            :default-value="currentScriptName" 
+                            v-model="nameStatus.field" />
                         <small id="scriptNameHelp">Choose a name for the script</small>
                         <InlineMessage target="scriptName" :severity="nameStatus.severity">{{nameStatus.summary}}</InlineMessage>
                     </div>
                     <div class="input-box">
                         <label for="scriptDiscription">Add a discription</label>
-                        <Textarea id="scriptDiscription" v-model="discription" autoResize rows="5" cols="30" />
+                        <Textarea 
+                            id="scriptDiscription" 
+                            v-model="discription" 
+                            :default-value="computedScript?.description || ''"
+                            autoResize 
+                            rows="5"
+                            cols="30" />
                     </div>
 
 
                     <div class="input-box"> 
                         <label for="fileSelect">Select a file to upload</label>
-                        <InputGroup>
-                            <InputGroupAddon>
-                                <FileUpload 
-                                    id="fileSelect"
-                                    mode="basic" 
-                                    name="demo[]" 
-                                    customUpload 
-                                    chooseLabel="Select File" 
-                                    @select="onFileSelect" 
-                                />
-                            </InputGroupAddon>
-                                <InlineMessage target="fileSelect" :severity="fileStatus.severity">{{ fileStatus.summary }}</InlineMessage>
-                        </InputGroup>
+                        <div class="bg-panel-h rounded-lg">
+                            <FileUpload 
+                                id="fileSelect"
+                                mode="basic" 
+                                class="mr-auto"
+                                name="demo[]" 
+                                customUpload 
+                                chooseLabel="Select File" 
+                                @select="onFileSelect" 
+                            />
+                        </div>
+                        <InlineMessage 
+                            target="fileSelect"
+                            class="ml-auto w-fit"
+                            :severity="fileStatus.severity">
+                            {{ fileStatus.summary }}
+                        </InlineMessage>
                         <small>From this file the data is collected.</small>
                         <div :class="{
                             // We cannot use hidden here, for we need to animate the element
@@ -108,7 +165,7 @@ let noErrors = computed(() => {
                             'visible opacity-100 w-auto h-auto': fileStatus.severity === 'success',
                             'transition-all duration-1000 ease-in-out overflow-hidden': true
                         }"> 
-                        <DataTable :value="fileStatus.params" class="mt-4">
+                        <DataTable :value="computedScriptParamTable" class="mt-4">
                             <template #header>
                                 <h4>Script Parameters</h4>
                             </template>
@@ -118,11 +175,17 @@ let noErrors = computed(() => {
                                 <p class="italic">The available parameters</p>
                             </template>
                         </DataTable>
+                        <a v-if="fileStatus.supportsStaticSchema" class="text-success">Can be used with static schema</a>
+                        <a v-else class="text-warning">Cannot be used with static schema</a>
                     </div>
                 </div>
                 <div class="input-box">
-                    <Button label="Submit" :disabled="!noErrors" @click="useScriptAPI"></Button>
+                    <Button
+                        label="Submit"
+                        :disabled="!noErrors"
+                        @click="() => onSubmit()"
+                    />
                 </div>
-            </form>
+            </div>
     </main>
 </template>

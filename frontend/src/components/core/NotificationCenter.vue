@@ -102,12 +102,12 @@ watch(
 
 <template>
     <div>
-    <Button icon="pi pi-clock" class="ml-auto" 
+    <Button icon="pi pi-clock" class="ml-auto w-full h-full" 
     :severity="useStatusMessage().getRecentStatusMessage.value?.msg.severity" 
     @click="isOpendInteractive != null ? isOpendInteractive = null : isOpendInteractive = 'interactivly'"></Button>
     <div class="relative">
         <div :class="{
-                'absolute flex flex-col bg-panel w-screen md:w-128 rounded-lg transition-all border-2 border-app z-20 max-w-[95vw]': true,
+                'absolute flex flex-col bg-panel w-screen md:w-128 rounded-lg transition-all border-2 border-app z-20 max-w-[95vw] my-2': true,
                 [`duration-${OPEN_CLOSE_DURATION}`]: true, 
                 'max-h-0 translate-x-full invisible opacity-0': !isOpendInteractive, 
                 'max-h-[100vh] opacity-100 visible': isOpendInteractive,

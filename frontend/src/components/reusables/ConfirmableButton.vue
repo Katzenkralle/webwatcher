@@ -10,6 +10,7 @@ const props = defineProps<{
     confirmIcon: string;
     confirmClass?: string;
     buttonClass?: string;
+    disabled?: boolean;
     buttonIcon: string;
     buttonLabel: string;
 }>();
@@ -47,5 +48,6 @@ const confirmDialog = ref(); // Ref for the popover
     <Button @click="(e) => confirmDialog?.toggle(e)" 
         :icon="props.buttonIcon" 
         :class="props.buttonClass" 
-        :label="props.buttonLabel" />
+        :label="props.buttonLabel"
+        :disabled="props.disabled !== undefined ? props.disabled : false"/>
 </template>

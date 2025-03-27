@@ -19,7 +19,7 @@ const aData = defineComponent({
 </script>
 
 <template>
-    <div class="bg-panel w-fit border-2 border-info rounded-lg p-2 ">
+    <div class="subsection">
         <div class="flex flex-col justify-center">
             <span class="grid grid-cols-5 items-end">
                 <h5 class="italic text-info">Id: {{ metaData.id }}</h5>

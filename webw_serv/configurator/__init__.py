@@ -1,0 +1,1 @@
+from webw_serv.configurator.config import Config

@@ -1,0 +1,92 @@
+#-------------------------------------------------------------------------------#
+#               Qodana analysis is configured by qodana.yaml file               #
+#             https://www.jetbrains.com/help/qodana/qodana-yaml.html            #
+#-------------------------------------------------------------------------------#
+version: "1.0"
+#Specify inspection profile for code analysis
+profile:
+  name: qodana.starter
+#Enable inspections
+#include:
+#  - name: <SomeEnabledInspectionId>
+include:
+  - name: JSUndefinedPropertyAssignment
+  - name: JSRemoveUnnecessaryParentheses
+  - name: UnterminatedStatementJS
+  - name: JsCoverageInspection
+  - name: CheckValidXmlInScriptTagBody
+  - name: StandardJS
+  - name: TailRecursionJS
+  - name: PlatformDetectionJS
+  - name: XHTMLIncompatabilitiesJS
+  - name: InnerHTMLJS
+  - name: ES6ConvertToForOf
+  - name: MongoJSExtResolveInspection
+  - name: MongoJSDeprecationInspection
+  - name: MongoJSExtDeprecationInspection
+  - name: RegExpRedundantEscape
+  - name: MongoJSResolveInspection
+  - name: StringLiteralBreaksHTMLJS
+  - name: ReservedWordUsedAsNameJS
+  - name: ThisExpressionReferencesGlobalObjectJS
+  - name: ES6BindWithArrowFunction
+  - name: DebuggerStatementJS
+  - name: CallerJS
+  - name: NestedFunctionJS
+  - name: BlockStatementJS
+  - name: DynamicallyGeneratedCodeJS
+  - name: ConfusingPlusesOrMinusesJS
+  - name: JSUrlImportUsage
+  - name: NpmUsedModulesInstalled
+  - name: JSUnresolvedReference
+  - name: JSFileReferences
+  - name: JSLastCommaInObjectLiteral
+  - name: JSLastCommaInObjectLiteral
+  - name: JSLastCommaInArrayLiteral
+  - name: JSCheckFunctionSignatures
+  - name: JSNonStrictModeUsed
+  - name: JSUnresolvedLibraryURL
+  - name: JSXSyntaxUsed
+  - name: JSAccessibilityCheck
+  - name: JSUndeclaredVariable
+  - name: JSAnnotator
+  - name: FlowJSConfig
+  - name: JSStringConcatenationToES6Template
+  - name: ES6ConvertIndexedForToForOf
+  - name: JSFunctionExpressionToArrowFunction
+  - name: VueDataFunction
+  - name: VueDeprecatedSymbol
+  - name: VueDuplicateTag
+  - name: VueMissingComponentImportInspection
+  - name: VueUnrecognizedSlot
+  - name: VueUnrecognizedDirective
+  - name: ComposeUnquotedPorts
+  - name: ComposeUnquotedPorts
+  - name: ComposeUnknownValues
+  - name: ComposeUnknownKeys
+  - name: ComposeMissingKeys
+  - name: DockerJsonFormStringLiterals
+  - name: DockerFileAddOrCopyPaths
+  - name: DockerFileRunCommandMissingContinuation
+  - name: DockerFileAssignments
+  - name: DockerFileArgumentCount
+  - name: PyAugmentAssignmentInspection
+  - name: PyInterpreterInspection
+  - name: PyClassicStyleClassInspection
+  - name: PyUnresolvedReferencesInspection
+  - name: PyArgumentEqualDefaultInspection
+  - name: PyMandatoryEncodingInspection
+  - name: PyMissingTypeHintsInspection
+  - name: PyMissingOrEmptyDocstringInspection
+  - name: PyDataclassInspection
+#env:
+#  - PYTHONPATH: "/usr/bin/python3"
+#Execute shell command before Qodana execution (Applied in CI/CD pipeline)
+bootstrap: pip install -r webw_serv/requirements.txt
+#Install IDE plugins before Qodana execution (Applied in CI/CD pipeline)
+#plugins:
+#  - id: <plugin.id> #(plugin id can be found at https://plugins.jetbrains.com)
+#Specify Qodana linter for analysis (Applied in CI/CD pipeline)
+linter: jetbrains/qodana-python:2024.3
+
+#linter: jetbrains/qodana-webstorm

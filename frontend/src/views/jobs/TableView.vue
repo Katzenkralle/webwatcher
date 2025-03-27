@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useTableMetaData } from "@/composable/api/JobAPI";
-import { useJobUiCreator } from "@/composable/jobs/JobDataHandler";
+import { getJobMetaData } from "@/composable/api/JobAPI";
+import { useJobDataHandler, useJobUiCreator } from "@/composable/jobs/JobDataHandler";
 import { jobUserDisplayConfig } from "@/composable/jobs/UserConfig";
 
 import router from "@/router";
@@ -23,37 +23,46 @@ import AccordionPanel from 'primevue/accordionpanel';
 import AccordionHeader from 'primevue/accordionheader';
 import AccordionContent from 'primevue/accordioncontent';
 
-import { SplitButton } from "primevue";
+import NavButtons from "@/components/reusables/NavButtons.vue";
+
+import { ProgressSpinner, SplitButton } from "primevue";
 
 import { ref, watch, computed } from "vue";
 
 const currentJobId = ref(Number(router.currentRoute.value.params.id));
 const downloadSuccessPopup = ref();
 
+const tableMetadata = ref();
 
-watch(
-  () => router.currentRoute.value.params.id,
-  (newVal) => {
-    if (!newVal) return;
+
+const changeJob = (newVal: any) => {
+  if (!newVal) return;
     try {
-      if (currentJobId.value && currentJobId.value !== Number(newVal)) {
-        currentJobId.value = Number(newVal);
-        jobHandler = useJobUiCreator(currentJobId.value);
+      let newId = Number(newVal);
+      if (!currentJobId.value || (currentJobId.value && currentJobId.value !== newId)) {
+        currentJobId.value = newId;
+        jobHandler = useJobUiCreator(newId);
+        getJobMetaData(newId).then((data) => {
+          tableMetadata.value = data;
+        });
       }
     } catch (e) {
       console.error(e);
     }
-  }
-);
+  };
 
-const tableMetadata = computed(() => {
-  return useTableMetaData().getTaleMetaData(currentJobId.value);
-});
-
+watch(
+  () => router.currentRoute.value.params.id,
+  (newVal) => {
+    changeJob(newVal);
+  });
 
 // This cannot be compute, if it would be, random recomputations would happen
 // when pressing some buttons - houres wasted: 2
 let jobHandler = useJobUiCreator(currentJobId.value);
+getJobMetaData(currentJobId.value).then((data) => {
+    tableMetadata.value = data;
+  });
 
 const userConfig = computed(() => {
   return jobUserDisplayConfig(currentJobId.value);
@@ -65,8 +74,11 @@ const userConfig = computed(() => {
 <template>
   <main>
     <dev class="flex flex-col w-full h-full items-center" :key="currentJobId">
-      <h1 class="mb-2 mt-5">Job Data & Managment</h1>
-
+      <div class="flex flex-row justify-between mb-2 mt-5 w-256">
+        <NavButtons />
+        <h1 class="self-center">Job Data & Managment</h1>
+        <p></p>
+      </div>
       <Accordion 
         class="w-full max-w-256 mb-2"
         :value="['0']" 
@@ -79,7 +91,7 @@ const userConfig = computed(() => {
                 <JobMetaDisplay 
                   v-if="tableMetadata"
                   :metaData="tableMetadata"
-                  class="max-w-256" />
+                  />
               </AccordionContent>
         </AccordionPanel>
 
@@ -114,9 +126,10 @@ const userConfig = computed(() => {
                     />
 
                   <StringSearch
+                    v-if="jobHandler.sortByString.value"
                     :mutSortByString="jobHandler?.sortByString.value"
                     :allColumns="jobHandler.jobDataHandler.computeLayoutUnfiltered.value"
-                    @update:key="() => jobHandler.unsetPrimevueSort() "
+                    @update:key="() => jobHandler?.unsetPrimevueSort() "
                     class="shrink-0"
                     />
                 </div>
@@ -177,35 +190,6 @@ const userConfig = computed(() => {
 <style lang="css">
 @reference "@/assets/global.css";
 
-
-.p-accordioncontent-content {
-  @apply flex justify-center;
-}
-
-.p-accordionheader{
-  @apply text-xl font-semibold underline underline-offset-3 mb-1 cursor-pointer;
-}
-
-.p-accordionpanel:not(:last-child) {
-  @apply border-b-2 border-h-panel pb-2;
-}
-.p-accordionpanel:not(:first-child) {
-  @apply pt-1;
-}
-
-.content-box {
-  @apply 
-    bg-panel 
-    border-2 
-    border-primary 
-    rounded-lg 
-    p-2 
-    w-full 
-    max-w-256 
-    justify-between 
-    overflow-x-scroll 
-    overflow-y-hidden;
-}
 
 .shrinkable {
   @apply flex 
