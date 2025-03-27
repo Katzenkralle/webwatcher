@@ -1,35 +1,30 @@
 import strawberry
-from enum import Enum
-from typing import Annotated, Union, Optional
+from typing_extensions import Annotated
+from API.gql_base_types import Message, User, ScriptContent, JobMetaData, JobSettings, JobEntry, JobFullInfo, \
+    UserJobDisplayConfig
 
-from db_handler.maria_schemas import *
-from watcher.base import ResultType as BaseResultType
-from utility.toolbox import extend_enum
-
-from backend.db_handler import DbUser
-
+user_result = User | Message
 
 @strawberry.type
-class Parameter:
-    key: str
-    value: str
+class ScriptContentList:
+    scripts: list[ScriptContent]
 
-@extend_enum(BaseResultType)
-@strawberry.enum
-class ResultType(Enum):
-    pass
+script_content_result = ScriptContentList | Message
 
 @strawberry.type
-class ErrorMessage:
-    message: str
-    status: ResultType
+class JobsMetaDataList:
+    jobs: list[JobMetaData]
+
+jobs_metadata_result = JobsMetaDataList | Message
+job_metadata_result = JobMetaData | Message
+jobs_settings_result = JobSettings | Message
 
 @strawberry.type
-class ScriptValidationResult:
-    valid: bool
-    available_parameters: list[Parameter]
-    supports_static_schema: bool
+class JobsEntryList:
+    jobs: list[JobEntry]
 
+jobs_entry_result = JobsEntryList | Message
+job_entry_result = JobEntry | Message
+job_full_info_result = JobFullInfo | Message
+user_job_config_result = UserJobDisplayConfig | Message
 
-
-UserResult = Annotated[Union[DbUser, ErrorMessage], strawberry.union("UserResult")]

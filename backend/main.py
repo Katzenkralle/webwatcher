@@ -38,6 +38,7 @@ def create_app():
     [mongo, maria] = establish_db_connections()
     scheduler = generate_scheduler()
 
+
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         yield

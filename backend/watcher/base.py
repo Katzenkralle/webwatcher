@@ -1,27 +1,6 @@
 from abc import ABC, abstractmethod
-import dataclasses
-from enum import Enum
 
-class ResultType(Enum):
-    SUCCESS = "success"
-    AUTH_ERROR = "auth_error"
-    PREMISSION_ERROR = "premission_error"
-    FAILURE = "failure"
-    NETWORK_ERROR = "network_error"
-    WARNING = "warning"
-    OK = "ok"
-    NOT_OK = "not_ok"
-    UNHEALTHY = "unhealthy"
-    TIMEOUT = "timeout"
-    CATS_AND_DOGS = "cats_and_dogs"
-
-@dataclasses.dataclass
-class JobEntry:
-    timestamp: int
-    script_runtime: int
-    result: ResultType
-    script_failure: bool
-    context: dict[str, any]
+from API.gql_base_types import JobEntry
 
 
 class Watcher(ABC):
@@ -55,7 +34,7 @@ class Watcher(ABC):
         pass
 
     @abstractmethod
-    def get_return_schema() -> dict[str, str] | None:
+    def get_return_schema(self) -> dict[str, str] | None:
         """
         Returns the schema that the watcher will return the 'context' of a entry in.
         If none, the watcher may use a dynamic schema.
@@ -66,7 +45,7 @@ class Watcher(ABC):
         pass
 
     @abstractmethod
-    def get_config_schema() -> dict[str, str] | None:
+    def get_config_schema(self) -> dict[str, str] | None:
         """
         Returns the schema that the watcher will use for the configuration.
 

@@ -24,6 +24,7 @@
       },
       "cwd": "${workspaceFolder}/backend",
       "program": "${workspaceFolder}/backend/main.py",
+      "python": "/usr/bin/python3",
       "justMyCode": false
     },
     {
@@ -31,6 +32,7 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${file}",
+      "python": "/usr/bin/python3",
       "console": "integratedTerminal",
       "justMyCode": false
     }

@@ -1,7 +1,7 @@
 import strawberry
 
 from .auth import get_hashed, admin_guard, user_guard
-from ..gql_types import ResultType, ErrorMessage, UserResult
+from ..gql_base_types import ResultType, Message, UserResult
 
 @strawberry.type
 class Mutation:
@@ -11,7 +11,7 @@ class Mutation:
         try:
             return await info.context["request"].state.maria.create_user(username, get_hashed(password), is_admin)
         except:
-            return ErrorMessage(message="Failed to create user, try another username!", status=ResultType.FAILURE)
+            return Message(message="Failed to create user, try another username!", status=ResultType.FAILURE)
 
 @strawberry.type
 class Query:
