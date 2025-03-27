@@ -11,6 +11,6 @@ if [ "$DEV" ]; then
 else
     echo "Running in production mode"
     echo "Starting webwatcher"
-    cd /webwatcher/backend
+    cd /webwatcher/webw_serv
     python3 main.py
 fi
