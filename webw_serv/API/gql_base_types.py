@@ -19,7 +19,7 @@ class BaseResultType(Enum):
     TIMEOUT = "timeout"
     CATS_AND_DOGS = "cats_and_dogs"
 
-@strawberry.type
+@strawberry.scalar
 class JsonStr(str):
     pass
 
@@ -70,12 +70,10 @@ class ScriptValidationResult:
     available_parameters: list[Parameter]
     supports_static_schema: bool
 
-@strawberry.interface
-class JobFullInfo:
-    id: int
 
 @strawberry.type
-class JobMetaData(JobFullInfo):
+class JobMetaData:
+    id: int
     name: str
     description: str
     enabled: bool
@@ -85,8 +83,14 @@ class JobMetaData(JobFullInfo):
     expected_return_schema: Optional[JsonStr]
 
 @strawberry.type
-class JobSettings(JobFullInfo):
+class JobSettings:
+    int: int
     parameters: list[Parameter]
+
+@strawberry.type
+@strawberry.interface
+class JobFullInfo(JobMetaData, JobSettings):
+    id: int
 
 @strawberry.type
 class JobEntry:
@@ -96,7 +100,6 @@ class JobEntry:
     result: ResultType
     script_failure: bool
     context: JsonStr
-
 
 
 UserResult = Annotated[Union[DbUser, Message], strawberry.union("UserResult")]
