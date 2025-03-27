@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from typing_extensions import Any
+
 from webw_serv.API.gql_base_types import JobEntry
 
 
@@ -9,7 +11,7 @@ class Watcher(ABC):
     """
 
     @abstractmethod
-    def __init__(self, config: dict[str, any]):
+    def __init__(self, config: dict[str, Any]):
         """
         Initializes the watcher with the configuration.
         The Configuration must match the schema returned by get_config_schema.

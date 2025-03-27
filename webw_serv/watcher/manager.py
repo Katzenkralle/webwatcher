@@ -4,15 +4,16 @@ import threading
 import sys
 import asyncio
 
-from typing_extensions import Dict
+from typing_extensions import Dict, Any
 
+from .errors import ScriptException
 
 # Proposed DB Managert for  to let Watchers add Rows to mongo db
 class DbManager:
     def __init__(self, tareget: int, schema: Dict[str, str]):
         self.__schema: Dict[str, str] = schema
         self.__target: int = tareget
-        self.__data: Dict[str, any] = {}
+        self.__data: Dict[str, Any] = {}
         self.__db = None
 
     def __check_datatype(self, k, v):
@@ -26,7 +27,7 @@ class DbManager:
         return self.__data
 
     @data.setter
-    def data(self, row: Dict[str, any]):
+    def data(self, row: Dict[str, Any]):
         for k, v in row.items():
             self.__check_datatype(k, v)
         self.__data.update(row)
@@ -41,15 +42,20 @@ class DbManager:
 
 
 class MainThread(threading.Thread):
-    def __init__(self, module_name):
+    def __init__(self, module_name, config: dict[str, Any]):
         threading.Thread.__init__(self)
         self.module_name = module_name
         self.result = None
+        self.package = "webw_serv"
+        self.config = config
 
     def run(self):
-        module = importlib.import_module(self.module_name)
-        main_instance = module.ScriptMain()
-        self.result = main_instance.run()
+        try:
+            module = importlib.import_module(self.module_name, self.package)
+            main_instance = module.ScriptMain(config=self.config)
+            self.result = main_instance.run()
+        except Exception as e:
+            self.result = ScriptException(e)
 
 def delete_script(module_name):
     if module_name in sys.modules:
@@ -87,11 +93,14 @@ class WatcherManager:
     async def run(self):
         ...
 
-if __name__ == "__main__":
-    script_name = ".script.http_return"  # Name of the script without .py extension
+def manager_main():
+    script_name = ".scripts.http_return"  # Name of the script without .py extension
 
     # Run multiple instances of MainThread asynchronously
     asyncio.run(run_main_threads(script_name, 5))
 
     # Delete the script and remove the module from cache
     delete_script(script_name)
+
+if __name__ == "__main__":
+    manager_main()

@@ -1,9 +1,11 @@
+from typing_extensions import Any
+
 from webw_serv import Watcher
 import aiohttp
 from http.client import responses
 
 class ScriptMain(Watcher):
-    def __init__(self, config: dict[str, any]):
+    def __init__(self, config: dict[str, Any]):
         if "url" not in config:
             raise ValueError("Config must contain a 'url' key")
         self.url = config["url"]
