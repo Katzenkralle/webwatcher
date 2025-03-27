@@ -143,10 +143,19 @@
         --p-button-success-hover-background: var(--color-success-h) !important;
         --p-button-success-hover-border-color: var(--color-success-h) !important;
 
+        --p-button-info-background: var(--color-info) !important;
+        --p-button-info-hover-background: var(--color-info-h) !important;
+        --p-button-info-hover-border-color: var(--color-info-h) !important;
+        --p-button-outlined-info-border-color: var(--color-info) !important;
+        --p-button-outlined-info-color: var(--color-info) !important;
+
+
         --p-button-warn-background: var(--color-warning) !important;
         --p-button-warn-border-color: var(--color-warning) !important;
         --p-button-warn-hover-background: var(--color-warning-h) !important;
         --p-button-warn-hover-border-color: var(--color-warning-h) !important;
+        --p-button-outlined-warn-border-color: var(--color-warning) !important;
+        --p-button-outlined-warn-color: var(--color-warning) !important;
 
         --p-button-error-background: var(--color-error) !important;
         --p-button-error-border-color: var(--color-error) !important;

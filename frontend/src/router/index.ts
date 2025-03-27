@@ -8,6 +8,8 @@ import Login from '@/views/core/Login.vue'
 import ScriptOverview from '@/views/scripts/ScriptOverview.vue'
 import CreateJob from '@/views/jobs/CreateJob.vue'
 
+import NavButtons from '@/components/reusables/NavButtons.vue'
+
 const router = createRouter({
   history: createWebHistory(),
   routes: [

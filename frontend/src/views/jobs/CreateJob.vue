@@ -16,6 +16,7 @@ import InputText from 'primevue/inputtext';
 import InputSwitch from 'primevue/inputswitch';
 import FloatLabel from 'primevue/floatlabel';
 
+import NavButtons from '@/components/reusables/NavButtons.vue';
 
 const isEdit = ref<boolean>(false);
 const jobMetaData = ref<Omit<TableMetaData, 'parameters'> & {parameters: Record<string, [string, any]>}>(
@@ -99,11 +100,12 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
 <template>
     <main class="flex w-full justify-center">
         <div class="card flex flex-col">
-            <div class="flex flex-row justify-between items-center">
+            <div class="grid grid-cols-3 items-center">
+                <NavButtons />
                 <h1 v-if="!isEdit">Create Job</h1>
                 <h1 v-else>Edit Job</h1>
-                <div class="input-box !flex-row items-center space-x-2">
-                    <label for="enableToggle">Enabled</label>
+                <div class="input-box !flex-row w-min items-center justify-self-end">
+                    <label for="enableToggle" class="!mb-0 mr-2">Enabled</label>
                     <InputSwitch id="enableToggle" v-model="jobMetaData.enabled" />
                 </div>
             </div>

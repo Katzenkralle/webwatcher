@@ -17,6 +17,7 @@ import router from '@/router';
 
 import { useLoadingAnimation, useStatusMessage} from "@/composable/core/AppState";
 import { validateFile, submitScript, type ScriptValidationResult, type ScriptMeta } from "@/composable/api/ScriptAPI";
+import NavButtons from '@/components/reusables/NavButtons.vue';
 
 
 
@@ -110,8 +111,12 @@ const computedScriptParamTable = computed(() => {
 
 <template>
     <main class="flex flex-col items-center w-screen">
-            <h1>{{currentScriptName ? "Edit Script" : "Upload Script"}}</h1>
-            <form class="card flex flex-col">
+            <div class="card flex flex-col">
+                <div class="grid grid-cols-3 items-center">
+                    <NavButtons />
+                    <h1>{{currentScriptName ? "Edit Script" : "Upload Script"}}</h1>
+                </div>
+
                     <div class="input-box">
                         <label for="scriptName">Script Name</label>
                         <InputText 
@@ -183,6 +188,6 @@ const computedScriptParamTable = computed(() => {
                         @click="() => onSubmit()"
                     />
                 </div>
-            </form>
+            </div>
     </main>
 </template>

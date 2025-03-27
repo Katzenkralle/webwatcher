@@ -73,7 +73,6 @@ const computeTableOptions = computed(() => {
 
             </nav>
             <NotificationCenter class="ml-auto mr-4" y-expand="bottom" x-expand="left" ></NotificationCenter>
-
         </div>
 
         <LoadingBar :isLoading="useLoadingAnimation().isLoading" />

@@ -23,6 +23,8 @@ import AccordionPanel from 'primevue/accordionpanel';
 import AccordionHeader from 'primevue/accordionheader';
 import AccordionContent from 'primevue/accordioncontent';
 
+import NavButtons from "@/components/reusables/NavButtons.vue";
+
 import { ProgressSpinner, SplitButton } from "primevue";
 
 import { ref, watch, computed } from "vue";
@@ -73,8 +75,11 @@ const userConfig = computed(() => {
 <template>
   <main>
     <dev class="flex flex-col w-full h-full items-center" :key="currentJobId">
-      <h1 class="mb-2 mt-5">Job Data & Managment</h1>
-
+      <div class="flex flex-row justify-between mb-2 mt-5 w-256">
+        <NavButtons />
+        <h1 class="self-center">Job Data & Managment</h1>
+        <p></p>
+      </div>
       <Accordion 
         class="w-full max-w-256 mb-2"
         :value="['0']" 
