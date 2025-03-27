@@ -1,2 +1,0 @@
-from backend.db_handler.mongo_core import MongoDbHandler
-from backend.db_handler.maria_core import MariaDbHandler

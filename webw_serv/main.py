@@ -2,14 +2,14 @@ import uvicorn
 from apscheduler.schedulers.background import BackgroundScheduler
 from contextlib import asynccontextmanager
 
-from backend.API.core import get_routes
-from backend.configurator import Config
+from webw_serv.API.core import get_routes
+from webw_serv.configurator import Config
 
-from backend.utility.custom_logging import CustomLogger
-from backend.utility import DEFAULT_LOGGER
+from webw_serv.utility.custom_logging import CustomLogger
+from webw_serv.utility import DEFAULT_LOGGER
 
 
-from backend.db_handler import MongoDbHandler, MariaDbHandler
+from webw_serv.db_handler import MongoDbHandler, MariaDbHandler
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 

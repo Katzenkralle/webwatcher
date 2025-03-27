@@ -1,1 +1,0 @@
-from backend.configurator.config import Config
