@@ -1,6 +1,6 @@
 import strawberry
 
-from .auth import get_hashed, admin_guard, user_guard
+from ..endpoints.auth import get_hashed, admin_guard, user_guard
 from ..gql_base_types import ResultType, Message, UserResult
 
 @strawberry.type

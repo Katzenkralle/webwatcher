@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from API.gql_base_types import JobEntry
+from webw_serv.API.gql_base_types import JobEntry
 
 
 class Watcher(ABC):

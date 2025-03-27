@@ -1,6 +1,5 @@
 import strawberry
-from typing_extensions import Annotated
-from API.gql_base_types import Message, User, ScriptContent, JobMetaData, JobSettings, JobEntry, JobFullInfo, \
+from webw_serv.API.gql_base_types import Message, User, ScriptContent, JobMetaData, JobSettings, JobEntry, JobFullInfo, \
     UserJobDisplayConfig
 
 user_result = User | Message

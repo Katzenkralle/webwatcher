@@ -5,9 +5,9 @@ import { useStatusMessage } from "@/composable/core/AppState";
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import SplitButton from "primevue/splitbutton";
-import ColumnGroup from 'primevue/columngroup';  
+import ColumnGroup from 'primevue/columngroup';
 
-import Row from 'primevue/row';             
+import Row from 'primevue/row';
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 
@@ -26,7 +26,7 @@ const openEditor = ref<{id: number|undefined, readonly: boolean}>({id: undefined
 let resizeObserver: MutationObserver | undefined = undefined
 
 const initTableSizeObserver = () => {
-  /* Observes the size of the table and adjusts the height of the outer element to fit the content 
+  /* Observes the size of the table and adjusts the height of the outer element to fit the content
   this is a workaround for the primevue datatable not supporting lazy loading with a fixed height table
   ToDo: Check if this can be done better and if this is not to expensive
   */
@@ -36,8 +36,8 @@ const initTableSizeObserver = () => {
     resizeObserver = new MutationObserver(() => {
       const headerSize = header ? header.clientHeight : 0;
       const totalPages = Math.floor(props.jobHandler.jobDataHandler.computeDisplayedData.value.length / props.jobHandler.fetchAmount.value)
-      const elementsOnPage = props.jobHandler.page.value === totalPages 
-        ? props.jobHandler.jobDataHandler.computeDisplayedData.value.length % props.jobHandler.fetchAmount.value 
+      const elementsOnPage = props.jobHandler.page.value === totalPages
+        ? props.jobHandler.jobDataHandler.computeDisplayedData.value.length % props.jobHandler.fetchAmount.value
         : props.jobHandler.fetchAmount.value;
       const sizeOfOne = (watchElement.clientHeight - headerSize)/elementsOnPage;
       const tableSize = (sizeOfOne *  props.jobHandler.fetchAmount.value)  + headerSize;
@@ -88,7 +88,7 @@ const entryEditMenu = (forId: number | [number, number]): MenuItem[] => {
 }
 
 
-const amountVisableInternalColumns = computed(() => 
+const amountVisableInternalColumns = computed(() =>
   props.jobHandler.jobDataHandler.computeLayout.value
     .map((col)  => props.jobHandler.intenalColums.includes(col.key) ? 1 : 0)
     .reduce((partialSum: number, a: number) => partialSum + a, 0)
@@ -115,9 +115,9 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
 <template>
     <!-- Attempting to use lazy loading from the primevue datatable resulted in unpredictable behavior,
        using custom implementation instead -->
-       <DataTable 
+       <DataTable
         :ref="props.jobHandler.mainDataTable"
-        :value="props.jobHandler.jobDataHandler.computeDisplayedData.value"  
+        :value="props.jobHandler.jobDataHandler.computeDisplayedData.value"
         class="bg-panel-h main-table"
         removableSort
         sortMode="multiple"
@@ -127,13 +127,13 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
         table-class="watched-table"
         paginator
 
-        :rows="props.jobHandler.fetchAmount.value" 
+        :rows="props.jobHandler.fetchAmount.value"
         @update:rows="(e: number) => jobHandler.fetchAmount.value = e"
         :rowsPerPageOptions="[2, 10, 30, 50, 100, 500]"
         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
         :currentPageReportTemplate="`({first} - {last}) / ${
-          props.jobHandler.jobDataHandler.computedAllFetched.value 
-            ? props.jobHandler.jobDataHandler.computeDisplayedData.value.length 
+          props.jobHandler.jobDataHandler.computedAllFetched.value
+            ? props.jobHandler.jobDataHandler.computeDisplayedData.value.length
             : '?'
           }`"
         @page="(e: any) => {
@@ -141,22 +141,22 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
           props.jobHandler.jobDataHandler.lazyFetch(e.page*e.rows)
         }"
         >
-          <ColumnGroup 
+          <ColumnGroup
           type="header">
             <Row>
-              <Column v-if="amountVisableInternalColumns" 
-                header="Meta Data" 
+              <Column v-if="amountVisableInternalColumns"
+                header="Meta Data"
                 :colspan="amountVisableInternalColumns"
                 class="top-header border-r-2 h-min"
               />
-              <Column v-if="props.jobHandler.jobDataHandler.computeLayout.value.length 
-                - amountVisableInternalColumns" 
-                header="Script Data" 
-                :colspan="props.jobHandler.jobDataHandler.computeLayout.value.length 
+              <Column v-if="props.jobHandler.jobDataHandler.computeLayout.value.length
+                - amountVisableInternalColumns"
+                header="Script Data"
+                :colspan="props.jobHandler.jobDataHandler.computeLayout.value.length
                 - amountVisableInternalColumns"
                 class="top-header border-r-2 h-min"
               />
-              <Column  
+              <Column
                 :colspan="1"
                 class="top-header h-min"
                />
@@ -164,18 +164,18 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
 
             <Row>
               <template v-for="col in props.jobHandler.jobDataHandler.computeLayout.value">
-                  <Column 
-                    :field="col.key" 
-                    :header="`${col.key} (${col.type})`" 
-                    sortable 
+                  <Column
+                    :field="col.key"
+                    :header="`${col.key} (${col.type})`"
+                    sortable
                     class="border-r-2 border-b-0  border-crust border-dashed"
                     />
               </template>
-              <Column 
-                field="vue_edit" 
-                header="Edit" 
-                :reorderableColumn="false" 
-                :sortable="false" 
+              <Column
+                field="vue_edit"
+                header="Edit"
+                :reorderableColumn="false"
+                :sortable="false"
               :pt="{
                 'columnTitle': 'mx-auto'
               }"
@@ -186,7 +186,7 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
           <template v-for="col in props.jobHandler.jobDataHandler.computeLayout.value">
               <Column :field="col.key">
                 <template #body="slotProps">
-                    <template v-if="props.jobHandler.jobDataHandler.highlightSubstring.value[slotProps.index] 
+                    <template v-if="props.jobHandler.jobDataHandler.highlightSubstring.value[slotProps.index]
                       && props.jobHandler.jobDataHandler.highlightSubstring.value[slotProps.index][col.key]">
                       <p>
                         <template v-for="segment in getHighlightedSegments(String(slotProps.data[col.key]),
@@ -204,15 +204,15 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
           </template>
           <Column field="vue_edit">
             <template #body="slotProps">
-                <EditEntryPopup 
-                  v-if="openEditor.id === slotProps.data.id" 
+                <EditEntryPopup
+                  v-if="openEditor.id === slotProps.data.id"
                   :can-modify-schema="true"
                   :internal-columns="jobHandler.intenalColums"
-                  :layout="Object.assign({}, ...jobHandler.jobDataHandler.computeLayout.value 
+                  :layout="Object.assign({}, ...jobHandler.jobDataHandler.computeLayout.value
                     .map((col) => ({[col.key]: col.type})))"
                   :readonly="openEditor.readonly"
                   :entry-values="slotProps.data"
-                  @update="(obj) => {console.debug(obj, 'ToDo: send me to the backend'); openEditor.id = undefined}"
+                  @update="(obj) => {console.debug(obj, 'ToDo: send me to the webw_serv'); openEditor.id = undefined}"
                   @close="() =>  openEditor.id = undefined"
                   />
 

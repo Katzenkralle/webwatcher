@@ -2,14 +2,14 @@ import uvicorn
 from apscheduler.schedulers.background import BackgroundScheduler
 from contextlib import asynccontextmanager
 
-from API.core import get_routes
-from configurator import Config
+from webw_serv.API.core import get_routes
+from webw_serv.configurator import Config
 
-from utility.custom_logging import CustomLogger
-from utility import DEFAULT_LOGGER
+from webw_serv.utility.custom_logging import CustomLogger
+from webw_serv.utility import DEFAULT_LOGGER
 
 
-from db_handler import MongoDbHandler, MariaDbHandler
+from webw_serv.db_handler import MongoDbHandler, MariaDbHandler
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
@@ -76,13 +76,17 @@ def create_app():
     scheduler.start()
     return app
 
-if __name__ == "__main__":
+def main():
     CustomLogger.set_default_log_opperation(level=Config().app.log_level, dev=Config().app.dev_mode)
     app = create_app()
     DEFAULT_LOGGER.info(f"Starting server at {Config().app.host}:{Config().app.port}")
-    uvicorn.run(app, 
-        host=Config().app.host,
-        port=Config().app.port,
-        lifespan="on",
-        log_level=Config().app.log_level,
-        log_config=CustomLogger.get_uvicorn_logging_config())
+    uvicorn.run(app,
+                host=Config().app.host,
+                port=Config().app.port,
+                lifespan="on",
+                log_level=Config().app.log_level,
+                log_config=CustomLogger.get_uvicorn_logging_config())
+
+
+if __name__ == "__main__":
+    main()

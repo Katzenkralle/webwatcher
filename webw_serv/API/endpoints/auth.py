@@ -14,9 +14,9 @@ import jwt
 import json
 from functools import wraps
 
-from db_handler.maria_schemas import DbUser
-from ..gql_base_types import Message
-from configurator import Config
+from webw_serv.db_handler.maria_schemas import DbUser
+from webw_serv.API.gql_base_types import Message
+from webw_serv.configurator import Config
 
 hash_context = CryptContext(schemes=["bcrypt"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")

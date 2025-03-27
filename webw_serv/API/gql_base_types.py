@@ -2,11 +2,9 @@ import strawberry
 from enum import Enum
 from typing import Annotated, Union, Optional
 
-from db_handler.maria_schemas import *
+from webw_serv.db_handler.maria_schemas import DbUser
 
-from utility.toolbox import extend_enum
-
-from db_handler import DbUser
+from webw_serv.utility.toolbox import extend_enum
 
 class BaseResultType(Enum):
     SUCCESS = "success"

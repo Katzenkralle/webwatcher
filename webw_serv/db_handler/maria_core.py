@@ -1,12 +1,11 @@
 import mariadb
 import asyncio
 
-from .misc import libroot
-from .misc import read_sql_blocks
-from .maria_schemas import DbUser
+from webw_serv.db_handler.misc import libroot, read_sql_blocks
+from webw_serv.db_handler.maria_schemas import DbUser
 
-from utility import DEFAULT_LOGGER as logger
-from configurator import Config
+from webw_serv.utility import DEFAULT_LOGGER as logger
+from webw_serv.configurator import Config
 
 
 
