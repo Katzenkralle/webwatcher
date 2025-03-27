@@ -14,10 +14,11 @@ import Button from 'primevue/button';
 import Textarea from 'primevue/textarea';
 import InputText from 'primevue/inputtext';
 import InputSwitch from 'primevue/inputswitch';
+import FloatLabel from 'primevue/floatlabel';
 
 
 const isEdit = ref<boolean>(false);
-const jobMetaData = ref<TableMetaData>(
+const jobMetaData = ref<Omit<TableMetaData, 'parameters'> & {parameters: Record<string, [string, any]>}>(
     {
     id: -1,
     name: "",
@@ -28,6 +29,7 @@ const jobMetaData = ref<TableMetaData>(
     executedLast: 0,
     forbidDynamicSchema: false,
     expectedReturnSchema: {},
+    parameters: {}
     }
 );
 const nameStatus = computed((): {severity: string, summary: string} => {
@@ -40,10 +42,23 @@ const nameStatus = computed((): {severity: string, summary: string} => {
 
 const availableScriptsOptions = ref<Record<string, string>[]>([]);
 
+const newParameterKvLayout = async (scriptName: string): Promise<Record<string, [string, any]>> => {
+    const allScripts = await getAllScripts();
+    return allScripts[scriptName] 
+        ? Object.keys(allScripts[scriptName].availableParameters)
+            .reduce((acc, key) => {
+                acc[key] = [allScripts[scriptName].availableParameters[key], null];
+                return acc;
+            }, {} as Record<string, [string, any]>)
+        : {}
+};
+
 const getAvailableStrings = (async () => {
-    availableScriptsOptions.value = await getAllScripts()
-                    .then((data) => Object.keys(data)
-                        .map((entry) => {return {name: entry}}));
+    const allScripts = await getAllScripts();
+    
+    jobMetaData.value.parameters = await newParameterKvLayout(jobMetaData.value.script);
+    availableScriptsOptions.value = Object.keys(allScripts)
+                        .map((entry) => {return {name: entry}});
 }); 
 
 
@@ -55,10 +70,15 @@ const refreshJobMetaData = (id: string|string[]|undefined) => {
             return;
     }
     let jobId: number =  Number(id);
-  
     console.log('jobId', jobId);
-    getJobMetaData(Number(id)).then((data: TableMetaData) => {
-            jobMetaData.value = data;
+    getJobMetaData(Number(id)).then(async (data: TableMetaData) => { 
+            jobMetaData.value = {...data, 
+                parameters: await newParameterKvLayout(data.script)
+            };
+            
+            Object.entries(data.parameters).forEach(([key, value]) => {
+                jobMetaData.value.parameters[key][1] = value;
+            });
             isEdit.value = true;
         }).catch((error) => {
             useStatusMessage().newStatusMessage('Job not found.', 'danger');
@@ -67,8 +87,8 @@ const refreshJobMetaData = (id: string|string[]|undefined) => {
     }
 
 onMounted(() => {
-    refreshJobMetaData(router.currentRoute.value.params.id);
     getAvailableStrings()
+    refreshJobMetaData(router.currentRoute.value.params.id);
 });
 
 watch(ref(router.currentRoute.value.params.id), (newJobId) => {
@@ -118,14 +138,18 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
                     id="scriptSelector"
                     v-model:model-value="jobMetaData.script"
                     :options="availableScriptsOptions"
-                    @change="() => {jobMetaData.forbidDynamicSchema = false}"
+                    @change="async (newVal) => {
+                        jobMetaData.forbidDynamicSchema = false
+                        jobMetaData.parameters = await newParameterKvLayout(newVal.value)
+                    }"
                     placeholder="Where do I run?"
                     option-label="name"
                     option-value="name"/>              
             </div>
 
             <div class="input-box"
-                v-if="globalScriptData[jobMetaData.script]?.staticSchema && Object.keys(globalScriptData[jobMetaData.script].staticSchema).length > 0">
+                v-if="globalScriptData[jobMetaData.script]?.staticSchema 
+                    && Object.keys(globalScriptData[jobMetaData.script].staticSchema).length > 0">
                 <label for="forbidDynamicSchema">Forbid Dynamic Schema</label>
                 <div class="flex flex-row items-center">
                     <InputSwitch id="forbidDynamicSchema" v-model="jobMetaData.forbidDynamicSchema" />
@@ -151,12 +175,36 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
                 />
             </div>
 
+            <div class="input-box" v-if="jobMetaData.parameters && Object.keys(jobMetaData.parameters).length > 0">
+                <label for="">Parameters for the Script</label>
+
+                <div v-for="([name, [type, _]]) in Object.entries(jobMetaData.parameters)"
+                    class="mb-2 flex flex-col space-y-1">
+                    <a :for="name" class="font-bold">{{name}}</a>
+                    <FloatLabel :for="`param-${name}`" :label="type" variant="in">
+                        <InputText
+                            :id="`param-${name}`"
+                            v-model:model-value="jobMetaData.parameters[name][1]"
+                            class="w-full"
+                            aria-describedby="jobName"
+                        />
+                        <label :for="`param-${name}`">{{type}}</label>
+                    </FloatLabel>
+                </div>
+            </div>
+
             <div class="input-box">
                 <Button
                     label="Save"
                     security="success"
                     @click="() => {
-                        updateOrCreateJob(jobMetaData)
+                        const normalizedJobData = { ...jobMetaData, parameters: {} };
+                        normalizedJobData.parameters = Object.entries(jobMetaData.parameters)
+                            .reduce((acc: Record<string, any>, [key, [_, value]]) => {
+                                acc[key] = value;
+                                return acc;
+                            }, {});
+                        updateOrCreateJob(normalizedJobData)
                             .then(() => {
                                 useStatusMessage().newStatusMessage('Job saved.', 'success');
                                 router.push('/jobs');

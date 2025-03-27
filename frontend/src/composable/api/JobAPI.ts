@@ -12,6 +12,7 @@ export interface TableMetaData {
     executedLast: number;
     forbidDynamicSchema: boolean;
     expectedReturnSchema: Record<string, string>;
+    parameters: Record<string, string>; // KV of parameter name and value
 }
 
 export type TableLayout = {
@@ -66,7 +67,8 @@ export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
                             executeTimer: "0",
                             executedLast: 0,
                             forbidDynamicSchema: false,
-                            expectedReturnSchema: {}
+                            expectedReturnSchema: {},
+                            parameters: {}
                         },
                         {
                             id: 1,
@@ -80,6 +82,9 @@ export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
                             expectedReturnSchema: {
                                 "some": "string|number",
                                 "aNumber": "number"
+                            },
+                            parameters: {
+                                "test": "value",
                             }
                         }
                     ]

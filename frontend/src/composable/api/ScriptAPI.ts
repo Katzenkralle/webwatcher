@@ -119,10 +119,8 @@ export async function fetchScripts() {
 
 export async function getAllScripts() {
     if(!Object.keys(globalScriptData.value).length) {
-        console.log("fetching scripts");
         await fetchScripts();
     }
-    console.log("returning scripts", globalScriptData.value);
     return globalScriptData.value;
 }
 
