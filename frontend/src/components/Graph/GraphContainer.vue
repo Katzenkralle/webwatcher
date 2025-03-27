@@ -1,57 +1,42 @@
 <script setup lang="ts">
-import { useGraphHandler } from "@/composable/Graphs/GraphHandler"
 import {defineProps, ref, computed} from "vue"
 
-import { MultiSelect, Select } from 'primevue';
+import Accordion from 'primevue/accordion';
+import AccordionPanel from 'primevue/accordionpanel';
+import AccordionHeader from 'primevue/accordionheader';
+import AccordionContent from 'primevue/accordioncontent';
+import SmallSeperator from "@/components/reusables/SmallSeperator.vue";
+
+
+import GraphSelector from "./GraphSelector.vue";
+import DisplayChart from "./DisplayChart.vue";
 
 const props = defineProps<{
     jobId: number
     }>()
 
-const selectedCols = ref([])    
-const selectedRows = ref([]) 
-const selectedChart = ref<string[]>([])
-
-
-
-const graphHandler = useGraphHandler(props.jobId,ref("row"), selectedCols, selectedRows, selectedChart)
-
-const computedSelectOptionsCols = computed(() => {
-    return graphHandler.dataHandler.computeLayoutUnfiltered.value.map((element) => {
-            return {"label": element.key}
-        })
-    })
-
-const computedSelectOptionsCharts = computed(() => {
-    return graphHandler.chartsOptions.value.map((element) => {
-        return {"label": element}
-    })
-    })
-
-
-
 </script>
 
 <template>
-    <h1>TEST</h1>
-    <MultiSelect 
-        v-model:model-value="selectedCols"
-        @update:model-value="(newVal)  => {console.log(newVal)}"
-        :options="computedSelectOptionsCols"
-        optionLabel="label"
-        option-value="label" 
-    />
-    
-    <Select
-        v-model:model-value="selectedChart"
-        @update:model-value="(newVal) => {console.log(newVal)}"
-        :options="computedSelectOptionsCharts"
-        optionLabel="label"
-        option-value="label"
-    />
+    <Accordion 
+        class="w-full max-w-256 mb-2"
+        :value="['0']" 
+        multiple
+        unstyled>
    
-
-   
+        <AccordionPanel value="0">
+                <AccordionHeader>Graph</AccordionHeader>
+                <AccordionContent>
+                    <div class="content-box flex flex-col">
+                        <GraphSelector :jobId="props.jobId"/>
+                        <SmallSeperator 
+                        class="my-2 mx-auto" 
+                        :is-dashed="true"/>
+                        <DisplayChart :jobId="props.jobId"/>
+                    </div>
+                </AccordionContent> 
+            </AccordionPanel>
+    </Accordion>
     
 </template>
 
