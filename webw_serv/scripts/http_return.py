@@ -1,4 +1,4 @@
-from typing_extensions import Any
+from typing_extensions import Any, Type
 
 from webw_serv import Watcher
 import aiohttp
@@ -16,15 +16,17 @@ class ScriptMain(Watcher):
                 return {
                     "url": self.url,
                     "status_code": response.status,
-                    "description": responses.get(response.status, "Unknown Status")}
+                    "description": responses.get(response.status, "Unknown Status")
+                }
 
     @staticmethod
-    def get_config_schema() -> dict[str, str] | None:
-        return {"url":"str"}
+    def get_config_schema() -> dict[str, Type[str | int | bool]] | None:
+        return {"url": str}
 
     @staticmethod
-    def get_return_schema() -> dict[str, str] | None:
+    def get_return_schema() -> dict[str, Type[str | int | bool]] | None:
         return {
-            "url": "str",
-            "status_code": "int",
-            "description": "str"}
+            "url": str,
+            "status_code": int,
+            "description": str
+        }

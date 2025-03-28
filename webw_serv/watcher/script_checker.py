@@ -19,5 +19,8 @@ def script_checker(module_name: str)  -> bool | ScriptFormatException:
     except Exception as e:
         return ScriptFormatException(e)
 
+
+def
+
 def abc_implemented(cls) -> bool:
     return not bool(cls.__abstractmethods__)

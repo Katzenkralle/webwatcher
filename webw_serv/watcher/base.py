@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from typing_extensions import Any
+from typing_extensions import Any, Type
 
 from webw_serv.API.gql_base_types import JobEntry
 
@@ -37,7 +37,7 @@ class Watcher(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_return_schema() -> dict[str, str] | None:
+    def get_return_schema() -> dict[str, Type[str | int | bool]] | None:
         """
         Returns the schema that the watcher will return the 'context' of a entry in.
         If none, the watcher may use a dynamic schema.
@@ -49,7 +49,7 @@ class Watcher(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_config_schema() -> dict[str, str] | None:
+    def get_config_schema() -> dict[str, Type[str | int | bool]] | None:
         """
         Returns the schema that the watcher will use for the configuration.
 

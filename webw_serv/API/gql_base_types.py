@@ -23,6 +23,10 @@ class BaseResultType(Enum):
 class JsonStr(str):
     pass
 
+@strawberry.scalar
+class B64Str(str):
+    pass
+
 # Helper types
 @strawberry.input
 class PaginationInput:
