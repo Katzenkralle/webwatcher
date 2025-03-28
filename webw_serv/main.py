@@ -1,7 +1,11 @@
 import uvicorn  # Unicorn
+import os
+import shutil
 from apscheduler.schedulers.background import BackgroundScheduler
 from contextlib import asynccontextmanager
 
+import CONFIG
+from utility.oven_cleaner import cleanup_folder
 from webw_serv.API.core import get_routes
 from webw_serv.configurator import Config
 
@@ -76,8 +80,12 @@ def create_app():
     scheduler.start()
     return app
 
+def self_cleanup_cycle():
+    cleanup_folder(CONFIG.SCRIPTS_TEMP_PATH)
+
 def main():
     CustomLogger.set_default_log_opperation(level=Config().app.log_level, dev=Config().app.dev_mode)
+    self_cleanup_cycle()
     app = create_app()
     DEFAULT_LOGGER.info(f"Starting server at {Config().app.host}:{Config().app.port}")
     uvicorn.run(app,

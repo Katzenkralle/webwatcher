@@ -2,7 +2,7 @@ import mariadb
 import asyncio
 
 from webw_serv.db_handler.misc import libroot, read_sql_blocks
-from webw_serv.db_handler.maria_schemas import DbUser
+from webw_serv.db_handler.maria_schemas import DbUser, DbScriptInfo
 
 from webw_serv.utility import DEFAULT_LOGGER as logger
 from webw_serv.configurator import Config
@@ -81,6 +81,42 @@ class MariaDbHandler:
             return DbUser(*user)
         except Exception as e:
             return None
+
+    async def get_script_info(self, name: str) -> DbScriptInfo | None:
+        self.__cursor.execute("""
+            SELECT fs_path, name, description
+            FROM script_list
+            WHERE name = ?
+        """, (name,))
+        script_list_data = self.__cursor.fetchone()
+
+        if not script_list_data:
+            return None
+
+        self.__cursor.execute("""
+            SELECT excpected_return_schema, input_schema
+            FROM script_input_info
+            WHERE name = ?
+        """, (name,))
+        script_input_info_data = self.__cursor.fetchall()
+
+        if not script_input_info_data:
+            return None
+
+        excpected_return_schema = {}
+        input_schema = {}
+
+        for row in script_input_info_data:
+            excpected_return_schema.update(row[0])
+            input_schema.update(row[1])
+
+        return DbScriptInfo(
+            fs_path=script_list_data[0],
+            name=script_list_data[1],
+            description=script_list_data[2],
+            excpected_return_schema=excpected_return_schema,
+            input_schema=input_schema
+        )
         
     def close(self):
         self.__cursor.close()

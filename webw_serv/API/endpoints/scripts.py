@@ -12,17 +12,22 @@ from ..gql_base_types import ScriptValidationResult, Parameter, Message, B64Str
 from ..gql_types import script_content_result, jobs_metadata_result, jobs_settings_result, jobs_entry_result, \
     user_job_config_result, job_metadata_result, job_full_info_result, job_entry_result
 
-
 @strawberry.type
 class Mutation:
     @strawberry.mutation
     @admin_guard(use_http_exception=True)
-    async def preupload_script(self, info: strawberry.Info, file: B64Str) -> ScriptValidationResult:
-        # TODO: mach mal
+    async def preupload_script(self, info: strawberry.Info, file: B64Str, name: Optional[str]) -> ScriptValidationResult:
         path = CONFIG.SCRIPTS_TEMP_PATH + info.context["user"].username + CONFIG.SCRIPTS_TEMP_SUFFIX
         b64_to_file(file, path)
         module_path = CONFIG.MODULE_TEMP_PREFIX + info.context["user"].username + CONFIG.MODULE_TEMP_SUFFIX
         script_check_result = script_checker(module_path)
+        if isinstance(script_check_result, tuple) and name is not None:
+            old_script_config_data = await info.context["request"].state.maria.get_script_info(name)
+            if old_script_config_data is not None:
+                ...
+            # TODO: Add the script to the database
+            # TODO: Check if the script in database matches the scheme
+
 
         if isinstance(script_check_result, tuple):
             script_msg = script_check_result[0]
@@ -43,7 +48,7 @@ class Mutation:
 
     @strawberry.mutation
     @admin_guard()
-    async def upload_script_data(self, name: str, create_new: bool, description: Optional[str]) -> job_metadata_result:
+    async def upload_script_data(self, name: str, description: Optional[str]) -> job_metadata_result:
         pass
 
     @strawberry.mutation
