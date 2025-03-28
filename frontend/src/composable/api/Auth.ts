@@ -11,8 +11,8 @@ export interface AuthResponse {
 }
 
 export interface SessionData {
-    expiration: string;
-    sessionId: string;
+    created: string;
+    name: string;
 }
 
 interface Message {
@@ -38,7 +38,7 @@ export const getSessionFromJWT = () => {
         return JSON.parse(JSON.parse(atob(base64)).sub); // Decode and parse JSON
     }
     catch (e) {
-        return {user: "", session: ""}
+        return {user: "", session: "", name: ""};
     }
 }
 
@@ -67,17 +67,17 @@ export const changePassword = async (oldPassword: string, newPassword: string) =
     });
 }
 
-export const logout = async (sessionId: string|undefined = undefined): Promise<void> => {
+export const logout = async (sessionName: string|undefined, sessionId: string|undefined = undefined): Promise<void> => {
     let logoutThisInstance = false;
-    const thisSessionId = getSessionFromJWT().session
-    if (!sessionId || thisSessionId == sessionId) {
-        sessionId = thisSessionId
+    const thisSession = getSessionFromJWT()
+    if ((sessionName && sessionName === thisSession.name ) || (sessionId && thisSession.session == sessionId)) {
+        sessionId = thisSession.session;
         logoutThisInstance = true;
     }
 
     const query = `
       mutation {
-        logout(sessionId: "${sessionId}") {
+        logout(sessionId: "${sessionId ?? ''}", sessionName: "${sessionName ?? ''}") {
         __typename
         ... on Message {
             message
@@ -99,10 +99,13 @@ export const logout = async (sessionId: string|undefined = undefined): Promise<v
     });
 }
 
-export const requestToken = async (username: string, password: string) => {
+export const requestToken = async (username: string, password: string, name: string|undefined = undefined) => {
     const formData = new FormData();
     formData.append('username', username);
     formData.append('password', password);
+    if (name) {
+        formData.append('client_id', name);
+    }
     return await fetch(`${AUTH_ENDPOINT}/token`, {
         method: 'POST',
         body: formData,
@@ -169,8 +172,8 @@ export const getAllSessions = async () => {
             ... on SessionList {
             __typename
             sessions {
-                expiration
-                sessionId
+                created
+                name
             }
             }
         }      
@@ -178,7 +181,7 @@ export const getAllSessions = async () => {
     return queryGql(query).then((response: GQLResponse) => {
         switch (response.keys[0]) {
             case "sessions":
-                return response.data.sessions as SessionData[];
+                return response.data.sessions.sessions as SessionData[];
             default:
                 throw response
         }

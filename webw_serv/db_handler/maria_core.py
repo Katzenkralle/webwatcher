@@ -10,6 +10,7 @@ from webw_serv.db_handler.maria_schemas import DbUser, DbSession
 
 from webw_serv.utility import DEFAULT_LOGGER as logger
 from webw_serv.configurator import Config
+from datetime import datetime
 
 
 
@@ -94,8 +95,6 @@ class MariaDbHandler:
                     WHERE session_id = ?""",
                     (session,))
                 db_session = self.__cursor.fetchone()
-                if db_session[2] != None and db_session[2] < time.time():
-                    return None
                 username = db_session[0]
                 
             self.__cursor.execute("SELECT * FROM web_users WHERE username = ?", (username,))
@@ -104,25 +103,41 @@ class MariaDbHandler:
         except Exception as e:
             return None
         
-    async def register_session(self, username: str) -> int:
+    async def register_session(self, username: str, name: str|None = None) -> DbSession:       
         new_id = None
         while new_id is None:
             new_id = "".join(random.choices(string.digits, k=255))
             self.__cursor.execute("SELECT * FROM web_user_sessions WHERE session_id = ?", (new_id,))
             if self.__cursor.fetchone() is not None:
                 new_id = None
-        
-        self.__cursor.execute("INSERT INTO web_user_sessions (session_id, username) VALUES (?, ?)", (new_id, username))
+        if not name:
+            name = f"oauth2_{new_id[:8]}"
+        else:
+            if self.__cursor.execute("SELECT * FROM web_user_sessions WHERE name = ?", (name,)):
+                raise ValueError("Session name already in use")
+
+        # Get current time in MariaDB TIMESTAMP format
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        new_session = DbSession(username, new_id, name, current_time)
+
+        self.__cursor.execute("INSERT INTO web_user_sessions (session_id, username, name, created) VALUES (?, ?, ?, ?)",
+                                (new_session.session_id, new_session.username, new_session.name, new_session.created))
         self.__conn.commit()
-        return new_id
+        return new_session
     
     async def get_sessions_for_user(self, username: str) -> list[DbSession]:
         self.__cursor.execute("SELECT * FROM web_user_sessions WHERE username = ?", (username,))
         db_sessions = self.__cursor.fetchall()
         return [DbSession(*session) for session in db_sessions]
 
-    async def logout_session(self, session_id: str) -> bool:
-        self.__cursor.execute("DELETE FROM web_user_sessions WHERE session_id = ?", (session_id, ))
+    async def logout_session(self, session_id: str|None = None, username:str|None = None, session_name: str|None = None ) -> bool:
+        if not session_id and (not username or not session_name):
+            raise ValueError("No session identifier provided")
+
+        if not session_id:
+            self.__cursor.execute("DELETE FROM web_user_sessions WHERE username = ? AND name = ?", (username, session_name))
+        else:
+            self.__cursor.execute("DELETE FROM web_user_sessions WHERE session_id = ?", (session_id, ))
         self.__conn.commit()
         return True
     

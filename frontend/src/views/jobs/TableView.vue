@@ -192,35 +192,6 @@ const userConfig = computed(() => {
 @reference "@/assets/global.css";
 
 
-.p-accordioncontent-content {
-  @apply flex justify-center;
-}
-
-.p-accordionheader{
-  @apply text-xl font-semibold underline underline-offset-3 mb-1 cursor-pointer;
-}
-
-.p-accordionpanel:not(:last-child) {
-  @apply border-b-2 border-h-panel pb-2;
-}
-.p-accordionpanel:not(:first-child) {
-  @apply pt-1;
-}
-
-.content-box {
-  @apply 
-    bg-panel 
-    border-2 
-    border-primary 
-    rounded-lg 
-    p-2 
-    w-full 
-    max-w-256 
-    justify-between 
-    overflow-x-scroll 
-    overflow-y-hidden;
-}
-
 .shrinkable {
   @apply flex 
     flex-col 

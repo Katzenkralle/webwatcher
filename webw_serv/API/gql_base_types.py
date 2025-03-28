@@ -57,7 +57,8 @@ class User(DbUser):
 
 @strawberry.type
 class Session(DbSession):
-    pass
+    # This is a private field, it will not be exposed in the schema
+    session_id: strawberry.Private[str]
 
 @strawberry.type
 class SessionList():

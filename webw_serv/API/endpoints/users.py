@@ -20,12 +20,12 @@ class Mutation:
         
     @strawberry.mutation
     @user_guard()
-    async def logout(self, info: strawberry.Info, session_id: str) -> Message:
+    async def logout(self, info: strawberry.Info, session_id: Optional[str] = None, session_name: Optional[str] = None) -> Message:
         try:
-            await info.context["request"].state.maria.logout_session(session_id)
+            await info.context["request"].state.maria.logout_session(session_id, info.context["user"].username, session_name)
             return Message(message="Logged out successfully", status=MessageType.SUCCESS)
-        except:
-            return Message(message="Failed to logout", status=MessageType.DANGER)
+        except Exception as e:
+            return Message(message=e, status=MessageType.DANGER)
         
     @strawberry.mutation
     @user_guard()

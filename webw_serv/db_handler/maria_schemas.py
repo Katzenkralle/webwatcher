@@ -10,4 +10,5 @@ class DbUser:
 class DbSession:
     username: str
     session_id: str
-    expiration: int | None = None
+    name: str
+    created: str

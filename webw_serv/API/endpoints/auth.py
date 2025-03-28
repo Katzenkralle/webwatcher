@@ -47,7 +47,7 @@ async def get_current_user_or_none(token: Annotated[str, Depends(retrieve_oauth_
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         data = json.loads(payload.get("sub", {}))
-        session = data.get("session")
+        session = data.get("session") #The session id is engough to get the user securly for jwt are signed
         user = await request.state.maria.get_user(session=session)
     except (jwt.InvalidTokenError, jwt.ExpiredSignatureError):
         return None
@@ -105,9 +105,9 @@ async def get_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
     if not user or not hash_context.verify(form_data.password, user.password):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
-    session_id = await request.state.maria.register_session(user.username)
+    session = await request.state.maria.register_session(user.username, form_data.client_id)
 
     # Password includet to let token be invalidated
-    token = generate_token({"sub": json.dumps({"user": user.username, "session": session_id})})
+    token = generate_token({"sub": json.dumps({"user": user.username, "session": session.session_id, "name": session.name })})
 
     return {"access_token": token, "token_type": "bearer"}

@@ -1,0 +1,208 @@
+<script setup lang="ts">
+import Password from 'primevue/password';
+import { ref, onMounted, computed } from 'vue';
+
+import FloatLabel from 'primevue/floatlabel';
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+
+import { useStatusMessage } from '@/composable/core/AppState';
+import { getAllSessions, changePassword, logout,
+    type SessionData, getSessionFromJWT, requestToken } from '@/composable/api/Auth';
+
+import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue';
+import PupupDialog from '@/components/reusables/PopupDialog.vue';
+import SmallSeperator from '@/components/reusables/SmallSeperator.vue';
+
+const passwdChange = ref({
+    old_passwd: '',
+    new_passwd: '',
+    new_passwd_confirm: ''
+});
+
+const sessions = ref<SessionData[]>([])
+const fetchSessions = () => {
+    getAllSessions()
+        .then((response: SessionData[]) => {
+            sessions.value = response;
+        })
+        .catch((error: Error) => {
+            console.debug(error);
+        });
+}
+onMounted(() => {
+    fetchSessions()
+});
+
+const thisToken = computed(() => {
+    return getSessionFromJWT()
+});
+
+const createNewTokenDialog = ref()
+const infoDialog = ref()
+const infoDilogData = ref({
+    title: '',
+    mesage_prelude: '',
+    mesage: '',
+    copyClicked: false
+})
+
+const resetInfoDialog = () => {
+    infoDilogData.value.title = ''
+    infoDilogData.value.mesage_prelude = ''
+    infoDilogData.value.mesage = ''
+    infoDilogData.value.copyClicked = false
+}   
+
+const putInClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    infoDilogData.value.copyClicked = true;
+    setTimeout(() => infoDilogData.value.copyClicked = false, 1500);
+}
+
+let newTokenPasswd = {
+    name: '',
+    password: ''
+}
+
+</script>
+
+<template>
+    <div>
+        <PupupDialog ref="infoDialog" 
+            @cancel="() => {infoDialog?.closeDialog(); resetInfoDialog()}"
+            passthrou-classes="max-w-300"
+            :title="infoDilogData.title">
+            <template #default>
+                <div class="flex flex-col">
+                    <div class="flex flex-row justify-between items-center mb-2">
+                        <p class="font-bold text-info">{{ infoDilogData.mesage_prelude }}</p>
+                        <Button 
+                            :icon="infoDilogData.copyClicked ? 'pi pi-check' : 'pi pi-clipboard'"
+                            :class="{'p-button-success': infoDilogData.copyClicked}"
+                            @click="() => {
+                                putInClipboard(infoDilogData.mesage);
+                            }" />
+                    </div>
+                    <p class="[word-wrap:anywhere;] subsection">{{ infoDilogData.mesage }}</p>
+                </div>
+            </template>
+            <template #footer>
+                <Button 
+                    label="Close" 
+                    @click="() => {infoDialog?.closeDialog(); resetInfoDialog()}" />
+            </template>
+        </PupupDialog>
+
+        <PupupDialog ref="createNewTokenDialog"
+            title="New Token:"
+            @submit="(confirmed) => {
+                if (confirmed){
+                    requestToken(thisToken.user, newTokenPasswd.password, newTokenPasswd.name).then((data) => {
+                        useStatusMessage().newStatusMessage('Successfully created new Token', 'success')
+                        infoDilogData.title = 'New Token: Success'
+                        infoDilogData.mesage_prelude = 'Your new token is:'
+                        infoDilogData.mesage = `{'Authorization': '${data.token_type} ${data.access_token}'}`
+                        console.log(infoDialog)
+                        infoDialog?.openDialog()
+                        fetchSessions()
+                    }).catch((e) => {
+                        useStatusMessage().newStatusMessage(e.message, 'danger')
+                    })
+                }
+                newTokenPasswd.name = ''
+                newTokenPasswd.password = ''
+            }"
+            >
+            <template #default>
+                <div class="flex flex-row justify-center space-x-4">
+                    <FloatLabel variant="in">
+                        <InputText
+                            v-model:model-value="newTokenPasswd.name"
+                        />
+                        <label>Session Name</label>
+                    </FloatLabel>
+                    <FloatLabel variant="in">
+                        <Password
+                            :feedback="false"
+                            v-model:model-value="newTokenPasswd.password"
+                        />
+                        <label>Re-enter Password</label>
+                    </FloatLabel>
+                </div>
+            </template>
+        </PupupDialog>
+
+        <div class="flex flex-col items-center mx-auto">
+            <div class="input-box passwd_change space-y-3 w-full">
+                <label for="passwd_change">Change password:</label>
+                <FloatLabel label="Old Password" variant="in" >
+                    <Password size="small" :feedback="false"  v-model:model-value="passwdChange.old_passwd" required />
+                    <label for="old_passwd">Old Password</label>
+                </FloatLabel>
+                <FloatLabel label="New Password" variant="in" class="w-full">
+                    <Password size="small" :feedback="false" v-model:model-value="passwdChange.new_passwd" required />
+                    <label for="new_passwd">New Password</label>    
+                </FloatLabel>
+                <FloatLabel label="Confirm New Password" variant="in" class="w-full">
+                    <Password size="small" :feedback="false" v-model:model-value="passwdChange.new_passwd_confirm" required />
+                    <label for="new_passwd_confirm">Confirm New Password</label>
+                </FloatLabel>
+                <Button 
+                    label="Submit" 
+                    type="submit"
+                    @click="() => {
+                        if (passwdChange.new_passwd !== passwdChange.new_passwd_confirm) {
+                            useStatusMessage().newStatusMessage('Passwords do not match.', 'danger');
+                            return;
+                        }
+                        changePassword(passwdChange.old_passwd, passwdChange.new_passwd)
+                    }" />
+            </div>
+
+            <div class="input-box w-full">
+                <label>Session Manager:</label>
+                    <div v-for="session, index in sessions" :key="session.name" 
+                        :class="`flex flex-row overflow-hidden justify-around items-center p-2 ${index % 2 === 0 ? 'bg-panel-h' : ''}`">
+                        <div class="flex flex-col mr-2">
+                            <span v-if="thisToken.name == session.name" class="text-sm text-warning">This Session</span>
+                            <span class="font-bold text-info">Name: </span>
+                            <span class="text-sm  text-info">Created at:</span>
+                        </div>
+
+                        <div class="flex flex-col mr-2">
+                            <span v-if="thisToken.name == session.name" class="opacity-0 text-sm"> .</span>
+                            <span class="text-text-d max-w-48 truncate"> {{ session.name }}</span>
+                            <span class="text-sm text-text-d"> {{ session.created }}</span>
+                        </div>
+
+                        <ConfirmableButton
+                            confirmMessage="Are you sure you want to terminate this session?"
+                            confirmIcon="pi pi-exclamation-triangle"
+                            buttonIcon="pi pi-times"
+                            buttonLabel="Terminate"
+                            @confirm="() => logout(session.name).then(() => {
+                                sessions = sessions.filter(s => s.name !== session.name);
+                            })"
+                         />
+                    </div>
+                <SmallSeperator class="my-2 mx-auto" />
+                <Button
+                    label="New Session"
+                    @click="() => createNewTokenDialog?.openDialog()"
+                />
+            </div>
+
+            
+        </div>
+    </div>
+</template>
+
+<style scoped>
+@reference "@/assets/global.css";
+
+.passwd_change div,
+.passwd_change input {
+    @apply w-full;
+}
+</style>
