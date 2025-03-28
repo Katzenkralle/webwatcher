@@ -7,3 +7,6 @@ def file_to_b64(file_path):
 def b64_to_file(b64_str, file_path):
     with open(file_path, "wb") as f:
         f.write(b64decode(b64_str))
+
+if __name__ == "__main__":
+    print(file_to_b64("/webwatcher/webw_serv/scripts/http_return.py"))

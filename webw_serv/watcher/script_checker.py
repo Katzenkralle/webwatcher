@@ -1,11 +1,12 @@
 import importlib
 
+from typing_extensions import Type
+
 from webw_serv import Watcher, CONFIG
-from webw_serv.watcher.errors import ScriptFormatException
+from webw_serv.watcher.errors import ScriptFormatException, ScriptException
 
 
-def script_checker(module_name: str)  -> bool | ScriptFormatException:
-    module_name = CONFIG.MODULE_PREFIX + module_name
+def script_checker(module_name: str)  -> tuple[str, dict[str, Type[str | int | bool]] | None, dict[str, Type[str | int | bool]] | None] | ScriptFormatException | ScriptException:
     try:
         module = importlib.import_module(module_name, CONFIG.PACKAGE_NAME)
         if not hasattr(module, "ScriptMain"):
@@ -15,12 +16,21 @@ def script_checker(module_name: str)  -> bool | ScriptFormatException:
             return ScriptFormatException(f"ScriptMain must be a subclass of Watcher")
         if not abc_implemented(instance):
             return ScriptFormatException(f"ScriptMain must implement all abstract methods")
-        return True
+
+        try:
+            config_schema = instance.get_config_schema()
+        except Exception as e:
+            return ScriptException(f"Exception while getting config schema: {e}")
+
+        try:
+            return_schema = instance.get_return_schema()
+        except Exception as e:
+            return ScriptException(f"Exception while getting return schema: {e}")
+
+        return "Success", config_schema, return_schema
     except Exception as e:
         return ScriptFormatException(e)
 
-
-def
 
 def abc_implemented(cls) -> bool:
     return not bool(cls.__abstractmethods__)
