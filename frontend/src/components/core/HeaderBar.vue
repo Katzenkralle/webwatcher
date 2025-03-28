@@ -68,6 +68,9 @@ const computeTableOptions = computed(() => {
                     <router-link to="/scripts" class="selectable-menu-entry">
                         <a>Scripts</a>
                     </router-link>
+                    <router-link to="/settings" class="selectable-menu-entry">
+                        <a>Settings</a>
+                    </router-link>
 
                 </template>
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ref} from 'vue';
-import {useAuth, type AuthResponse} from "@/composable/api/Auth";
+import {requestToken, type AuthResponse} from "@/composable/api/Auth";
 import InputText from "primevue/inputtext";
 import Password from "primevue/password";
 import Button from "primevue/button";
@@ -13,7 +13,7 @@ const auth_error = ref('');
 
 const submit = () => {
     useLoadingAnimation().setState(true);
-    useAuth().requestToken(username.value, password.value)
+    requestToken(username.value, password.value)
         .then((response: AuthResponse) => {
             document.cookie = 
             `oauth2=${response.token_type} ${response.access_token};secure;paath=/;samesite=strict`;

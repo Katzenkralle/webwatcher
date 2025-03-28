@@ -2,17 +2,27 @@ import strawberry
 from enum import Enum
 from typing import Annotated, Union, Optional
 
-from webw_serv.db_handler.maria_schemas import DbUser
+from webw_serv.db_handler.maria_schemas import DbUser, DbSession
+
 
 from webw_serv.utility.toolbox import extend_enum
 
-class BaseResultType(Enum):
+
+class MessageType(Enum):
+    SECONDARY = "secondary"
     SUCCESS = "success"
+    INFO = "info"
+    WARN = "warn"
+    HELP = "help"
+    DANGER = "danger" 
+    CONTRAST = "contrast"  # Fixed semicolon
+
+@extend_enum(MessageType)
+class BaseResultType(Enum):
     AUTH_ERROR = "auth_error"
     PERMISSION_ERROR = "permission_error"
     FAILURE = "failure"
     NETWORK_ERROR = "network_error"
-    WARNING = "warning"
     OK = "ok"
     NOT_OK = "not_ok"
     UNHEALTHY = "unhealthy"
@@ -40,11 +50,18 @@ class ResultType(Enum):
     pass
 
 # Base types
+@strawberry.type()
+class User(DbUser):
+    pass
+
+
 @strawberry.type
-class User:
-    username: str
-    password: Optional[str]
-    is_admin: bool
+class Session(DbSession):
+    pass
+
+@strawberry.type
+class SessionList():
+    sessions: list[Session]
 
 @strawberry.type()
 class UserJobDisplayConfig:
@@ -54,7 +71,7 @@ class UserJobDisplayConfig:
 @strawberry.type
 class Message:
     message: str
-    status: ResultType
+    status: MessageType
 
 @strawberry.type
 class ScriptContent:
@@ -101,5 +118,6 @@ class JobEntry:
     script_failure: bool
     context: JsonStr
 
+UserResult = Annotated[Union[User, Message], strawberry.union("UserResult")]
 
-UserResult = Annotated[Union[DbUser, Message], strawberry.union("UserResult")]
+SessionResult = Annotated[Union[SessionList, Message], strawberry.union("SessionResult")] 

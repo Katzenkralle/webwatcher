@@ -18,7 +18,7 @@ export const jobUserDisplayConfig = (id: number) => {
             { 
             userJobConfig {
                 __typename
-                ... on ErrorMessage {
+                ... on Message {
                     message
                     status
                 }

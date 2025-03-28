@@ -27,9 +27,12 @@ export const useStatusMessage = (batchFire = false) => {
     let previousStatusMessage: { index: number, msg: StatusMessage } | null = null;
     let onHold: StatusMessage[] = [];
 
-    const newStatusMessage = (msg: string, severity: "secondary" | "success" | "info" | "warn" | "help" | "danger" | "contrast") => {
+    const newStatusMessage = (msg: string, severity: "secondary" | "success" | "info" | "warn" | "help" | "danger" | "contrast" |
+            "SECONDARY" | "SUCCESS" | "INFO" | "WARN" | "HELP" | "DANGER" | "CONTRAST" 
+    ) => {
+        severity = severity.toLowerCase() as "secondary" | "success" | "info" | "warn" | "help" | "danger" | "contrast";
         let icon = "";
-        switch (severity) {
+        switch (severity.toLowerCase()) {
             case "secondary":
                 icon = "pi-equals";
                 break;

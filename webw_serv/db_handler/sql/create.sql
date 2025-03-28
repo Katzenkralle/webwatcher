@@ -6,6 +6,14 @@ CREATE TABLE IF NOT EXISTS web_users
     PRIMARY KEY (username)
 );
 
+CREATE TABLE IF NOT EXISTS web_user_sessions (
+    username VARCHAR(255),
+    session_id VARCHAR(255) NOT NULL,
+    expiration TIMESTAMP,
+    FOREIGN KEY (username) REFERENCES web_users (username) ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY (username, session_id)
+);
+
 CREATE TABLE IF NOT EXISTS script_list
 (
     fs_path                VARCHAR(255),

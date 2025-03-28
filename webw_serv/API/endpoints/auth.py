@@ -14,6 +14,7 @@ import jwt
 import json
 from functools import wraps
 
+from ..gql_base_types import MessageType
 from webw_serv.db_handler.maria_schemas import DbUser
 from webw_serv.API.gql_base_types import Message
 from webw_serv.configurator import Config
@@ -22,7 +23,6 @@ hash_context = CryptContext(schemes=["bcrypt"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
-# ToDo: Move to .env
 SECRET_KEY = Config().crypto.secret_key
 ALGORITHM = Config().crypto.algorithm
 
@@ -47,13 +47,8 @@ async def get_current_user_or_none(token: Annotated[str, Depends(retrieve_oauth_
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         data = json.loads(payload.get("sub", {}))
-        [username, password] = [data.get("user"), data.get("hash")]
-        if username is None:
-            raise jwt.InvalidTokenError
-        user = await request.state.maria.get_user(username)
-        if user.password != password:
-            # By also checking the password we can invalidate the token with a password change
-            raise jwt.InvalidTokenError
+        session = data.get("session")
+        user = await request.state.maria.get_user(session=session)
     except (jwt.InvalidTokenError, jwt.ExpiredSignatureError):
         return None
     return user
@@ -68,7 +63,7 @@ async def get_current_user(user: Annotated[DbUser | None, Depends(get_current_us
 
 def user_guard(reject_unauth: any = None, use_http_exception: bool = False):
     if not reject_unauth:
-        reject_unauth = Message(message="Unauthorized. You must be loged in to do this.", status="auth_error")
+        reject_unauth = Message(message="Unauthorized. You must be loged in to do this.", status=MessageType.DANGER)
     def user_guard_decorator(fn: callable):
         @wraps(fn)
         async def wrapper(*args, **kwargs):
@@ -81,7 +76,7 @@ def user_guard(reject_unauth: any = None, use_http_exception: bool = False):
 
 def admin_guard(reject_unauth: any = None, reject_user: any = None, use_http_exception: bool = False):
     if not reject_user:
-        reject_user = Message(message="Insufficient permissions.", status="permission_error")
+        reject_user = Message(message="Insufficient permissions.", status=MessageType.DANGER)
     def admin_guard_decorator(fn: callable):
         @wraps(fn)
         @user_guard(reject_unauth, use_http_exception)
@@ -102,7 +97,7 @@ async def test_token(form_string: str, Request: Request) -> DbUser | None:
     return user
 
 @router.post("/token")
-async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], request: Request):
+async def get_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], request: Request):
     # OAuth2 Specific login data to be served as form data with
     # username and password fields (and optionaly scope, grant_type, client_id, client_secret)
     # The endpoint however, must recieve JSON containing the access_token and token_type
@@ -110,7 +105,9 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], requ
     if not user or not hash_context.verify(form_data.password, user.password):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
+    session_id = await request.state.maria.register_session(user.username)
+
     # Password includet to let token be invalidated
-    token = generate_token({"sub": json.dumps({"user": user.username, "hash": user.password})})
+    token = generate_token({"sub": json.dumps({"user": user.username, "session": session_id})})
 
     return {"access_token": token, "token_type": "bearer"}

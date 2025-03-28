@@ -1,8 +1,12 @@
 import mariadb
 import asyncio
 
+import random
+import string
+import time
+
 from webw_serv.db_handler.misc import libroot, read_sql_blocks
-from webw_serv.db_handler.maria_schemas import DbUser
+from webw_serv.db_handler.maria_schemas import DbUser, DbSession
 
 from webw_serv.utility import DEFAULT_LOGGER as logger
 from webw_serv.configurator import Config
@@ -12,7 +16,13 @@ from webw_serv.configurator import Config
 
 class MariaDbHandler:
     SQL_DIR = f"{libroot}/sql/"
-    EXPECTED_TABLES = ['cron_list', 'job_input_settings', 'job_list', 'script_input_info', 'script_list', 'web_users']
+    EXPECTED_TABLES = [ 'cron_list',
+                        'job_input_settings',
+                        'job_list',
+                        'script_input_info',
+                        'script_list',
+                        'web_users',
+                        'web_user_sessions']
 
     def __init__(self, maria_config, app_config):
         logger.debug("MARIA: Initializing MariaDbHandler")
@@ -74,14 +84,53 @@ class MariaDbHandler:
         self.__conn.commit()
         return DbUser(username, password, is_admin)
     
-    async def get_user(self, username: str) -> DbUser | None:
-        self.__cursor.execute("SELECT * FROM web_users WHERE username = ?", (username,))
+    async def get_user(self, username: str|None = None, session: str|None = None) -> DbUser | None:
+        if not username and not session:
+            return None
         try:
+            if session:
+                self.__cursor.execute(
+                    """SELECT * FROM web_user_sessions
+                    WHERE session_id = ?""",
+                    (session,))
+                db_session = self.__cursor.fetchone()
+                if db_session[2] != None and db_session[2] < time.time():
+                    return None
+                username = db_session[0]
+                
+            self.__cursor.execute("SELECT * FROM web_users WHERE username = ?", (username,))
             user = self.__cursor.fetchone()
             return DbUser(*user)
         except Exception as e:
             return None
         
+    async def register_session(self, username: str) -> int:
+        new_id = None
+        while new_id is None:
+            new_id = "".join(random.choices(string.digits, k=255))
+            self.__cursor.execute("SELECT * FROM web_user_sessions WHERE session_id = ?", (new_id,))
+            if self.__cursor.fetchone() is not None:
+                new_id = None
+        
+        self.__cursor.execute("INSERT INTO web_user_sessions (session_id, username) VALUES (?, ?)", (new_id, username))
+        self.__conn.commit()
+        return new_id
+    
+    async def get_sessions_for_user(self, username: str) -> list[DbSession]:
+        self.__cursor.execute("SELECT * FROM web_user_sessions WHERE username = ?", (username,))
+        db_sessions = self.__cursor.fetchall()
+        return [DbSession(*session) for session in db_sessions]
+
+    async def logout_session(self, session_id: str) -> bool:
+        self.__cursor.execute("DELETE FROM web_user_sessions WHERE session_id = ?", (session_id, ))
+        self.__conn.commit()
+        return True
+    
+    async def change_password(self, username: str, new_password: str) -> bool:
+        self.__cursor.execute("UPDATE web_users SET password = ? WHERE username = ?", (new_password, username))
+        self.__conn.commit()
+        return True
+
     def close(self):
         self.__cursor.close()
         self.__conn.close()

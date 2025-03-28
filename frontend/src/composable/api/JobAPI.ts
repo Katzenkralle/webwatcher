@@ -43,7 +43,7 @@ export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
                     expectedReturnSchema
                     }
                 }
-                ... on ErrorMessage {
+                ... on Message {
                     message
                     status
                 }
@@ -116,7 +116,7 @@ export const deleteJob = async(id: number) => {
         mutation {
             deleteJob(id: ${id}) {
                 __typename
-                ... on ErrorMessage {
+                ... on Message {
                     message
                     status
                 }
@@ -160,7 +160,7 @@ export const updateOrCreateJob = async(entry: TableMetaData): Promise<void> => {
                 expectedReturnSchema: ${JSON.stringify(entry.expectedReturnSchema)}
             ) {
                 __typename
-                ... on ErrorMessage {
+                ... on Message {
                     message
                     status
                 }
@@ -235,7 +235,7 @@ export const useJobData = (jobId: number) => {
                             context
                         }
                     }
-                    ... on ErrorMessage {
+                    ... on Message {
                         message
                         status
                     }

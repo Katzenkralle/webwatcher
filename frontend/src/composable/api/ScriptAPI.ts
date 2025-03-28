@@ -48,7 +48,7 @@ export async function deleteScript(name: string) {
                 staticSchema
                 availableParameters
             }
-            ... on ErrorMessage {
+            ... on Message {
                 message
                 status
             }
@@ -82,7 +82,7 @@ export async function fetchScripts() {
                 description
                 expectedSchema
             }
-            ... on ErrorMessage {
+            ... on Message {
                 message
                 status
             }
@@ -163,7 +163,7 @@ export async function submitScript(name: String, discription: String): Promise<v
                 staticSchema
                 availableParameters
             }
-            ... on ErrorMessage {
+            ... on Message {
                 message
                 status
             }
