@@ -39,6 +39,7 @@ const props = defineProps<{
     <InputGroup class="max-w-80">
         <InputText
         placeholder="Save as..."
+        v-model="newFilterConfigName"
         @update:model-value="(e: string|undefined) => newFilterConfigName = e ?? ''"
         size="small"
         />
@@ -47,10 +48,10 @@ const props = defineProps<{
         icon="pi pi-save"
         @click="() => {
             if (newFilterConfigName){
-            activeFilterConfig = newFilterConfigName
-            props.filterConfig.filter.value[newFilterConfigName] = getCopyJsonSaveConfig()
+                activeFilterConfig = newFilterConfigName
+                props.filterConfig.filter.value[newFilterConfigName] = getCopyJsonSaveConfig()
             } else {
-            useStatusMessage().newStatusMessage('Invalide name for Filter', 'danger');
+                useStatusMessage().newStatusMessage('Invalide name for Filter', 'danger');
             }
         }"/>
     </InputGroup>

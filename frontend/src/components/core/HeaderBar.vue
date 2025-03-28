@@ -2,7 +2,7 @@
 import { ref, computed } from "vue";
 import { useLoadingAnimation, useStatusMessage } from "@/composable/core/AppState";
 import DropDownSelector from "@/components/reusables/DropDownSelection.vue";
-import { useTableMetaData } from "@/composable/api/JobAPI";
+import { globalTableMetaData } from "@/composable/api/JobAPI";
 import router from "@/router";
 import Button from 'primevue/button';
 import NotificationCenter from "./NotificationCenter.vue";
@@ -25,11 +25,11 @@ const isSlimMode = computed(() => {
 }) 
 
 const changeUrl = (_: number, a: number) => {
-    router.push('/table/' + a)
+    router.push('/jobs/table/' + a)
 }
 
 const computeTableOptions = computed(() => {
-    return useTableMetaData().localTableMetaData.value.map((element) => {
+    return globalTableMetaData.value.map((element) => {
         return [element.name, changeUrl, element.id]
     })
 })
@@ -53,7 +53,7 @@ const computeTableOptions = computed(() => {
                             @mouseover="activeDropDown = 0" 
                             @click="() => { 
                                 if (activeDropDown === 0) { 
-                                    $router.push('/tables'); 
+                                    $router.push('/jobs'); 
                                 } 
                             }">
                             Tables
@@ -73,7 +73,6 @@ const computeTableOptions = computed(() => {
 
             </nav>
             <NotificationCenter class="ml-auto mr-4" y-expand="bottom" x-expand="left" ></NotificationCenter>
-
         </div>
 
         <LoadingBar :isLoading="useLoadingAnimation().isLoading" />

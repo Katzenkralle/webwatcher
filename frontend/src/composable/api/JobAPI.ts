@@ -1,6 +1,6 @@
-import { ref, resolveComponent, type Ref} from 'vue';
+import { ref, type Ref} from 'vue';
 import { useStatusMessage } from '../core/AppState';
-import { queryGql, reportError, type ErrorTypes } from "@/composable/api/GqlHandler" 
+import { queryGql, reportError, type ErrorTypes } from "@/composable/api/QueryHandler" 
 
 export interface TableMetaData {
     id: number;
@@ -8,10 +8,11 @@ export interface TableMetaData {
     script: string;
     description: string;
     enabled: boolean;
-    executeTimer: number;
+    executeTimer: string;
     executedLast: number;
     forbidDynamicSchema: boolean;
-    expectedReturnSchema: any;
+    expectedReturnSchema: Record<string, string>;
+    parameters: Record<string, string>; // KV of parameter name and value
 }
 
 export type TableLayout = {
@@ -19,94 +20,181 @@ export type TableLayout = {
     type: string;
 };
 
-let globalTableMetaData: Ref<TableMetaData[]> = ref([]);
+export let globalTableMetaData: Ref<TableMetaData[]> = ref([]);
 
-export function useTableMetaData() {
 
-    const fetchTableMetaData = (): Promise<Boolean> => {
-        return new Promise(async (resolve, reject) => {
-            const query = `
-            query {
-                jobsMetaDataResult {
-                    __typename
-                    ... on jobsMetaDataList {
-                        jobs {
-                        id
-                        name
-                        script
-                        description
-                        enabled
-                        executeTimer
-                        executedLast
-                        forbidDynamicSchema
-                        expectedReturnSchema
-                        }
-                    }
-                    ... on ErrorMessage {
-                        message
-                        status
+
+export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
+    return new Promise(async (resolve, reject) => {
+        const query = `
+        query {
+            jobsMetaDataResult {
+                __typename
+                ... on jobsMetaDataList {
+                    jobs {
+                    id
+                    name
+                    script
+                    description
+                    enabled
+                    executeTimer
+                    executedLast
+                    forbidDynamicSchema
+                    expectedReturnSchema
                     }
                 }
+                ... on ErrorMessage {
+                    message
+                    status
+                }
             }
-            `;
-            queryGql(query).then((response) => {
-                const key = response.keys[0];
-                switch (key) {
-                    case "jobsMetaDataList":
-                        globalTableMetaData.value = response.data[key]
-                        return resolve(true)
-                    default:
-                        globalTableMetaData.value = [
-                            {
-                                id: 0,
-                                name: "TestTable",
-                                script: "TestScript",
-                                description: "Hello World",
-                                enabled: false,
-                                executeTimer: 0,
-                                executedLast: 0,
-                                forbidDynamicSchema: false,
-                                expectedReturnSchema: {}
+        }
+        `;
+        queryGql(query).then((response) => {
+            const key = response.keys[0];
+            switch (key) {
+                case "jobsMetaDataList":
+                    globalTableMetaData.value = response.data[key]
+                    return resolve(response.data[key])
+                default:
+                    globalTableMetaData.value = [
+                        {
+                            id: 0,
+                            name: "Tabke",
+                            script: "script1",
+                            description: "Hello World",
+                            enabled: false,
+                            executeTimer: "0",
+                            executedLast: 0,
+                            forbidDynamicSchema: false,
+                            expectedReturnSchema: {},
+                            parameters: {}
+                        },
+                        {
+                            id: 1,
+                            name: "Entry",
+                            script: "script2",
+                            description: "Hello World2",
+                            enabled: false,
+                            executeTimer: "0",
+                            executedLast: 0,
+                            forbidDynamicSchema: true,
+                            expectedReturnSchema: {
+                                "some": "string|number",
+                                "aNumber": "number"
                             },
-                            {
-                                id: 1,
-                                name: "TestTable2",
-                                script: "TestScript2",
-                                description: "Hello World2",
-                                enabled: false,
-                                executeTimer: 0,
-                                executedLast: 0,
-                                forbidDynamicSchema: false,
-                                expectedReturnSchema: {
-                                    "some": "string|number",
-                                    "aNumber": 1
-                                }
+                            parameters: {
+                                "test": "value",
                             }
-                        ]
-                        return resolve(true)
+                        }
+                    ]
+                    return resolve(globalTableMetaData.value)
 
+                }
+            reportError(response)                
+            return reject(response)
+        })
+    });
+}
+
+export const getJobMetaData = async  (id: number|undefined): Promise<TableMetaData> => {
+    const localElntry =  globalTableMetaData.value.find((table) => table.id === id);
+    if(localElntry) {
+        return new Promise((resolve) => resolve(localElntry));
+    }
+    return fetchAllJobMetaData().then((data) => {
+        const entry = data.filter((table) => table.id === id)[0];
+        if(entry) {
+            return entry;
+        }
+        throw new Error("Table not found");
+    });
+}
+
+export const deleteJob = async(id: number) => {
+    const query = `
+        mutation {
+            deleteJob(id: ${id}) {
+                __typename
+                ... on ErrorMessage {
+                    message
+                    status
+                }
+                ... on jobsMetaDataResult {
+                    jobs {
+                    id
+                    name
+                    script
+                    description
+                    enabled
+                    executeTimer
+                    executedLast
+                    forbidDynamicSchema
+                    expectedReturnSchema
                     }
-                reportError(response)                
-                return reject(response)
-            })
+                }
+            }`;
+    queryGql(query).then((response) => {
+        const key = response.keys[0];
+        switch (key) {
+            case "jobsMetaDataList":
+                globalTableMetaData.value = response.data[key]
+                break;
+            default:
+                reportError(response)
+        }
+    });
+}
+
+export const updateOrCreateJob = async(entry: TableMetaData): Promise<void> => {
+    const query = `
+        mutation {
+            createOrModifyJob(
+                ${entry.id >= 0 ? `id: ${entry.id},` : ``}
+                name: "${entry.name}",
+                script: "${entry.script}",
+                description: "${entry.description}",
+                enabled: ${entry.enabled},
+                forbidDynamicSchema: ${entry.forbidDynamicSchema},
+                executeTimer: "${entry.executeTimer}",
+                expectedReturnSchema: ${JSON.stringify(entry.expectedReturnSchema)}
+            ) {
+                __typename
+                ... on ErrorMessage {
+                    message
+                    status
+                }
+                ... on jobsMetaDataResult {
+                    jobs {
+                    id
+                    name
+                    script
+                    description
+                    enabled
+                    executeTimer
+                    executedLast
+                    forbidDynamicSchema
+                    expectedReturnSchema
+                    }
+                }
+            }`;
+    return new Promise((resolve, reject) => {
+        queryGql(query).then((response) => {
+            const key = response.keys[0];
+            switch (key) {
+                case "jobsMetaDataList":
+                    globalTableMetaData.value = response.data[key];
+                    resolve();
+                    break;
+                default:
+                    reportError(response);
+                    reject(response);
+            }
+        }).catch((error) => {
+            reportError(error);
+            reject();
         });
-    }
-
-    const getTaleMetaData = (id: number|undefined) => {
-        return globalTableMetaData.value.find((table) => table.id === id);
-    }
-
-    const updateTableMetaData = (data: TableMetaData) => {
-        console.debug("Not jet implemented")
-    }
-
-    return { 
-        fetchTableMetaData,
-        getTaleMetaData,
-        updateTableMetaData,
-        localTableMetaData: globalTableMetaData
-     }
-    
+    });
 }
    
 
@@ -206,5 +294,3 @@ export const useJobData = (jobId: number) => {
     return { fetchData }
 }
 
-// This is not good practice, but itll work for now
-useTableMetaData().fetchTableMetaData();

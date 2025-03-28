@@ -29,12 +29,20 @@ main, header, footer {
     @apply my-2 flex flex-col bg-panel px-4 py-2 rounded-lg
 }
 
-.input-box label {
+.input-box > label {
     @apply text-xl mb-2 underline decoration-1 underline-offset-4
 }
 
 .p-password-input {
     @apply w-full;
+}
+
+.subsection {
+    @apply bg-panel w-fit border-2 border-info rounded-lg p-2;
+}
+
+.main_content {
+    @apply flex flex-col items-center max-w-256 space-y-4;
 }
 
 button:disabled {

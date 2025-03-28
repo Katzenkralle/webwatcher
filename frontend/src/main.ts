@@ -1,5 +1,4 @@
 import './assets/global.css'
-
 import Lara from "@primevue/themes/lara";
 
 import { createApp } from 'vue'
@@ -9,6 +8,10 @@ import router from './router'
 // primevue and icons
 import PrimeVue from 'primevue/config';
 import 'primeicons/primeicons.css';
+
+// Cron
+import '@vue-js-cron/prime/dist/prime.css'
+import CronPrimePlugin from '@vue-js-cron/prime'
 
 export const AUTH_ENDPOINT = '/auth'
 const app = createApp(App)
@@ -27,4 +30,5 @@ app.use(PrimeVue, {
         }
     }
  });
+app.use(CronPrimePlugin)
 app.mount('#app')

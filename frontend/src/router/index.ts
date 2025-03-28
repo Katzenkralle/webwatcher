@@ -6,6 +6,9 @@ import NotFound from '@/views/core/NotFound.vue'
 import ScriptUpload from '@/views/scripts/UploadScript.vue'
 import Login from '@/views/core/Login.vue'
 import ScriptOverview from '@/views/scripts/ScriptOverview.vue'
+import CreateJob from '@/views/jobs/CreateJob.vue'
+
+import NavButtons from '@/components/reusables/NavButtons.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -19,7 +22,7 @@ const router = createRouter({
       }
     },
     {
-      path: '/tables',
+      path: '/jobs',
       name: 'tables',
       component: TableOverview,
       meta: {
@@ -27,9 +30,17 @@ const router = createRouter({
       }
     },
     {
-      path: '/table/:id(\\d+)',
+      path: '/jobs/table/:id(\\d+)',
       name: 'table',
       component: TableView,
+      meta: {
+        requiresAuth: true,
+      }
+    },
+    {
+      path: '/jobs/create/:id(\\w+)?',
+      name: 'createJob',
+      component: CreateJob,
       meta: {
         requiresAuth: true,
       }
@@ -43,7 +54,7 @@ const router = createRouter({
       }
     },
     {
-      path: '/script/upload',
+      path: '/script/upload/:name(\\w+)?',
       name: 'scriptUpload',
       component: ScriptUpload,
       meta: {

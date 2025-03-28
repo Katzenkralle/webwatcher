@@ -22,8 +22,8 @@
         "APP_DEFAULT_ADMIN_USERNAME": "someone",
         "APP_DEFAULT_ADMIN_HASH": "$2b$12$3cV0JOP3f8LbR8VXtbbpDOIf1gUhPf7bk1DMtUCmdIA/d.uCePomC"
       },
-      "cwd": "${workspaceFolder}/webw_serv",
-      "program": "${workspaceFolder}/webw_serv/main.py",
+      "cwd": "${workspaceFolder}",
+      "module": "webw_serv",
       "python": "/usr/bin/python3",
       "justMyCode": false
     },

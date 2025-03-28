@@ -1,10 +1,9 @@
 @import url("./fonts.css");
 @import "tailwindcss";
-@layer base, primevue, components, utilities, theme;
+@import './components.css';
 
-@layer components {
-    @import './components.css';
-}
+@layer base, primevue, utilities, theme;
+
 
 @layer theme {
   @theme {
@@ -138,6 +137,32 @@
         --p-surface-900: var(--color-crust) !important;/* bg table */ 
         --p-surface-950: var(--color-crust) !important;/* bg input */
     
+
+        --p-button-success-background: var(--color-success) !important;
+        --p-button-success-border-color: var(--color-success) !important;
+        --p-button-success-hover-background: var(--color-success-h) !important;
+        --p-button-success-hover-border-color: var(--color-success-h) !important;
+
+        --p-button-info-background: var(--color-info) !important;
+        --p-button-info-hover-background: var(--color-info-h) !important;
+        --p-button-info-hover-border-color: var(--color-info-h) !important;
+        --p-button-outlined-info-border-color: var(--color-info) !important;
+        --p-button-outlined-info-color: var(--color-info) !important;
+
+
+        --p-button-warn-background: var(--color-warning) !important;
+        --p-button-warn-border-color: var(--color-warning) !important;
+        --p-button-warn-hover-background: var(--color-warning-h) !important;
+        --p-button-warn-hover-border-color: var(--color-warning-h) !important;
+        --p-button-outlined-warn-border-color: var(--color-warning) !important;
+        --p-button-outlined-warn-color: var(--color-warning) !important;
+
+        --p-button-error-background: var(--color-error) !important;
+        --p-button-error-border-color: var(--color-error) !important;
+        --p-button-error-hover-background: var(--color-error-h) !important;
+        --p-button-error-hover-border-color: var(--color-error-h) !important;
+
+
         --p-primary-color: var(--color-app) !important;
         --p-primary-contrast-color: var(--color-h-text) !important;
         --p-primary-hover-color: var(--color-app-h) !important;
