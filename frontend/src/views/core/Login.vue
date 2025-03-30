@@ -20,9 +20,7 @@ const submit = () => {
             useQueryRouting().routeToQuery();
         })
         .catch((error: Error) => {
-            console.debug("2");
-            console.debug(error);
-            auth_error.value = `${error.name}: ${error.message}`;
+            auth_error.value = error.message;
         })
         .finally(() => {
             useLoadingAnimation().setState(false);

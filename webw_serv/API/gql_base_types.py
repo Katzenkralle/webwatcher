@@ -15,11 +15,12 @@ class MessageType(Enum):
     WARN = "warn"
     HELP = "help"
     DANGER = "danger" 
-    CONTRAST = "contrast"  # Fixed semicolon
+    CONTRAST = "contrast"
+    AUTH_ERROR = "auth_error"
+
 
 @extend_enum(MessageType)
 class BaseResultType(Enum):
-    AUTH_ERROR = "auth_error"
     PERMISSION_ERROR = "permission_error"
     FAILURE = "failure"
     NETWORK_ERROR = "network_error"

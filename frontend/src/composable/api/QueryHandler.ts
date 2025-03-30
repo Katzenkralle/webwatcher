@@ -39,6 +39,7 @@ export function queryGql(query: string): Promise<GQLResponse> {
                 let __typename = data[key].__typename;
                 delete data[key].__typename;
                 if (__typename === "Message" && data[key].status === "AUTH_ERROR") {
+                    data[key].status = "danger";
                     requireLogin();
                 }
             }
@@ -66,7 +67,7 @@ export function reportError(gql: GQLResponse|Error, includeDataErrors: boolean =
     if (includeDataErrors){
         for (let key of gql.keys) {
             if (gql.data[key] === "Message") {
-                statusMessage.newStatusMessage(gql.data[key].message, "danger");
+                statusMessage.newStatusMessage(gql.data[key].message, gql.data[key].status);
             }
         }
     }

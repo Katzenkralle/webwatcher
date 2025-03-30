@@ -3,11 +3,14 @@ from strawberry.tools import merge_types
 from strawberry.schema import Schema
 from fastapi import APIRouter, Request, Depends
 
-from webw_serv.API.endpoints import auth, users, test, scripts
+from ..API.endpoints import auth, users, test, scripts
+from webw_serv.db_handler.maria_schemas import DbUser
 
-async def get_context(request:Request, user = Depends(auth.get_current_user_or_none)):
+async def get_context(request:Request, 
+                      user: dict["user": DbUser, "session": str] | None = Depends(auth.get_current_user_or_none)):
     return {
-        "user": user,
+        "user": user["user"] if user else None,
+        "session": user["session"] if user else None,
         "request": request
     }
 

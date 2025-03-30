@@ -1,9 +1,8 @@
 import { AUTH_ENDPOINT } from "@/main"
 import router from "@/router";
-import { queryGql, type GQLResponse } from "./QueryHandler";
+import { queryGql, reportError, type GQLResponse } from "./QueryHandler";
 import { ref } from "vue";
 import { useStatusMessage } from "../core/AppState";
-
 
 export interface AuthResponse {
     access_token: string;
@@ -70,7 +69,9 @@ export const changePassword = async (oldPassword: string, newPassword: string) =
 export const logout = async (sessionName: string|undefined, sessionId: string|undefined = undefined): Promise<void> => {
     let logoutThisInstance = false;
     const thisSession = getSessionFromJWT()
-    if ((sessionName && sessionName === thisSession.name ) || (sessionId && thisSession.session == sessionId)) {
+    if ((sessionName && sessionName === thisSession.name ) 
+        || (sessionId && thisSession.session == sessionId) 
+        || (!sessionName && !sessionId)) {
         sessionId = thisSession.session;
         logoutThisInstance = true;
     }
@@ -87,6 +88,9 @@ export const logout = async (sessionName: string|undefined, sessionId: string|un
     }`;
     return new Promise((resolve, reject) => {
         queryGql(query).then((response: GQLResponse) => {
+            if (!response.data.logout) {
+                throw response;     
+            }
             useStatusMessage().newStatusMessage(response.data.logout.message, response.data.logout.status);
             if (logoutThisInstance) {
                 requireLogin();
@@ -114,16 +118,16 @@ export const requestToken = async (username: string, password: string, name: str
         }
     }).then( async response => {
         if (!response.ok) {
-            throw new Error(response.statusText ? response.statusText : 'Unknown error');
+            const errorBody = await response.text();
+            const errorMsg = `${response.statusText ?? 'Unknown error'}: ${JSON.parse(errorBody).detail}`;
+            throw new Error(errorMsg);
         }
-        console.log("Response: ", response);
         return response.json() as Promise<AuthResponse>;
     })
     .catch((resp_or_err: any) => {
         if (!(resp_or_err instanceof Error)) {
             resp_or_err = new Error(resp_or_err.statusText ? resp_or_err.statusText : 'Unknown error');
         }
-        console.error(resp_or_err);
         throw resp_or_err;
     });
 }

@@ -21,6 +21,8 @@ class Mutation:
     @strawberry.mutation
     @user_guard()
     async def logout(self, info: strawberry.Info, session_id: Optional[str] = None, session_name: Optional[str] = None) -> Message:
+        if not session_id and not session_name:
+            session_id = info.context["session"]
         try:
             await info.context["request"].state.maria.logout_session(session_id, info.context["user"].username, session_name)
             return Message(message="Logged out successfully", status=MessageType.SUCCESS)

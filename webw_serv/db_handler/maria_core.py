@@ -111,9 +111,14 @@ class MariaDbHandler:
             if self.__cursor.fetchone() is not None:
                 new_id = None
         if not name:
-            name = f"oauth2_{new_id[:8]}"
+            while not name:
+                name = f"oauth2_{new_id[:8]}"
+                self.__cursor.execute("SELECT * FROM web_user_sessions WHERE username = ? AND name = ?", (username, name,))
+                if self.__cursor.fetchone() is not None:
+                    name = None
         else:
-            if self.__cursor.execute("SELECT * FROM web_user_sessions WHERE name = ?", (name,)):
+            self.__cursor.execute("SELECT * FROM web_user_sessions WHERE username = ? AND name = ?", (username, name,))
+            if self.__cursor.fetchone() is not None:
                 raise ValueError("Session name already in use")
 
         # Get current time in MariaDB TIMESTAMP format

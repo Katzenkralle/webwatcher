@@ -43,7 +43,8 @@ async def retrieve_oauth_token(request: Request) -> str:
     # Using this method we can get the token from the Authorization header or the cookie
     return param
 
-async def get_current_user_or_none(token: Annotated[str, Depends(retrieve_oauth_token)], request: Request) -> DbUser | None:
+async def get_current_user_or_none(token: Annotated[str, Depends(retrieve_oauth_token)], request: Request) \
+    -> dict["user": DbUser, "session": str] | None:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         data = json.loads(payload.get("sub", {}))
@@ -51,9 +52,10 @@ async def get_current_user_or_none(token: Annotated[str, Depends(retrieve_oauth_
         user = await request.state.maria.get_user(session=session)
     except (jwt.InvalidTokenError, jwt.ExpiredSignatureError):
         return None
-    return user
+    return {"user": user, "session": session}
 
-async def get_current_user(user: Annotated[DbUser | None, Depends(get_current_user_or_none)]) -> DbUser:
+async def get_current_user(user: Annotated[dict["user": DbUser, "session": str] | None, Depends(get_current_user_or_none)]) \
+    -> dict["user": DbUser, "session": str]:
     # The use of this would block the context generation if the user is None for the gql endpoint
     # rendering them unaccesible for unauthenticated users
     if user is None:
@@ -63,7 +65,7 @@ async def get_current_user(user: Annotated[DbUser | None, Depends(get_current_us
 
 def user_guard(reject_unauth: any = None, use_http_exception: bool = False):
     if not reject_unauth:
-        reject_unauth = Message(message="Unauthorized. You must be loged in to do this.", status=MessageType.DANGER)
+        reject_unauth = Message(message="Unauthorized. You must be logged in to do this.", status=MessageType.AUTH_ERROR)
     def user_guard_decorator(fn: callable):
         @wraps(fn)
         async def wrapper(*args, **kwargs):
@@ -76,7 +78,7 @@ def user_guard(reject_unauth: any = None, use_http_exception: bool = False):
 
 def admin_guard(reject_unauth: any = None, reject_user: any = None, use_http_exception: bool = False):
     if not reject_user:
-        reject_user = Message(message="Insufficient permissions.", status=MessageType.DANGER)
+        reject_user = Message(message="Insufficient permissions.", status=MessageType.WARN)
     def admin_guard_decorator(fn: callable):
         @wraps(fn)
         @user_guard(reject_unauth, use_http_exception)
@@ -94,7 +96,7 @@ router = APIRouter(prefix="/auth")
 async def test_token(form_string: str, Request: Request) -> DbUser | None:
     # This is just a test endpoint to see if the token is working
     user = await get_current_user_or_none(token=form_string, request=Request)
-    return user
+    return user["user"] if user else None
 
 @router.post("/token")
 async def get_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], request: Request):
@@ -103,11 +105,12 @@ async def get_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
     # The endpoint however, must recieve JSON containing the access_token and token_type
     user = await request.state.maria.get_user(form_data.username)
     if not user or not hash_context.verify(form_data.password, user.password):
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
+        raise HTTPException(status_code=401, detail="Incorrect username or password")
 
-    session = await request.state.maria.register_session(user.username, form_data.client_id)
+    try:
+        session = await request.state.maria.register_session(user.username, form_data.client_id)
+    except ValueError as e:
+        raise HTTPException(status_code=403, detail=str(e))
 
-    # Password includet to let token be invalidated
     token = generate_token({"sub": json.dumps({"user": user.username, "session": session.session_id, "name": session.name })})
-
     return {"access_token": token, "token_type": "bearer"}
