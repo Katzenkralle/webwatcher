@@ -109,7 +109,7 @@ class MariaDbHandler:
         for row in script_input_info_data:
             excpected_return_schema.update(row[0])
             input_schema.update(row[1])
-
+        # TODO: transform the schema to the correct format
         return DbScriptInfo(
             fs_path=script_list_data[0],
             name=script_list_data[1],
@@ -117,6 +117,9 @@ class MariaDbHandler:
             excpected_return_schema=excpected_return_schema,
             input_schema=input_schema
         )
+
+    def add_script(self):
+        ...  # ToDo: Implement this method
         
     def close(self):
         self.__cursor.close()

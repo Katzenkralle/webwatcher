@@ -23,14 +23,16 @@ class Mutation:
         script_check_result = script_checker(module_path)
         if isinstance(script_check_result, tuple) and name is not None:
             old_script_config_data = await info.context["request"].state.maria.get_script_info(name)
-            if old_script_config_data is not None:
-                ...
-            # TODO: Add the script to the database
-            # TODO: Check if the script in database matches the scheme
+            new_script_config_data = script_check_result[1]
+            if old_script_config_data is not None and new_script_config_data is not None:
+                if old_script_config_data != new_script_config_data:
+                    return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False,
+                                                  validation_msg=str("The script doesn't match the scheme"))
 
+            # TODO: Add the script to the database
 
         if isinstance(script_check_result, tuple):
-            script_msg = script_check_result[0]
+            script_msg = str(script_check_result[0])
             was_valid = True
             if script_check_result[2] is not None:
                 static_supported = True
@@ -39,7 +41,7 @@ class Mutation:
                 parameters_list = []
                 static_supported = False
         else:
-            script_msg = script_check_result
+            script_msg = str(script_check_result)
             was_valid = False
             parameters_list = []
             static_supported = False
