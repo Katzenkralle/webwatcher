@@ -23,11 +23,18 @@ interface User {
     isAdmin: boolean;
 }
 
+const readToken = () => {
+    const token = document.cookie.split('; ').find(row => row.startsWith('oauth2='));
+    if (token) {
+        return token.split('=')[1];
+    }
+    return null;
+}
+
 export const getSessionFromJWT = () => {
-    let token = document.cookie.split('; ').find(row => row.startsWith('oauth2='));
-    token = token ? token.split('=')[1] : undefined;
+    let token = readToken();
     if (!token) {
-        return null;
+        return null
     }
     token = token.split(' ')[1]; // Get the payload part
     try {
@@ -41,8 +48,16 @@ export const getSessionFromJWT = () => {
     }
 }
 
+export function writeAuthCookie (type: string, token: string) {
+    document.cookie = 
+        `oauth2=${type} ${token};secure;paath=/;samesite=strict`;
+    }
+
 
 export function requireLogin() {
+    if (readToken()) {
+        useStatusMessage().newStatusMessage("You have been loged out!", "danger");
+    }
     document.cookie = "oauth2=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     router.push({ name: "login" , query: { redirect: router.currentRoute.value.fullPath } });
 }

@@ -2,10 +2,13 @@
 import Password from 'primevue/password';
 import { ref, onMounted, computed } from 'vue';
 
+import QRCodeVue3 from "qrcode-vue3";
+
 import FloatLabel from 'primevue/floatlabel';
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 
+import { getCssColors } from '@/composable/core/helpers';
 import { useStatusMessage } from '@/composable/core/AppState';
 import { getAllSessions, changePassword, logout,
     type SessionData, getSessionFromJWT, requestToken } from '@/composable/api/Auth';
@@ -44,7 +47,8 @@ const infoDilogData = ref({
     title: '',
     mesage_prelude: '',
     mesage: '',
-    copyClicked: false
+    copyClicked: false,
+    link: ''
 })
 
 const resetInfoDialog = () => {
@@ -52,6 +56,7 @@ const resetInfoDialog = () => {
     infoDilogData.value.mesage_prelude = ''
     infoDilogData.value.mesage = ''
     infoDilogData.value.copyClicked = false
+    infoDilogData.value.link = ''
 }   
 
 const putInClipboard = (text: string) => {
@@ -65,6 +70,10 @@ let newTokenPasswd = {
     password: ''
 }
 
+
+const getLoginUrl = (token: string, type: string) => {
+    return `${window.location.origin}/login?token=${token}&type=${type}`
+}
 </script>
 
 <template>
@@ -74,17 +83,55 @@ let newTokenPasswd = {
             passthrou-classes="max-w-300"
             :title="infoDilogData.title">
             <template #default>
-                <div class="flex flex-col">
-                    <div class="flex flex-row justify-between items-center mb-2">
-                        <p class="font-bold text-info">{{ infoDilogData.mesage_prelude }}</p>
-                        <Button 
-                            :icon="infoDilogData.copyClicked ? 'pi pi-check' : 'pi pi-clipboard'"
-                            :class="{'p-button-success': infoDilogData.copyClicked}"
-                            @click="() => {
-                                putInClipboard(infoDilogData.mesage);
-                            }" />
+                    
+                <div class="flex flex-col lg:grid lg:grid-cols-4 lg:gap-4">
+                    <div class="flex flex-col lg:col-span-3">
+                        <div class="flex flex-row justify-between items-center mb-2 h-11">
+                            <p class="font-bold text-info">{{ infoDilogData.mesage_prelude }}</p>
+                            <Button 
+                                :icon="infoDilogData.copyClicked ? 'pi pi-check' : 'pi pi-clipboard'"
+                                :class="{'p-button-success': infoDilogData.copyClicked}"
+                                @click="() => {
+                                    putInClipboard(infoDilogData.mesage);
+                                }" />
+                        </div>
+                        <p class="[word-wrap:anywhere;] subsection my-auto">{{ infoDilogData.mesage }}</p>
                     </div>
-                    <p class="[word-wrap:anywhere;] subsection">{{ infoDilogData.mesage }}</p>
+                    <div class="flex flex-col">
+                        <div class="flex flex-row items-center h-11">
+                            <p class="font-bold text-info w-full lg:justify-self-center my-auto">Scan to login:</p>
+                        </div>
+                        <QRCodeVue3
+                            v-if="infoDilogData.link !== ''"
+                            imgclass="mx-auto"
+                            myclass=""
+                            :value="infoDilogData.link"
+                             
+                            :qr-options="{
+                                errorCorrectionLevel: 'L',
+                                mode: 'Byte',
+                                typeNumber: 0,
+                            }"
+                            
+                            :background-options="{
+                                color: '#00000000',
+                            }"
+                            :image-options="{
+                                margin: 0,
+                            }"
+                            :dots-options="{
+                                color: getCssColors().text,
+                            }"
+                            :corners-square-options="{
+                                color: getCssColors().info,
+                            }"
+                            :corners-dot-options="{
+                                color: getCssColors().app,
+                            }
+                           "
+                        />
+                    </div>
+                    
                 </div>
             </template>
             <template #footer>
@@ -103,7 +150,7 @@ let newTokenPasswd = {
                         infoDilogData.title = 'New Token: Success'
                         infoDilogData.mesage_prelude = 'Your new token is:'
                         infoDilogData.mesage = `{'Authorization': '${data.token_type} ${data.access_token}'}`
-                        console.log(infoDialog)
+                        infoDilogData.link = getLoginUrl(data.access_token, data.token_type)
                         infoDialog?.openDialog()
                         fetchSessions()
                     }).catch((e) => {
