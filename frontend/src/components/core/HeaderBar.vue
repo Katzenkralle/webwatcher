@@ -1,83 +1,241 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watchEffect, watch, onMounted, h, type PropType, type VNode, defineComponent, Transition } from "vue";
 import { useLoadingAnimation, useStatusMessage } from "@/composable/core/AppState";
-import DropDownSelector from "@/components/reusables/DropDownSelection.vue";
-import { globalTableMetaData } from "@/composable/api/JobAPI";
-import router from "@/router";
-import Button from 'primevue/button';
+import { getAllJobMetaData, globalTableMetaData, type TableMetaData } from "@/composable/api/JobAPI";
+import router from "@/router";import Button from 'primevue/button';
 import NotificationCenter from "./NotificationCenter.vue";
 
 import LoadingBar from "@/components/reusables/LoadingBar.vue";
+import Badge from "primevue/badge";
+import SmallSeperator from "../reusables/SmallSeperator.vue";
+import { RouterLink } from "vue-router";
 
-const activeDropDown = ref(-1);
-/*
--1: none
-0: table
-*/
+interface BarItem {
+    label?: string;
+    icon?: string;
+    route?: string;
+    items?: BarItem[];
+    badge?: number;
+    image?: string;
+    style?: "highlighted";
+    aligned?: string;
+    passThroughClass?: string;
+    comand?: () => void;
+    // vue dose not like to dirtectly pass vnodes around,
+    // we neet to get the node when we need it
+    passThroughComponent?: () =>  VNode; 
+}
 
-const isSlimMode = computed(() => {
-    switch (router.currentRoute.value.path) {
-        case '/login':
-            return true;
-        default:
-            return false;
-    }
-}) 
+const tableMetaData = ref<TableMetaData[]>([]);
+
+const computeOptions = computed((): BarItem[] => {
+    const isSlimMode = router.currentRoute.value.path === '/login';
+    return [
+        {
+            image: new URL('@/assets/img/placeholder.png', import.meta.url).href,
+            route: "/",
+        },
+        ...(isSlimMode ? [] : [
+            {
+                label: "Jobs",
+                icon: "",
+                route: "/jobs",
+                badge: tableMetaData.value.length,
+                items: [{label: "Overview", route:"/jobs", style: 'highlighted' as "highlighted"}, // wtf is this syntax?
+                    ...tableMetaData.value.map((element) => {
+                        return {
+                            label: element.name,
+                            route: "/jobs/table/" + element.id}
+                    })]
+            },
+            {
+                label: "Scripts",
+                route: "/scripts"
+            },
+            {
+                label: "Settings",
+                route: "/settings",
+            }
+        ]),
+        {
+            aligned: "end",
+            passThroughComponent: () => h(NotificationCenter, { 
+                class: "mr-2 h-full aspect-square", 
+                yExpand: "bottom",
+                xExpand: "left" 
+        }),
+        }
+]
+})
+
+watch(globalTableMetaData, () => {
+    // this aproach is needed, for async cannot be directly comuputed
+    getAllJobMetaData().then((metadata) => {
+        tableMetaData.value = metadata;
+    });
+})
+
+onMounted(() => {
+    getAllJobMetaData().then((metadata) => {
+        tableMetaData.value = metadata;
+    });
+})
 
 const changeUrl = (_: number, a: number) => {
     router.push('/jobs/table/' + a)
 }
 
-const computeTableOptions = computed(() => {
-    return globalTableMetaData.value.map((element) => {
-        return [element.name, changeUrl, element.id]
-    })
-})
 
+
+// Shared itemRenderer component
+const ItemRenderer = defineComponent({
+    name: 'ItemRenderer',
+    props: {
+        item: {
+            type: Object as PropType<BarItem>,
+            required: true
+        },
+        slave: {
+            type: Boolean,
+            default: false
+        }
+    },
+    setup(props) {
+        const  itemsHover = ref(false);
+        const isCurrentRoute = computed(() => {
+            if (!props.item.route) return false;
+            if (props.item.route === "/") return router.currentRoute.value.path === props.item.route 
+                || router.currentRoute.value.path === "/login";
+
+            return props.slave 
+                ? router.currentRoute.value.path == props.item.route 
+                : router.currentRoute.value.path.startsWith(props.item.route);
+        });
+
+        const getPopulation = () => {
+                return [
+                        props.item.image && h("img", { src: props.item.image, class: "h-11 p-1" }),
+                        props.item.icon && h("span", { class: props.item.icon }),
+                        props.item.label && h("span", {}, props.item.label),
+                        props.item.badge && h(Badge, { size: "small", value: props.item.badge, class:  "ml-2" }),
+                        props.item.items && h("span", { class: "pi pi-fw pi-angle-down" })
+                ]
+            }
+        const populationContainerClass = 'h-full flex flex-row items-center justify-center space-x-1'
+
+        return (): any => h("div", { 
+            class: "h-full",
+            onMouseenter: () => { itemsHover.value = true; },
+            onMouseleave: () => { itemsHover.value = false; }
+        }, [
+            h("div", { class: `${props.item.items ? 'min-w-25' : ''}  min-h-10 h-full py-1 px-2 rounded-lg gap-2 text-lg \
+                ${isCurrentRoute.value ? 'bg-info/20' : ''} hover:bg-panel-h \
+                ${props.item.style ===  'highlighted' ? 'font-bold' : ''}`  }, [
+                props.item.route 
+                    ? h(RouterLink, { to: props.item.route || "#",  
+                        class: populationContainerClass  + ` ${props.item.passThroughClass || ''}`}, {
+                        default: () => getPopulation(),
+                    })
+                    : h("span", { 
+                        class: populationContainerClass + ` ${props.item.passThroughClass || ''}`,
+                        onClick: () => props.item.comand?.()
+                    }, {
+                        default: () => getPopulation(),
+                    })
+            ]),
+            props.item.items && h(Transition, { 
+                name: 'dropdown',
+                enterActiveClass: 'transition ease-out duration-200',
+                enterFromClass: 'transform opacity-0 scale-y-0 origin-top',
+                enterToClass: 'transform opacity-100 scale-y-100 origin-top',
+                leaveActiveClass: 'transition ease-in duration-150',
+                leaveFromClass: 'transform opacity-100 scale-y-100 origin-top',
+                leaveToClass: 'transform opacity-0 scale-y-0 origin-top'
+            }, {
+                default: () => itemsHover.value 
+                    ? h(ItemContainerVertical, 
+                        { items: props.item.items as BarItem[], slave: !props.slave})
+                    : null
+            }),
+        ]);
+    }
+});
+// Horizontal container
+const ItemContainerHorizontal = defineComponent({
+    name: 'ItemContainerHorizontal',
+    props: {
+        items: {
+            type: Array as PropType<BarItem[]>,
+            required: true
+        },
+        slave: {
+            type: Boolean,
+            default: false
+        }
+    },
+    setup(props) {
+        const getItemLayout = (item: BarItem) => {
+            if (item.passThroughComponent) {
+            return item.passThroughComponent()
+        }
+
+            
+
+            return h(ItemRenderer, { item, slave: props.slave })
+        }
+
+        return () => h("div", {  class: "flex flex-row h-13 p-1 gap-2" }, [
+            props.items.filter(item =>  item.aligned != "end").map((item) => 
+                getItemLayout(item) 
+            ),
+            h('span', { class: "flex-grow" }),
+            props.items.filter(item =>  item.aligned == "end").map((item) => 
+                getItemLayout(item)
+            )
+            ]   
+        );
+    }
+});
+
+// Vertical container (header bar)
+const ItemContainerVertical = defineComponent({
+    name: 'ItemContainerVertical',
+    props: {
+        items: {
+            type: Array as PropType<BarItem[]>,
+            required: true
+        },
+        slave: {
+            type: Boolean,
+            default: false
+        }
+    },
+    setup(props) {
+        const getItemLayout = (item: BarItem) => {
+            return item.style === "highlighted" 
+                ? h("div", { class: "flex flex-col items-center" }, [
+                        h(ItemRenderer, { item, slave: props.slave }),
+                        h(SmallSeperator, { class: "mx-auto  mt-1" })
+                    ]) 
+                : h(ItemRenderer, { item, slave: props.slave })
+        }
+        return () => h("div", {  class: "flex flex-col absolute bg-panel p-0 w-auto rounded-lg border-2 border-info space-y-1 z-10" }, [
+            props.items.filter(item =>  item.aligned != "end").map((item) => 
+                getItemLayout(item) 
+            ),
+            h('span', { class: "flex-grow" }),
+            props.items.filter(item =>  item.aligned == "end").map((item) => 
+                getItemLayout(item)
+            )
+            ]   
+        );
+    }
+});
 </script>
 
 <template>
-    <!-- -12 > size nav -->
-    <header class="w-full flex flex-col z-10 sticky" :style="{ top: `calc(var(--spacing) * -12)` }">
-        <div class="flex flex-row items-center bg-panel">
-            <nav class="flex flex-row h-12">
-                <router-link to="/" class="flex">
-                    <img class="selectable-menu-entry" src="@/assets/img/placeholder.png" alt="HOME"/>
-                </router-link>
-                <template v-if="!isSlimMode">
-                    
-                    <div class="relative flex flex-col min-w-32"
-                        @mouseleave="activeDropDown = -1">
-                        <button 
-                            class="selectable-menu-entry" 
-                            @mouseover="activeDropDown = 0" 
-                            @click="() => { 
-                                if (activeDropDown === 0) { 
-                                    $router.push('/jobs'); 
-                                } 
-                            }">
-                            Tables
-                        </button>                    
-                        <DropDownSelector 
-                        :multiSelect="false"
-                        :isActive="activeDropDown == 0 ? true : false"
-                        :options="computeTableOptions"
-                        @close="activeDropDown = -1"
-                        />
-                    </div>
-                    <router-link to="/scripts" class="selectable-menu-entry">
-                        <a>Scripts</a>
-                    </router-link>
-                    <router-link to="/settings" class="selectable-menu-entry">
-                        <a>Settings</a>
-                    </router-link>
-
-                </template>
-
-            </nav>
-            <NotificationCenter class="ml-auto mr-4" y-expand="bottom" x-expand="left" ></NotificationCenter>
-        </div>
-
+    <header class="w-full flex flex-col z-10 sticky" :style="{ top: `calc(var(--spacing) * -13)` }">
+        <ItemContainerHorizontal class="bg-panel w-full" :items="computeOptions" />
         <LoadingBar :isLoading="useLoadingAnimation().isLoading" />
     </header>
 </template>

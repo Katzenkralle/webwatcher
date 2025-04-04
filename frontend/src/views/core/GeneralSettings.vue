@@ -21,7 +21,7 @@ import SmallSeperator from "@/components/reusables/SmallSeperator.vue";
             unstyled>
 
             <AccordionPanel value="0">
-                <AccordionHeader>Overview</AccordionHeader>
+                <AccordionHeader>Authentication</AccordionHeader>
                 <AccordionContent>
                     <UserSettings class="content-box"/>
                 </AccordionContent>

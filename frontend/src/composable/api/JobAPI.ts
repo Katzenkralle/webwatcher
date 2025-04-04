@@ -24,7 +24,7 @@ export let globalTableMetaData: Ref<TableMetaData[]> = ref([]);
 
 
 
-export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
+const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
     return new Promise(async (resolve, reject) => {
         const query = `
         query {
@@ -54,10 +54,9 @@ export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
             const key = response.keys[0];
             switch (key) {
                 case "jobsMetaDataList":
-                    globalTableMetaData.value = response.data[key]
                     return resolve(response.data[key])
                 default:
-                    globalTableMetaData.value = [
+                    return resolve([
                         {
                             id: 0,
                             name: "Tabke",
@@ -87,8 +86,8 @@ export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
                                 "test": "value",
                             }
                         }
-                    ]
-                    return resolve(globalTableMetaData.value)
+                    ])
+                    
 
                 }
             reportError(response)                
@@ -97,12 +96,20 @@ export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
     });
 }
 
+export const getAllJobMetaData = async(forceRefetch: boolean = false): Promise<TableMetaData[]> => {
+    if(forceRefetch || !globalTableMetaData.value.length){
+        const jobDate = await fetchAllJobMetaData()
+        globalTableMetaData.value = jobDate
+    }
+    return globalTableMetaData.value
+}
+
 export const getJobMetaData = async  (id: number|undefined): Promise<TableMetaData> => {
-    const localElntry =  globalTableMetaData.value.find((table) => table.id === id);
+    const localElntry =  globalTableMetaData.value.find((table) => table.id === id || !id);
     if(localElntry) {
         return new Promise((resolve) => resolve(localElntry));
     }
-    return fetchAllJobMetaData().then((data) => {
+    return getAllJobMetaData().then((data) => {
         const entry = data.filter((table) => table.id === id)[0];
         if(entry) {
             return entry;

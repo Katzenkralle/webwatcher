@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { globalTableMetaData, fetchAllJobMetaData, deleteJob, type TableMetaData } from "@/composable/api/JobAPI";
+import { globalTableMetaData, getAllJobMetaData, deleteJob, type TableMetaData } from "@/composable/api/JobAPI";
 import Card from 'primevue/card';
 import Button from "primevue/button";
 import AutoComplete from 'primevue/autocomplete';
@@ -15,9 +15,7 @@ import { useStatusMessage } from "@/composable/core/AppState";
 const suggestedItems = ref<TableMetaData[]>([]);
 
 onMounted(async () => {
-  let a = await fetchAllJobMetaData();
-  console.log(a);
-  suggestedItems.value = a
+  suggestedItems.value = await getAllJobMetaData();
 });
 
 const recomputeSugestions = (search: string) => {

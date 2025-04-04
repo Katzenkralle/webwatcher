@@ -102,7 +102,7 @@ watch(
 
 <template>
     <div>
-    <Button icon="pi pi-clock" class="ml-auto" 
+    <Button icon="pi pi-clock" class="ml-auto w-full h-full" 
     :severity="useStatusMessage().getRecentStatusMessage.value?.msg.severity" 
     @click="isOpendInteractive != null ? isOpendInteractive = null : isOpendInteractive = 'interactivly'"></Button>
     <div class="relative">
