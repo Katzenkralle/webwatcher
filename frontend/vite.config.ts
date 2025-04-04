@@ -6,6 +6,8 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
+import { version, license, repository } from './package.json'
+
 // https://vite.dev/config/
 export default defineConfig({
   server: {
@@ -33,4 +35,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+    __APP_LICENSE__: JSON.stringify(license),
+    __APP_REPOSETORY__: JSON.stringify(repository),
+  }
 })

@@ -81,9 +81,6 @@ onMounted(() => {
     });
 })
 
-const changeUrl = (_: number, a: number) => {
-    router.push('/jobs/table/' + a)
-}
 
 
 
