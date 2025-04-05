@@ -14,14 +14,6 @@ export interface SessionData {
     name: string;
 }
 
-interface Message {
-    message: string;
-    status: number;
-}
-interface User {
-    username: string;
-    isAdmin: boolean;
-}
 
 const readToken = () => {
     const token = document.cookie.split('; ').find(row => row.startsWith('oauth2='));
@@ -74,14 +66,13 @@ export const changePassword = async (oldPassword: string, newPassword: string) =
         }
     }`;
     return queryGql(query).then((response: GQLResponse) => {
-        console.log(response);
         useStatusMessage().newStatusMessage(response.data.changePassword.message, response.data.changePassword.status);
     }).catch((error) => {
         reportError(error);
     });
 }
 
-export const logout = async (sessionName: string|undefined, sessionId: string|undefined = undefined): Promise<void> => {
+export const logout = async (sessionName: string|undefined = undefined, sessionId: string|undefined = undefined): Promise<void> => {
     let logoutThisInstance = false;
     const thisSession = getSessionFromJWT()
     if ((sessionName && sessionName === thisSession.name ) 
@@ -147,37 +138,6 @@ export const requestToken = async (username: string, password: string, name: str
     });
 }
 
-export const getUser = async (): Promise<User | Message> => {
-    const query = `
-    {
-        user {
-            __typename
-            ... on User {
-                username
-                isAdmin
-            }
-            ... on Message {
-                message
-                status
-            }
-        }
-    }`;
-    
-    return queryGql(query).then((response: GQLResponse) => {
-        switch (response.keys[0]) {
-            case "user":
-                return response.data.user as User;
-            case "Message":
-                return response.data.user as Message;
-            default:
-                console.error("Unexpected response from server");
-                throw new Error("Unexpected response from server");
-                
-        }
-    }).catch((error) => {
-        return { message: "Unexpected response from server", status: 0 } as Message;
-    });
-};
 
 export const getAllSessions = async () => {
     const query = `
@@ -198,8 +158,8 @@ export const getAllSessions = async () => {
         }      
     }`;
     return queryGql(query).then((response: GQLResponse) => {
-        switch (response.keys[0]) {
-            case "sessions":
+        switch (response.providedTypes[0].type) {
+            case "SessionList":
                 return response.data.sessions.sessions as SessionData[];
             default:
                 throw response

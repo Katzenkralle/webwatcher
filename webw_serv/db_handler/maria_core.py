@@ -54,7 +54,6 @@ class MariaDbHandler:
             logger.info("No default admin user provided, skipping creation..")
         return None
 
-
     def __establish_connection(self, host, port, user, password, db):
         conn = mariadb.connect(
             host=host,
@@ -84,6 +83,11 @@ class MariaDbHandler:
         self.__cursor.execute("INSERT INTO web_users (username, password, is_admin) VALUES (?, ?, ?)", (username, password, is_admin))
         self.__conn.commit()
         return DbUser(username, password, is_admin)
+    
+    async def delete_user(self, username: str) -> bool:
+        self.__cursor.execute("DELETE FROM web_users WHERE username = ?", (username,))
+        self.__conn.commit()
+        return True
     
     async def get_user(self, username: str|None = None, session: str|None = None) -> DbUser | None:
         if not username and not session:
@@ -150,6 +154,11 @@ class MariaDbHandler:
         self.__cursor.execute("UPDATE web_users SET password = ? WHERE username = ?", (new_password, username))
         self.__conn.commit()
         return True
+
+    async def get_all_users(self) -> list[DbUser]:
+        self.__cursor.execute("SELECT * FROM web_users")
+        db_users = self.__cursor.fetchall()
+        return [DbUser(*user) for user in db_users]
 
     def close(self):
         self.__cursor.close()

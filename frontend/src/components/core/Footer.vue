@@ -7,7 +7,7 @@ const license = __APP_LICENSE__
 </script>
 
 <template>
-    <footer class="w-screen bg-panel z-10 border-t-4 border-panel-d p-2 relative">
+    <footer class="w-screen relative bg-panel border-t-4 border-panel-d p-2 mt-2">
         <div class="flex flex-col justify-center items-center">
             <span>Webwatcher VueUi - Version {{ version }} - 🄯 {{ license }}</span>
             <span>For Source code and Documentation visite <a 

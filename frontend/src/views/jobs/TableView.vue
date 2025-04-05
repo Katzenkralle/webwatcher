@@ -39,7 +39,6 @@ const changeJob = (newVal: any) => {
   if (!newVal) return;
     try {
       let newId = Number(newVal);
-      console.log("New Job ID: ", newId, "Current Job ID: ", currentJobId.value);
       if (!currentJobId.value || (currentJobId.value && currentJobId.value !== newId)) {
         currentJobId.value = newId;
         jobHandler = useJobUiCreator(newId);
@@ -92,7 +91,7 @@ const userConfig = computed(() => {
                 <JobMetaDisplay 
                   v-if="tableMetadata"
                   :metaData="tableMetadata"
-                  class="max-w-256" />
+                  />
               </AccordionContent>
         </AccordionPanel>
 

@@ -74,6 +74,7 @@ let newTokenPasswd = {
 const getLoginUrl = (token: string, type: string) => {
     return `${window.location.origin}/login?token=${token}&type=${type}`
 }
+
 </script>
 
 <template>
@@ -149,7 +150,7 @@ const getLoginUrl = (token: string, type: string) => {
                         useStatusMessage().newStatusMessage('Successfully created new Token', 'success')
                         infoDilogData.title = 'New Token: Success'
                         infoDilogData.mesage_prelude = 'Your new token is:'
-                        infoDilogData.mesage = `{'Authorization': '${data.token_type} ${data.access_token}'}`
+                        infoDilogData.mesage = JSON.stringify({Authorization: `${data.token_type} ${data.access_token}`})
                         infoDilogData.link = getLoginUrl(data.access_token, data.token_type)
                         infoDialog?.openDialog()
                         fetchSessions()
@@ -181,17 +182,17 @@ const getLoginUrl = (token: string, type: string) => {
         </PupupDialog>
 
         <div class="flex flex-col items-center mx-auto">
-            <div class="input-box passwd_change space-y-3 w-full">
+            <div class="input-box passwd_change">
                 <label for="passwd_change">Change password:</label>
                 <FloatLabel label="Old Password" variant="in" >
                     <Password size="small" :feedback="false"  v-model:model-value="passwdChange.old_passwd" required />
                     <label for="old_passwd">Old Password</label>
                 </FloatLabel>
-                <FloatLabel label="New Password" variant="in" class="w-full">
-                    <Password size="small" :feedback="false" v-model:model-value="passwdChange.new_passwd" required />
+                <FloatLabel label="New Password" variant="in">
+                    <Password size="small" v-model:model-value="passwdChange.new_passwd" required />
                     <label for="new_passwd">New Password</label>    
                 </FloatLabel>
-                <FloatLabel label="Confirm New Password" variant="in" class="w-full">
+                <FloatLabel label="Confirm New Password" variant="in">
                     <Password size="small" :feedback="false" v-model:model-value="passwdChange.new_passwd_confirm" required />
                     <label for="new_passwd_confirm">Confirm New Password</label>
                 </FloatLabel>
@@ -209,15 +210,15 @@ const getLoginUrl = (token: string, type: string) => {
 
             <div class="input-box w-full">
                 <label>Session Manager:</label>
-                    <div v-for="session, index in sessions" :key="session.name" 
-                        :class="`flex flex-row overflow-hidden justify-around items-center p-2 ${index % 2 === 0 ? 'bg-panel-h' : ''}`">
-                        <div class="flex flex-col mr-2">
+                    <div v-for="session in sessions" :key="session.name" 
+                        :class="`row-based-table`">
+                        <div>
                             <span v-if="thisToken.name == session.name" class="text-sm text-warning">This Session</span>
                             <span class="font-bold text-info">Name: </span>
                             <span class="text-sm  text-info">Created at:</span>
                         </div>
 
-                        <div class="flex flex-col mr-2">
+                        <div>
                             <span v-if="thisToken.name == session.name" class="opacity-0 text-sm"> .</span>
                             <span class="text-text-d max-w-48 truncate"> {{ session.name }}</span>
                             <span class="text-sm text-text-d"> {{ session.created }}</span>
@@ -247,9 +248,4 @@ const getLoginUrl = (token: string, type: string) => {
 
 <style scoped>
 @reference "@/assets/global.css";
-
-.passwd_change div,
-.passwd_change input {
-    @apply w-full;
-}
 </style>

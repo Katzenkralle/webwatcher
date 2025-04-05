@@ -53,8 +53,11 @@ class ResultType(Enum):
 # Base types
 @strawberry.type()
 class User(DbUser):
-    pass
+    password: strawberry.Private[str]
 
+@strawberry.type()
+class UserList():
+    users: list[User]
 
 @strawberry.type
 class Session(DbSession):
@@ -121,5 +124,5 @@ class JobEntry:
     context: JsonStr
 
 UserResult = Annotated[Union[User, Message], strawberry.union("UserResult")]
-
+AllUsersResult = Annotated[Union[UserList, Message], strawberry.union("AllUsersResult")]
 SessionResult = Annotated[Union[SessionList, Message], strawberry.union("SessionResult")] 

@@ -4,8 +4,8 @@ from typing import Optional
 from dataclasses import asdict
 
 from ..endpoints.auth import get_hashed, admin_guard, user_guard, hash_context
-from ..gql_base_types import MessageType, Message, UserResult, SessionResult, \
-    User as StrawberryUser, SessionList, Session as StrawberrySession
+from ..gql_base_types import MessageType, Message, UserResult, SessionResult, AllUsersResult, \
+    User as StrawberryUser, Session as StrawberrySession, SessionList, UserList
 
 
 @strawberry.type
@@ -14,7 +14,9 @@ class Mutation:
     @admin_guard()
     async def create_user(self, info: strawberry.Info, username: str, password: str, is_admin: bool = False) -> UserResult:
         try:
-            return await info.context["request"].state.maria.create_user(username, get_hashed(password), is_admin)
+            return  StrawberryUser(**asdict(
+                await info.context["request"].state.maria.create_user(username, get_hashed(password), is_admin)
+                ))
         except:
             return Message(message="Failed to create user, try another username!", status=MessageType.DANGER)
         
@@ -39,15 +41,33 @@ class Mutation:
             return Message(message="Password changed successfully", status=MessageType.SUCCESS)
         except:
             return Message(message="Failed to change password", status=MessageType.DANGER)
+    
+    @strawberry.mutation
+    @admin_guard()
+    async def delete_user(self, info: strawberry.Info, username: str) -> Message:
+        try:
+            await info.context["request"].state.maria.delete_user(username)
+            return Message(message="User deleted successfully", status=MessageType.SUCCESS)
+        except Exception as e:
+            return Message(message=f"Failed to delete user; {e}", status=MessageType.DANGER)
 
 @strawberry.type
 class Query:
     @strawberry.field
     @user_guard()
     async def user(self, info: strawberry.Info) -> UserResult:
-        # ToDo: Add another StrawberryUser for it is useless to return the hased password
         return StrawberryUser(**asdict(info.context["user"]))
     
+
+    @strawberry.field
+    @admin_guard()
+    async def allUsers(self, info: strawberry.Info) -> AllUsersResult:
+        try:
+            db_users = await info.context["request"].state.maria.get_all_users()
+            return UserList(users=[StrawberryUser(**asdict(user)) for user in db_users])
+        except Exception as e:
+            return Message(message=f"Failed to get users; {e}", status=MessageType.DANGER)
+
     @strawberry.field
     @user_guard()
     async def sessions(self, info: strawberry.Info) -> SessionResult:

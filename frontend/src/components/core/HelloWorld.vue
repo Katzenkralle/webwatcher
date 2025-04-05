@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, type Ref } from "vue";
 import Button from "primevue/button"
-import {getUser, logout} from "@/composable/api/Auth";
+import {logout} from "@/composable/api/Auth";
+import {getUser} from "@/composable/api/User";
 import {useStatusMessage, useLoadingAnimation} from "@/composable/core/AppState";
 import { useFilterIterationContext, type IterationContext, type Group } from "@/composable/jobs/FilterGroups";
 
@@ -184,7 +185,6 @@ const testString = `{
     />
     <Button label="Open Dialog"
             @click="() => {
-                console.log(popupRef);
                 popupRef.openDialog();
             }"
     />

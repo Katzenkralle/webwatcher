@@ -51,7 +51,7 @@ const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
         }
         `;
         queryGql(query).then((response) => {
-            const key = response.keys[0];
+            const key = response.providedTypes[0].type;
             switch (key) {
                 case "jobsMetaDataList":
                     return resolve(response.data[key])
@@ -142,7 +142,7 @@ export const deleteJob = async(id: number) => {
                 }
             }`;
     queryGql(query).then((response) => {
-        const key = response.keys[0];
+        const key = response.providedTypes[0].type;
         switch (key) {
             case "jobsMetaDataList":
                 globalTableMetaData.value = response.data[key]
@@ -187,7 +187,7 @@ export const updateOrCreateJob = async(entry: TableMetaData): Promise<void> => {
             }`;
     return new Promise((resolve, reject) => {
         queryGql(query).then((response) => {
-            const key = response.keys[0];
+            const key = response.providedTypes[0].type;
             switch (key) {
                 case "jobsMetaDataList":
                     globalTableMetaData.value = response.data[key];
@@ -250,7 +250,7 @@ export const useJobData = (jobId: number) => {
             }
             `;
             queryGql(query).then((response) => {
-                const key = response.keys[0];
+                const key = response.providedTypes[0].type;
                 switch (key) {
                     case "jobEntry":
                         return resolve(response.data[key] as Record<number, jobEnty>)
