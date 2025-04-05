@@ -56,42 +56,42 @@ const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
                 case "jobsMetaDataList":
                     return resolve(response.data[key])
                 default:
-                    return resolve([
-                        {
-                            id: 0,
-                            name: "Tabke",
-                            script: "script1",
-                            description: "Hello World",
-                            enabled: false,
-                            executeTimer: "0",
-                            executedLast: 0,
-                            forbidDynamicSchema: false,
-                            expectedReturnSchema: {},
-                            parameters: {}
-                        },
-                        {
-                            id: 1,
-                            name: "Entry",
-                            script: "script2",
-                            description: "Hello World2",
-                            enabled: false,
-                            executeTimer: "0",
-                            executedLast: 0,
-                            forbidDynamicSchema: true,
-                            expectedReturnSchema: {
-                                "some": "string|number",
-                                "aNumber": "number"
-                            },
-                            parameters: {
-                                "test": "value",
-                            }
-                        }
-                    ])
-                    
-
+                    throw response
+            }
+        }).catch((error) => {
+            return resolve([
+                {
+                    id: 0,
+                    name: "Tabke",
+                    script: "script1",
+                    description: "Hello World",
+                    enabled: false,
+                    executeTimer: "0",
+                    executedLast: 0,
+                    forbidDynamicSchema: false,
+                    expectedReturnSchema: {},
+                    parameters: {}
+                },
+                {
+                    id: 1,
+                    name: "Entry",
+                    script: "script2",
+                    description: "Hello World2",
+                    enabled: false,
+                    executeTimer: "0",
+                    executedLast: 0,
+                    forbidDynamicSchema: true,
+                    expectedReturnSchema: {
+                        "some": "string|number",
+                        "aNumber": "number"
+                    },
+                    parameters: {
+                        "test": "value",
+                    }
                 }
-            reportError(response)                
-            return reject(response)
+            ])
+            reportError(error)
+            return reject(error)
         })
     });
 }

@@ -51,8 +51,8 @@ const curentAccordion = ref<string[]>(['0']);
 </script>
 
 <template>
-    <main class="w-full h-full flex flex-col items-center">
-        <h1 class="mt-5 mb-2">General Settings</h1>
+    <main class="flex flex-col items-center">
+        <h1>General Settings</h1>
 
         <SmallSeperator :is-dashed="true" class="my-4"/>
         <Accordion 

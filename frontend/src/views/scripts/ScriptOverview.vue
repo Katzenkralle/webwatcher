@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DataTable, Column, Button } from 'primevue';
-import { fetchScripts, globalScriptData, deleteScript } from '@/composable/api/ScriptAPI';
+import { getAllScripts, globalScriptData, deleteScript } from '@/composable/api/ScriptAPI';
 
 import { ref, computed, onMounted } from 'vue';
 
@@ -17,7 +17,7 @@ const isFiltered = ref(false);
 
 
 onMounted(() => {
-    fetchScripts();
+    getAllScripts();
 });
 // Convert object to an array with script names included
 const formattedGlobalScriptData = computed(() =>

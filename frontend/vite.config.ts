@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import svgLoader from 'vite-svg-loader'
 
 import { version, license, repository } from './package.json'
 
@@ -29,6 +30,7 @@ export default defineConfig({
     vueJsx(),
     vueDevTools(),
     tailwindcss(),
+    svgLoader(),
   ],
   resolve: {
     alias: {

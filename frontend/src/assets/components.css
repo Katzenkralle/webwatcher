@@ -1,6 +1,6 @@
 
 main {
-    @apply min-h-[96vh] relative;
+    @apply min-h-[96vh] w-full relative;
 }
 
 main, header, footer {
@@ -90,13 +90,17 @@ main, header, footer {
     @apply flex flex-col mr-2;
 }
 
+.color-change-trans {
+    @apply transition-colors duration-300;
+}
+
 button:disabled {
     @apply !cursor-not-allowed;
   }
   
 
 h1 {
-    @apply text-4xl font-bold;
+    @apply text-4xl font-bold mt-5 mb-2;
 }
 h2 {
     @apply text-3xl font-bold;
