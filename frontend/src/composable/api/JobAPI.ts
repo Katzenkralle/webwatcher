@@ -24,7 +24,7 @@ export let globalTableMetaData: Ref<TableMetaData[]> = ref([]);
 
 
 
-export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
+const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
     return new Promise(async (resolve, reject) => {
         const query = `
         query {
@@ -43,7 +43,7 @@ export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
                     expectedReturnSchema
                     }
                 }
-                ... on ErrorMessage {
+                ... on Message {
                     message
                     status
                 }
@@ -51,58 +51,65 @@ export const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
         }
         `;
         queryGql(query).then((response) => {
-            const key = response.keys[0];
+            const key = response.providedTypes[0].type;
             switch (key) {
                 case "jobsMetaDataList":
-                    globalTableMetaData.value = response.data[key]
                     return resolve(response.data[key])
                 default:
-                    globalTableMetaData.value = [
-                        {
-                            id: 0,
-                            name: "Tabke",
-                            script: "script1",
-                            description: "Hello World",
-                            enabled: false,
-                            executeTimer: "0",
-                            executedLast: 0,
-                            forbidDynamicSchema: false,
-                            expectedReturnSchema: {},
-                            parameters: {}
-                        },
-                        {
-                            id: 1,
-                            name: "Entry",
-                            script: "script2",
-                            description: "Hello World2",
-                            enabled: false,
-                            executeTimer: "0",
-                            executedLast: 0,
-                            forbidDynamicSchema: true,
-                            expectedReturnSchema: {
-                                "some": "string|number",
-                                "aNumber": "number"
-                            },
-                            parameters: {
-                                "test": "value",
-                            }
-                        }
-                    ]
-                    return resolve(globalTableMetaData.value)
-
+                    throw response
+            }
+        }).catch((error) => {
+            return resolve([
+                {
+                    id: 0,
+                    name: "Tabke",
+                    script: "script1",
+                    description: "Hello World",
+                    enabled: false,
+                    executeTimer: "0",
+                    executedLast: 0,
+                    forbidDynamicSchema: false,
+                    expectedReturnSchema: {},
+                    parameters: {}
+                },
+                {
+                    id: 1,
+                    name: "Entry",
+                    script: "script2",
+                    description: "Hello World2",
+                    enabled: false,
+                    executeTimer: "0",
+                    executedLast: 0,
+                    forbidDynamicSchema: true,
+                    expectedReturnSchema: {
+                        "some": "string|number",
+                        "aNumber": "number"
+                    },
+                    parameters: {
+                        "test": "value",
+                    }
                 }
-            reportError(response)                
-            return reject(response)
+            ])
+            reportError(error)
+            return reject(error)
         })
     });
 }
 
+export const getAllJobMetaData = async(forceRefetch: boolean = false): Promise<TableMetaData[]> => {
+    if(forceRefetch || !globalTableMetaData.value.length){
+        const jobDate = await fetchAllJobMetaData()
+        globalTableMetaData.value = jobDate
+    }
+    return globalTableMetaData.value
+}
+
 export const getJobMetaData = async  (id: number|undefined): Promise<TableMetaData> => {
-    const localElntry =  globalTableMetaData.value.find((table) => table.id === id);
+    const localElntry =  globalTableMetaData.value.find((table) => table.id === id || !id);
     if(localElntry) {
         return new Promise((resolve) => resolve(localElntry));
     }
-    return fetchAllJobMetaData().then((data) => {
+    return getAllJobMetaData().then((data) => {
         const entry = data.filter((table) => table.id === id)[0];
         if(entry) {
             return entry;
@@ -116,7 +123,7 @@ export const deleteJob = async(id: number) => {
         mutation {
             deleteJob(id: ${id}) {
                 __typename
-                ... on ErrorMessage {
+                ... on Message {
                     message
                     status
                 }
@@ -135,7 +142,7 @@ export const deleteJob = async(id: number) => {
                 }
             }`;
     queryGql(query).then((response) => {
-        const key = response.keys[0];
+        const key = response.providedTypes[0].type;
         switch (key) {
             case "jobsMetaDataList":
                 globalTableMetaData.value = response.data[key]
@@ -160,7 +167,7 @@ export const updateOrCreateJob = async(entry: TableMetaData): Promise<void> => {
                 expectedReturnSchema: ${JSON.stringify(entry.expectedReturnSchema)}
             ) {
                 __typename
-                ... on ErrorMessage {
+                ... on Message {
                     message
                     status
                 }
@@ -180,7 +187,7 @@ export const updateOrCreateJob = async(entry: TableMetaData): Promise<void> => {
             }`;
     return new Promise((resolve, reject) => {
         queryGql(query).then((response) => {
-            const key = response.keys[0];
+            const key = response.providedTypes[0].type;
             switch (key) {
                 case "jobsMetaDataList":
                     globalTableMetaData.value = response.data[key];
@@ -235,7 +242,7 @@ export const useJobData = (jobId: number) => {
                             context
                         }
                     }
-                    ... on ErrorMessage {
+                    ... on Message {
                         message
                         status
                     }
@@ -243,51 +250,53 @@ export const useJobData = (jobId: number) => {
             }
             `;
             queryGql(query).then((response) => {
-                const key = response.keys[0];
+                const key = response.providedTypes[0].type;
                 switch (key) {
                     case "jobEntry":
                         return resolve(response.data[key] as Record<number, jobEnty>)
                     default:
-                        const generateRandomJobEntry = (): jobEnty => {
-                            return {
-                                timestamp: Date.now() - Math.floor(Math.random() * 1000000),
-                                runtime: Math.floor(Math.random() * 500),
-                                result: Math.random() > 0.5 ? "SUCCESS" : "FAILURE",
-                                scriptFailure: Math.random() > 0.5,
-                                context: {
-                                    "some": Math.random().toString(36)+ " " + Math.random().toString(36),
-                                    "aNumber": Math.floor(Math.random() * 100)
-                                }
-                            };
-                        };
-
-                        const data = Array.from({ length: 15 }, (_, index) => ({
-                            [index]: generateRandomJobEntry()
-                        })).reduce((acc, entry) => {
-                            return { ...acc, ...entry };
-                        }, {} as Record<number, jobEnty>);
-                        data[15] = {
-                            timestamp: 0,
-                            runtime: 0,
-                            result: "CATS_AND_DOGS",
-                            scriptFailure: false,
-                            context: {
-                                "some": 0,
-                                "aNumber": 1
-                            }
-                        }
-                        return resolve(Object.keys(data).filter((key) =>{
-                            const index = parseInt(key)
-                            return (range ? index >= Number(range[0]) && index < Number(range[1]) : true)
-                        }).map((key) => parseInt(key))
-                        .reduce((acc, key) => {
-                            acc[key] = data[key]
-                            return acc
-                        }, {} as Record<number, jobEnty>)                       
-                        )
+                        throw response
                 }
-                reportError(response)                
-                return reject(response)
+            }).catch((error) => {
+                const generateRandomJobEntry = (): jobEnty => {
+                    return {
+                        timestamp: Date.now() - Math.floor(Math.random() * 1000000),
+                        runtime: Math.floor(Math.random() * 500),
+                        result: Math.random() > 0.5 ? "SUCCESS" : "FAILURE",
+                        scriptFailure: Math.random() > 0.5,
+                        context: {
+                            "some": Math.random().toString(36)+ " " + Math.random().toString(36),
+                            "aNumber": Math.floor(Math.random() * 100)
+                        }
+                    };
+                };
+
+                const data = Array.from({ length: 15 }, (_, index) => ({
+                    [index]: generateRandomJobEntry()
+                })).reduce((acc, entry) => {
+                    return { ...acc, ...entry };
+                }, {} as Record<number, jobEnty>);
+                data[15] = {
+                    timestamp: 0,
+                    runtime: 0,
+                    result: "CATS_AND_DOGS",
+                    scriptFailure: false,
+                    context: {
+                        "some": 0,
+                        "aNumber": 1
+                    }
+                }
+                return resolve(Object.keys(data).filter((key) =>{
+                    const index = parseInt(key)
+                    return (range ? index >= Number(range[0]) && index < Number(range[1]) : true)
+                }).map((key) => parseInt(key))
+                .reduce((acc, key) => {
+                    acc[key] = data[key]
+                    return acc
+                }, {} as Record<number, jobEnty>)                       
+                )
+                reportError(error)
+                return reject(error)
             })
         });
     }

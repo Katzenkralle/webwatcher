@@ -64,14 +64,11 @@ const getAvailableStrings = (async () => {
 
 
 const refreshJobMetaData = (id: string|string[]|undefined) => {
-    console.log('refreshJobMetaData', id);
     if (!id) {
             isEdit.value = false;
-            console.log('isEdit', isEdit.value);
             return;
     }
     let jobId: number =  Number(id);
-    console.log('jobId', jobId);
     getJobMetaData(Number(id)).then(async (data: TableMetaData) => { 
             jobMetaData.value = {...data, 
                 parameters: await newParameterKvLayout(data.script)

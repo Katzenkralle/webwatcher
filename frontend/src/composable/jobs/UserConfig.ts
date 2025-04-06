@@ -10,7 +10,6 @@ export const jobUserDisplayConfig = (id: number) => {
 
     watch(filter, (value) => {
         console.debug("ToDo: Filter changed, Sync with  db", value);
-        console.log(value);
     }, { deep: true });
 
     const loacConfigs = async () => {
@@ -18,7 +17,7 @@ export const jobUserDisplayConfig = (id: number) => {
             { 
             userJobConfig {
                 __typename
-                ... on ErrorMessage {
+                ... on Message {
                     message
                     status
                 }
@@ -29,7 +28,7 @@ export const jobUserDisplayConfig = (id: number) => {
 
             }
         }`).then((response) => {
-            switch (response.keys[0]) {
+            switch (response.providedTypes[0]) {
                 case "userJobConfig":
                     filter.value = response.data.userJobConfig.filter;
                     graph.value = response.data.userJobConfig.graph;
@@ -55,7 +54,7 @@ export const jobUserDisplayConfig = (id: number) => {
                 }
             }
         `).then((response) => {
-            if (response.keys[0] == "Message" && response.data.status === "SUCCESS") {
+            if (response.providedTypes[0] == "Message" && response.data.status === "SUCCESS") {
                 useStatusMessage().newStatusMessage(response.data.message, "success");
                 return;        
             }

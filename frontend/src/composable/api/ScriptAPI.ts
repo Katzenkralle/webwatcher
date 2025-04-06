@@ -48,14 +48,14 @@ export async function deleteScript(name: string) {
                 staticSchema
                 availableParameters
             }
-            ... on ErrorMessage {
+            ... on Message {
                 message
                 status
             }
           }
     }`;   
     queryGql(mutation).then((response) => {
-        if (response.keys[0] === "jobsMetaData") {
+        if (response.providedTypes[0].type === "jobsMetaData") {
             setScriptMetaData(response.data as (ScriptMeta & { name: string})[]);
             useStatusMessage().newStatusMessage("Script deleted", "success");
             return;
@@ -82,13 +82,13 @@ export async function fetchScripts() {
                 description
                 expectedSchema
             }
-            ... on ErrorMessage {
+            ... on Message {
                 message
                 status
             }
         }`
     ).then((response) => {
-        const key = response.keys[0];
+        const key = response.providedTypes[0].type;
         switch (key) {
             case "scripts":
                 setScriptMetaData(response.data as (ScriptMeta & { name: string})[]);
@@ -163,7 +163,7 @@ export async function submitScript(name: String, discription: String): Promise<v
                 staticSchema
                 availableParameters
             }
-            ... on ErrorMessage {
+            ... on Message {
                 message
                 status
             }
@@ -171,7 +171,7 @@ export async function submitScript(name: String, discription: String): Promise<v
             `
     return new Promise((resolve, reject) => {
         return queryGql(mutation).then((response) => {
-            if (response.keys[0] === "jobsMetaData") {
+            if (response.providedTypes[0].type === "jobsMetaData") {
                 setScriptMetaData(response.data as (ScriptMeta & { name: string})[]);
                 resolve();
             } 

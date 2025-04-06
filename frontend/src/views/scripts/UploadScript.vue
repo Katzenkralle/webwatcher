@@ -43,7 +43,6 @@ const computedScript = computed((): undefined | ScriptMeta  => {
     } else if (currentScriptName.value === '') {
         return undefined;
     }
-    console.log('computedScript', thisScript);
     fileStatus.value = {severity: 'success',
         summary: 'File present on the Server.',
         availableParameters: thisScript.availableParameters,

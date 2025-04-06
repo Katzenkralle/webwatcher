@@ -7,7 +7,7 @@ import ScriptUpload from '@/views/scripts/UploadScript.vue'
 import Login from '@/views/core/Login.vue'
 import ScriptOverview from '@/views/scripts/ScriptOverview.vue'
 import CreateJob from '@/views/jobs/CreateJob.vue'
-
+import Settings from '@/views/core/GeneralSettings.vue'
 import NavButtons from '@/components/reusables/NavButtons.vue'
 
 const router = createRouter({
@@ -41,6 +41,14 @@ const router = createRouter({
       path: '/jobs/create/:id(\\w+)?',
       name: 'createJob',
       component: CreateJob,
+      meta: {
+        requiresAuth: true,
+      }
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: Settings,
       meta: {
         requiresAuth: true,
       }

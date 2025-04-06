@@ -51,10 +51,10 @@
     --color-info: #8caaee;
     --color-info-h: #bccdf5;
 
-    --color-special-d: #f4f4f4;
+    --color-special-d: #b271da;
     --color-special: #ca9ee6;
-    --color-special-h: #b271da;
-
+    --color-special-h: #f4f4f4;
+    
     --color-primary: var(--color-info); /* + selection */
     --color-primary-contrast: var(--color-h-text);
     --color-highlight: var(--color-app-d);
