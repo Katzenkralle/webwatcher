@@ -1,7 +1,6 @@
 import { AUTH_ENDPOINT } from "@/main"
 import router from "@/router";
 import { queryGql, reportError, type GQLResponse } from "./QueryHandler";
-import { ref } from "vue";
 import { useStatusMessage } from "../core/AppState";
 
 export interface AuthResponse {

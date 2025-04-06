@@ -89,21 +89,22 @@ const computedInfoCards = computed((): InfoCard[] => {
           :style="`border-color:var(${card.suddleAcentColor}); 
             --hover-border-color:var(${card.acentColor});`"
           :class="'hover:!border-[var(--hover-border-color)]'">
-          <template #title>
-            <h3 class="mb-4 underline" :style="`color:var(${card.acentColor});`">
-          {{ card.title }}
-            </h3>
-          </template>
-
-          <template #content>
-            <p>{{ card.description }}</p>
-          
+          <template #header>
             <!-- Background SVG Icon -->
             <component
               :is="card.backgroundIcon"
               class="w-full h-full absolute top-0 left-0 opacity-20 z-0" 
               :style="`stroke:var(${card.acentColor});color:var(${card.acentColor});`"
-                />
+              />
+          </template>
+          <template #title>
+            <h3 class="mb-4 underline" :style="`color:var(${card.acentColor});`">
+              {{ card.title }}
+            </h3>
+          </template>
+
+          <template #content>
+            <p>{{ card.description }}</p>
           </template>
         </Card>
       </router-link>
@@ -116,7 +117,7 @@ const computedInfoCards = computed((): InfoCard[] => {
 @reference "@/assets/global.css";
 
 .p-card *:not(div):not(svg) {
-  @apply relative z-10;
+  @apply relative;
 }
 
 </style>

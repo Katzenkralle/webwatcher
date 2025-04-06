@@ -57,13 +57,13 @@ onMounted (async() => {
         <div class="input-box">
             <label >All Users</label>
             <div v-for="user in userList" class="row-based-table">
-                <div class="text-info">
+                <div class="text-info w-1/3">
                     <p v-if="thisUser && user.username === thisUser.username"
                         class="text-warning text-sm">This Account</p>
                     <p class="font-bold">Username:</p>
                     <p class="font-sm">Premission:</p>
                 </div>
-                <div>
+                <div class="w-1/2">
                     <p v-if="thisUser && user.username === thisUser.username"
                         class="opacity-0 text-sm">.</p>
                     <p>{{ user.username }}</p>
@@ -71,9 +71,10 @@ onMounted (async() => {
                 </div>
 
                 <ConfirmableButton 
-                    button-icon="'pi pi-user-minus'"
+                    button-icon="pi pi-user-minus"
                     button-label="Delete"
-                    confirm-icon="'pi pi-user-minus'"
+                    confirm-icon="pi pi-user-minus"
+                    :disabled="thisUser && user.username === thisUser.username"
                     button-class="p-button-danger"
                     :confirm-message="'Are you sure you want to delete ' + user.username + '?'"
                     @confirm="() =>  {

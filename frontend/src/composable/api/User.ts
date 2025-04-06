@@ -35,6 +35,7 @@ export const getUser = async (forceRefetch:  boolean = false): Promise<User> => 
         switch (response.providedTypes[0].type) {
             case "User":
                 curentUser.value = response.data.user as User;
+                console.log("User fetched", curentUser.value);
                 return curentUser.value;
             default:
                 throw response
@@ -99,7 +100,6 @@ export const createUser  = async (newUser: User & { password:  string }): Promis
         switch (response.providedTypes[0].type) {
             case "User":
                 useStatusMessage().newStatusMessage("User created", "success");
-                curentUser.value = response.data.createUser as User;
                 return response.data.createUser as User;
             default:
                 throw response;

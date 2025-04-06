@@ -7,6 +7,7 @@ import Button from "primevue/button";
 import InlineMessage from 'primevue/inlinemessage';
 
 import { useLoadingAnimation, useQueryRouting } from '@/composable/core/AppState';
+import { getUser } from '@/composable/api/User';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -19,8 +20,9 @@ const auth_error = ref('');
 const submit = () => {
     useLoadingAnimation().setState(true);
     requestToken(username.value, password.value)
-        .then((response: AuthResponse) => {
+        .then(async(response: AuthResponse) => {
             writeAuthCookie(response.token_type, response.access_token);
+            await getUser(true)
             useQueryRouting().routeToQuery();
         })
         .catch((error: Error) => {
@@ -45,7 +47,7 @@ onMounted(() => {
 <template>
     <main class="flex flex-col items-center justify-center">
             <h1>Login</h1>
-            <form @submit.prevent="submit" class="flex flex-col w-1/4 mt-8">
+            <form @submit.prevent="submit" class="flex flex-col w-1/4 mt-8 min-w-74 max-w-256">
                 <div class="input-box">
                     <label for="username">Username</label>
                     <InputText 

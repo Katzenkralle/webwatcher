@@ -9,15 +9,20 @@ import InputText from 'primevue/inputtext';
 import SmallSeperator from '@/components/reusables/SmallSeperator.vue';
 import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue';
 import { FilterMatchMode } from '@primevue/core/api';
+import {  getUser } from '@/composable/api/User';
 
 const scriptFilter = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
 const isFiltered = ref(false);
 
+const user = ref(); 
 
 onMounted(() => {
     getAllScripts();
+    getUser().then((data) => {
+        user.value = data;
+    });
 });
 // Convert object to an array with script names included
 const formattedGlobalScriptData = computed(() =>
@@ -43,7 +48,10 @@ const formattedGlobalScriptData = computed(() =>
             <div class="w-full flex flex-wrap justify-between items-end">
                 <h3 class="self-end">Added Scripts:</h3>
                 <router-link to="/script/upload/">
-                    <Button label="Add Script" icon="pi pi-plus" />
+                    <Button 
+                        label="Add Script" 
+                        icon="pi pi-plus"
+                        :disabled="!user || !user.isAdmin" />
                 </router-link>
             </div>
 
