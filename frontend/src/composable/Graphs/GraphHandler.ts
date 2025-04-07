@@ -43,6 +43,8 @@ export const useGraphHandler = (jobId:  number,
     return {
         dataHandler,
         chartsOptions,
-        reformData
+        reformData,
+        selectedChart,
+        selectedCols
         }
 }

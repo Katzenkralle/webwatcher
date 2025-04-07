@@ -1,29 +1,23 @@
 <script setup lang="ts">
-import { useGraphHandler } from "@/composable/Graphs/GraphHandler"
+
 import {defineProps, ref, computed} from "vue"
 
 import { MultiSelect, Select, FloatLabel } from 'primevue';
+import { useGraphHandler } from "@/composable/Graphs/GraphHandler"
 
 const props = defineProps<{
-    jobId: number
+    graphHandler: ReturnType<typeof useGraphHandler>
     }>()
 
-const selectedCols = ref([])    
-const selectedRows = ref([]) 
-const selectedChart = ref<string[]>([])
-
-
-
-const graphHandler = useGraphHandler(props.jobId,ref("row"), selectedCols, selectedRows, selectedChart)
 
 const computedSelectOptionsCols = computed(() => {
-    return graphHandler.dataHandler.computeLayoutUnfiltered.value.map((element) => {
+    return props.graphHandler.dataHandler.computeLayoutUnfiltered.value.map((element) => {
             return {"label": element.key}
         })
     })
 
 const computedSelectOptionsCharts = computed(() => {
-    return graphHandler.chartsOptions.value.map((element) => {
+    return props.graphHandler.chartsOptions.value.map((element) => {
         return {"label": element}
     })
     })
@@ -33,9 +27,10 @@ const computedSelectOptionsCharts = computed(() => {
 
 <template>
     <div class="flex flex-row">
+        <h1>{{props.graphHandler.selectedChart}}</h1>
         <FloatLabel class="w-full md:w-80" variant="in">
             <Select
-                v-model:model-value="selectedChart"
+                v-model:model-value="props.graphHandler.selectedChart"
                 @update:model-value="(newVal) => {console.log(newVal)}"
                 :options="computedSelectOptionsCharts"
                 optionLabel="label"
@@ -47,12 +42,11 @@ const computedSelectOptionsCharts = computed(() => {
         </FloatLabel>
         <FloatLabel class="w-full md:w-80" variant="in">
             <MultiSelect 
-                v-model:model-value="selectedCols"
+                v-model:model-value="props.graphHandler.selectedCols"
                 @update:model-value="(newVal)  => {console.log(newVal)}"
                 :options="computedSelectOptionsCols"
                 optionLabel="label"
                 option-value="label" 
-                size="small"
                 class="w-40"
                 overlayClass="SelectColumnsMultiselect"
             />

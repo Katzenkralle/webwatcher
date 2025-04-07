@@ -1,57 +1,43 @@
 <script setup lang="ts">
+
+import Chart from 'primevue/chart';
+import GraphSelector from "./GraphSelector.vue";
+import {defineProps, ref, computed} from "vue"
 import { useGraphHandler } from "@/composable/Graphs/GraphHandler"
 
-import {defineProps, ref, computed} from "vue"
-import Chart from "primevue/chart";
-import GraphSelector from "./GraphSelector.vue";
-
 const props = defineProps<{
-    jobId: number
+    graphHandler: ReturnType<typeof useGraphHandler>
     }>()
 
-const selectedCols = ref([])    
-const selectedRows = ref([]) 
-const selectedChart = ref<string[]>([])
+const labels = ['A', 'B', 'C'];
+const data = [200, 500, 400]
 
-const graphHandler = useGraphHandler(props.jobId,ref("row"), selectedCols, selectedRows, selectedChart)
+const chartData = {
+  labels: labels,
+  datasets: [
+    {
+      data: data,
+    },
+  ],
+};
 
-const computedChart = computed(() => {
-    return GraphSelector.selectedChart.value
-})
-
-const computedChartLabel = computed(() => {
-    return graphHandler.reformData.value.label
-})
-
-const computedChartData = computed(() => {
-    return graphHandler.reformData.value.dataList
-})
-
-const setChartData = computed(() => {
-    //for element in Data, push {labels: , datasests: {data}} #TODO
-    return {
-        labels: computedChartLabel.value,
-        datasets: [
-            {
-                data: computedChartData.value
-            }
-        ]
-    };
-})
-
-const selectChart = computedChart.value // #TODO
-const chartData = setChartData.value
-const chartOptions = ref({plugins: {legend: {labels: {cutout: '60%'}}}
-    })
+const chartType = computed(() =>
+    props.graphHandler.selectedChart.value[0]
+)
 
 </script>
 
 <template>
-    <div class="card">
-        <Chart type="selectChart" :data="chartData" :options="chartOptions" class="h-[30rem]"  />
+    <div>
+        <h1>{{ chartType }}</h1>
+
+        <Chart 
+            v-if="chartType"
+            :type="chartType" 
+            :data="chartData" 
+            class="h-[30rem]" 
+            />
+        
     </div>
 </template>
 
-<style scoped>
-
-</style>
