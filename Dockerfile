@@ -22,9 +22,10 @@ RUN npm install --prefix /webwatcher/frontend
 # || true to allow failure
 RUN npm run build --prefix /webwatcher/frontend || true
 
-# Setup database and nginx
+# Setup nginx
 RUN rm /etc/nginx/nginx.conf
 RUN ln -s /webwatcher/conf/nginx.conf /etc/nginx/nginx.conf
+RUN mkdir -p /var/nginx
 
 
 

@@ -28,7 +28,7 @@ export const jobUserDisplayConfig = (id: number) => {
 
             }
         }`).then((response) => {
-            switch (response.providedTypes[0]) {
+            switch (response.providedTypes[0].type) {
                 case "userJobConfig":
                     filter.value = response.data.userJobConfig.filter;
                     graph.value = response.data.userJobConfig.graph;
@@ -54,7 +54,7 @@ export const jobUserDisplayConfig = (id: number) => {
                 }
             }
         `).then((response) => {
-            if (response.providedTypes[0] == "Message" && response.data.status === "SUCCESS") {
+            if (response.providedTypes[0].type == "Message" && response.data.status === "SUCCESS") {
                 useStatusMessage().newStatusMessage(response.data.message, "success");
                 return;        
             }

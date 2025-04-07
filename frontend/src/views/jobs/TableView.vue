@@ -142,21 +142,6 @@ const userConfig = computed(() => {
         <SmallSeperator class="my-4" :is-dashed="true"/>
         <JobDataTable
           :jobHandler="jobHandler"
-            :graph-input-handler="ref({
-            cols: {
-              enabled: true,
-              maxSelection: 2,
-              allowedTypes:[],
-              invalid: false,
-              selected: []
-            },
-            rows: {
-              enabled: true,
-              maxSelection: 4,
-              invalid: false,
-              selected: []
-            }
-            })"
           />
       </div>
 
