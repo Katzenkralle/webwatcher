@@ -13,27 +13,13 @@ import { ref, onMounted, onUnmounted, computed, type Ref } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 
 import EditEntryPopup from "./EditEntryPopup.vue";
+import  {type GraphInput} from "@/composable/jobs/GraphDataHandler";
 
 
-interface GraphInputHandler {
-  cols: {
-    enabled: boolean
-    maxSelection: number // 0 means unlimited
-    allowedTypes: string[]
-    invalid: boolean
-    selected: string[]
-  },
-  rows: {
-    enabled: boolean
-    maxSelection: number // 0 means unlimited
-    invalid: boolean
-    selected: number[]
-  }
-}
 
 const props = defineProps<{
   jobHandler: ReturnType<typeof useJobUiCreator>
-  graphInputHandler?: Ref<GraphInputHandler>
+  graphInputHandler?: Ref<GraphInput>
 }>();
 
 const computedTableSize = ref<string>("85vh");
