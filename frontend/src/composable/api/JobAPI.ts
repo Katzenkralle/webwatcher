@@ -51,6 +51,7 @@ const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
         }
         `;
         queryGql(query).then((response) => {
+            console.log(response)
             const key = response.providedTypes[0].type;
             switch (key) {
                 case "jobsMetaDataList":

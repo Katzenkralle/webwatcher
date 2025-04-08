@@ -30,7 +30,7 @@ export function queryGql(query: string): Promise<GQLResponse> {
     }).then(async response => {
         return response.json().then(content => {
             if (!(content.data)){
-                return { data: {}, providedTypes: [], errors: content.errors } as GQLResponse;
+                throw content.errors
             }
             let data = content.data;
             let errors = content.errors;
@@ -47,8 +47,10 @@ export function queryGql(query: string): Promise<GQLResponse> {
             return { data: data, providedTypes: providedTypes, errors } as GQLResponse;
         });
     }).catch((error) => {
-        console.error(error);
-        return { data: {}, providedTypes: [], errors: [error] } as GQLResponse;
+        if (!(error instanceof Array)) {
+            error = [error];
+        }
+        return { data: {}, providedTypes: [{type: "gqlAPIError", field: ''}], errors: error } as GQLResponse;
     });
 }
 

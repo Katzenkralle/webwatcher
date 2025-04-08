@@ -100,22 +100,22 @@
   }
 }
 
-.p-button-danger {
+.p-button-danger:not(.p-button-outlined) {
   @apply bg-error-d text-h-text border-error-d hover:bg-error hover:border-error hover:text-h-text;
 }
-.p-button-warn {
+.p-button-warn:not(.p-button-outlined) {
   @apply bg-warning-d text-h-text border-warning-d hover:bg-warning hover:border-warning hover:text-h-text;
 }
-.p-button-success {
+.p-button-success:not(.p-button-outlined) {
   @apply bg-success-d text-h-text border-success-d hover:bg-success hover:border-success hover:text-h-text;
 }
-.p-button-info {
+.p-button-info:not(.p-button-outlined) {
   @apply bg-info-d text-h-text border-info-d hover:bg-info hover:border-info hover:text-h-text;
 }
-.p-button-primary {
+.p-button-primary:not(.p-button-outlined) {
   @apply bg-base-d text-h-text border-base-d  hover:bg-base-d hover:border-base-d hover:text-h-text;
 }
-.p-button-secondary {
+.p-button-secondary:not(.p-button-outlined) {
   @apply bg-h-panel-d text-h-text border-h-panel-d hover:bg-h-panel hover:border-h-panel hover:text-h-text;
 }
 
