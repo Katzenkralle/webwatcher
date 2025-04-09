@@ -128,32 +128,31 @@ const computedVisibleData = computed(() => {
 });
 
 const checkAllVisibleRows = () => {
-  if(!props.graphInputHandler) {
+  if (!props.graphInputHandler?.rows.enabled) {
     return;
   }
-  const graphInputHandler = props.graphInputHandler; // Store in a local variable to help TypeScript
-  const maxAmount = graphInputHandler.rows.maxSelection
-      ? graphInputHandler.rows.maxSelection 
-      : props.jobHandler.jobDataHandler.computeDisplayedData.value.length;
-  if (graphInputHandler.rows.selected.length >= maxAmount){
-    graphInputHandler.rows.selected = graphInputHandler.rows.selected.filter((id) => {
-      return !computedVisibleData.value.some((entry: flattendJobEnty) => entry.id === id);
-    }); 
-  }
-  else {
-    computedVisibleData.value.forEach((entry: flattendJobEnty) => {
-      if (graphInputHandler.rows.selected.length < maxAmount && 
-        !graphInputHandler.rows.selected.includes(entry.id)){   
-        graphInputHandler.rows.selected.push(entry.id as number);
+  
+  const { rows } = props.graphInputHandler;
+  const maxSelection = rows.maxSelection || Infinity;
+  const visibleEntries = computedVisibleData.value;
+  const selectedVisibleIds = visibleEntries
+    .filter((entry: flattendJobEnty) => rows.selected.includes(entry.id))
+    .map((entry: flattendJobEnty) => entry.id);
+  
+  // If all visible rows are already selected, deselect them
+  if (selectedVisibleIds.length === Math.min(maxSelection, visibleEntries.length)) {
+    // Remove all visible IDs from selection
+    rows.selected = rows.selected.filter(id => 
+      !visibleEntries.some((entry: flattendJobEnty) => entry.id === id));
+  } else {
+    // Add visible rows up to maxSelection limit
+    visibleEntries.forEach((entry: flattendJobEnty) => {
+      if (rows.selected.length < maxSelection && !rows.selected.includes(entry.id)) {
+        rows.selected.push(entry.id as number);
       }
     });
   }
- }
-
-
-
-
-
+}
 </script>
 
 <template>
@@ -247,14 +246,15 @@ const checkAllVisibleRows = () => {
                 <template #header>
                   <Checkbox
                     v-if="props.graphInputHandler?.rows.enabled"
-                    :invalid="props.graphInputHandler.rows.invalid"
+                    :invalid="props.graphInputHandler?.rows.invalid"
                     name="cb_row_all"
                     @click="() => checkAllVisibleRows()"
                     :binary="true"
-                    :default-value="computed(()  => 
-                      computedVisibleData.filter((entry: flattendJobEnty) =>
+                    :default-value="computed(()  => computedVisibleData.filter((entry: flattendJobEnty) =>
                         props.graphInputHandler?.rows.selected.includes(entry.id)
-                    ).length == Math.min(props.graphInputHandler?.rows.maxSelection || 0, computedVisibleData.length))"
+                    ).length == Math.min((props.graphInputHandler?.rows.maxSelection || 0) === 0 
+                      ? Infinity 
+                      : props.graphInputHandler?.rows.maxSelection as number, computedVisibleData.length))"
                     readonly
                   />
                 </template>
