@@ -258,7 +258,8 @@ export const useJobDataHandler = (
         }
         }
 
-    return { 
+    return {
+        jobId,
         computeDisplayedData,
         highlightSubstring,
         computeLayout,

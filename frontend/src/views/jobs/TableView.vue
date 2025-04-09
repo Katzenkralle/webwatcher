@@ -15,7 +15,7 @@ import JobMetaDisplay from "@/components/jobs/MetaData.vue";
 import SmallSeperator from "@/components/reusables/SmallSeperator.vue";
 import PopupDialog from "@/components/reusables/PopupDialog.vue";
 import FilterSelector from "@/components/filter/FilterSelector.vue";
-
+import GraphCoardinator from "@/components/Graphs/GraphCoardinator.vue";
 
 import Button  from "primevue/button";
 import Accordion from 'primevue/accordion';
@@ -68,6 +68,7 @@ const userConfig = computed(() => {
   return jobUserDisplayConfig(currentJobId.value);
 });
 
+const graphCoardinator = ref();
 
 </script>
 
@@ -113,6 +114,18 @@ const userConfig = computed(() => {
         </AccordionPanel>
 
         <AccordionPanel value="2">
+            <AccordionHeader>Graphs</AccordionHeader>
+              <AccordionContent>
+                <div class="content-box flex flex-col">
+                    <GraphCoardinator
+                      ref="graphCoardinator"
+                      :jobData="jobHandler.jobDataHandler"
+                    />
+              </div>
+              </AccordionContent>
+        </AccordionPanel>
+
+        <AccordionPanel value="3">
             <AccordionHeader>View Options</AccordionHeader>
               <AccordionContent>
                 <div class="content-box shrinkable">
@@ -142,6 +155,7 @@ const userConfig = computed(() => {
         <SmallSeperator class="my-4" :is-dashed="true"/>
         <JobDataTable
           :jobHandler="jobHandler"
+          :graph-input-handler="graphCoardinator?.tableInputForGraph"
           />
       </div>
 

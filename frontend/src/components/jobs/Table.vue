@@ -9,7 +9,7 @@ import ColumnGroup from 'primevue/columngroup';
 import Checkbox from "primevue/checkbox";
 
 import Row from 'primevue/row';
-import { ref, onMounted, onUnmounted, computed, type Ref } from "vue";
+import { ref, onMounted, onUnmounted, computed, type Ref, type Reactive } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 
 import EditEntryPopup from "./EditEntryPopup.vue";
@@ -19,7 +19,7 @@ import  {type GraphInput} from "@/composable/jobs/GraphDataHandler";
 
 const props = defineProps<{
   jobHandler: ReturnType<typeof useJobUiCreator>
-  graphInputHandler?: Ref<GraphInput>
+  graphInputHandler?: Reactive<GraphInput>
 }>();
 
 const computedTableSize = ref<string>("85vh");
@@ -118,7 +118,7 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
 
 
 const computedVisibleData = computed(() => {
-  if (!props.graphInputHandler?.value.rows.enabled ||  !props.jobHandler.mainDataTable.value){
+  if (!props.graphInputHandler?.rows.enabled ||  !props.jobHandler.mainDataTable.value){
     return [];
   }
   return props.jobHandler.mainDataTable.value.processedData.slice(
@@ -132,19 +132,19 @@ const checkAllVisibleRows = () => {
     return;
   }
   const graphInputHandler = props.graphInputHandler; // Store in a local variable to help TypeScript
-  const maxAmount = graphInputHandler.value.rows.maxSelection
-      ? graphInputHandler.value.rows.maxSelection 
+  const maxAmount = graphInputHandler.rows.maxSelection
+      ? graphInputHandler.rows.maxSelection 
       : props.jobHandler.jobDataHandler.computeDisplayedData.value.length;
-  if (graphInputHandler.value.rows.selected.length >= maxAmount){
-    graphInputHandler.value.rows.selected = graphInputHandler.value.rows.selected.filter((id) => {
+  if (graphInputHandler.rows.selected.length >= maxAmount){
+    graphInputHandler.rows.selected = graphInputHandler.rows.selected.filter((id) => {
       return !computedVisibleData.value.some((entry: flattendJobEnty) => entry.id === id);
     }); 
   }
   else {
     computedVisibleData.value.forEach((entry: flattendJobEnty) => {
-      if (graphInputHandler.value.rows.selected.length < maxAmount && 
-        !graphInputHandler.value.rows.selected.includes(entry.id)){   
-        graphInputHandler.value.rows.selected.push(entry.id as number);
+      if (graphInputHandler.rows.selected.length < maxAmount && 
+        !graphInputHandler.rows.selected.includes(entry.id)){   
+        graphInputHandler.rows.selected.push(entry.id as number);
       }
     });
   }
@@ -162,6 +162,7 @@ const checkAllVisibleRows = () => {
        <DataTable
         :ref="props.jobHandler.mainDataTable"
         :value="props.jobHandler.jobDataHandler.computeDisplayedData.value"
+        :id="`table${props.jobHandler.jobDataHandler.jobId}`"
         dataKey="id"
         class="bg-panel-h main-table"
         removableSort
@@ -217,15 +218,15 @@ const checkAllVisibleRows = () => {
                   >
                     <template #header>
                       <Checkbox
-                        v-if="props.graphInputHandler?.value.cols.enabled"
-                        :invalid="props.graphInputHandler.value.cols.invalid"
-                        :disabled="(!props.graphInputHandler.value.cols.allowedTypes.includes(col.type)
-                          && props.graphInputHandler.value.cols.allowedTypes.length !== 0)
-                          || (props.graphInputHandler.value.cols.selected.length
-                          >= props.graphInputHandler.value.cols.maxSelection
-                          && props.graphInputHandler.value.cols.maxSelection !== 0
-                          && !props.graphInputHandler.value.cols.selected.includes(col.key))"
-                           v-model:model-value="props.graphInputHandler.value.cols.selected"
+                        v-if="props.graphInputHandler?.cols.enabled"
+                        :invalid="props.graphInputHandler.cols.invalid"
+                        :disabled="(!props.graphInputHandler.cols.allowedTypes.includes(col.type)
+                          && props.graphInputHandler.cols.allowedTypes.length !== 0)
+                          || (props.graphInputHandler.cols.selected.length
+                          >= props.graphInputHandler.cols.maxSelection
+                          && props.graphInputHandler.cols.maxSelection !== 0
+                          && !props.graphInputHandler.cols.selected.includes(col.key))"
+                           v-model:model-value="props.graphInputHandler.cols.selected"
                         :inputId="`cb_${col.key}`"
                         name="cb_col"
                         :value="col.key"
@@ -245,15 +246,15 @@ const checkAllVisibleRows = () => {
               <Column>
                 <template #header>
                   <Checkbox
-                    v-if="props.graphInputHandler?.value.rows.enabled"
-                    :invalid="props.graphInputHandler.value.rows.invalid"
+                    v-if="props.graphInputHandler?.rows.enabled"
+                    :invalid="props.graphInputHandler.rows.invalid"
                     name="cb_row_all"
                     @click="() => checkAllVisibleRows()"
                     :binary="true"
                     :default-value="computed(()  => 
                       computedVisibleData.filter((entry: flattendJobEnty) =>
-                        props.graphInputHandler?.value.rows.selected.includes(entry.id)
-                    ).length == Math.min(props.graphInputHandler?.value.rows.maxSelection || 0, computedVisibleData.length))"
+                        props.graphInputHandler?.rows.selected.includes(entry.id)
+                    ).length == Math.min(props.graphInputHandler?.rows.maxSelection || 0, computedVisibleData.length))"
                     readonly
                   />
                 </template>
@@ -307,13 +308,13 @@ const checkAllVisibleRows = () => {
           <Column>
             <template #body="slotProps">
               <Checkbox
-                v-if="props.graphInputHandler?.value.rows.enabled"
-                :invalid="props.graphInputHandler.value.rows.invalid"
-                :disabled="props.graphInputHandler.value.rows.selected.length
-                          >= props.graphInputHandler.value.rows.maxSelection
-                          && props.graphInputHandler.value.rows.maxSelection !== 0
-                          && !props.graphInputHandler.value.rows.selected.includes(slotProps.data.id)"
-                v-model:modelValue="props.graphInputHandler.value.rows.selected"
+                v-if="props.graphInputHandler?.rows.enabled"
+                :invalid="props.graphInputHandler.rows.invalid"
+                :disabled="props.graphInputHandler.rows.selected.length
+                          >= props.graphInputHandler.rows.maxSelection
+                          && props.graphInputHandler.rows.maxSelection !== 0
+                          && !props.graphInputHandler.rows.selected.includes(slotProps.data.id)"
+                v-model:modelValue="props.graphInputHandler.rows.selected"
                 :id="`cb_${slotProps.data.id}`"
                 :value="slotProps.data.id"
               />
