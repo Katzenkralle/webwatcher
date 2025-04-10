@@ -22,6 +22,7 @@ defineExpose({
 <template>
     <GraphInputVue
         :graphConstructor="graphInput"
+        :computedDisplayData="props.jobData.computeDisplayedData"
     />
 
 </template>

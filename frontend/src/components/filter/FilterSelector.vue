@@ -69,7 +69,6 @@ const helpImages = [
         class="mr-2"
         variant="outlined"
         @click="() => {
-            console.log(helpPopup)
             helpPopup?.openDialog();
         }"
         />

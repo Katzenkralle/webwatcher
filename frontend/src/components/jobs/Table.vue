@@ -9,7 +9,7 @@ import ColumnGroup from 'primevue/columngroup';
 import Checkbox from "primevue/checkbox";
 
 import Row from 'primevue/row';
-import { ref, onMounted, onUnmounted, computed, type Ref, type Reactive } from "vue";
+import { ref, onMounted, onUnmounted, computed, type Ref, type Reactive, watch } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 
 import EditEntryPopup from "./EditEntryPopup.vue";
@@ -117,7 +117,7 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
 
 
 
-const computedVisibleData = computed(() => {
+const computedVisibleData = computed((): flattendJobEnty => {
   if (!props.graphInputHandler?.rows.enabled ||  !props.jobHandler.mainDataTable.value){
     return [];
   }
@@ -153,6 +153,25 @@ const checkAllVisibleRows = () => {
     });
   }
 }
+
+watch(
+  () => computedVisibleData.value, 
+  (newVisibleData) => {
+    if(!props.graphInputHandler?.rows.enabled){
+      return;
+    }
+    // We ree-seelect selected entys to follow possible reordering
+    const oldSelectedRows = props.graphInputHandler.rows.selected;
+    props.graphInputHandler.rows.selected =  newVisibleData.map((entry: flattendJobEnty) => {
+      if (oldSelectedRows.includes(entry.id)){
+        return entry.id;
+      }
+    }).filter((entry: number | undefined) => entry !== undefined);
+  },
+  { immediate: true }
+)
+
+
 </script>
 
 <template>

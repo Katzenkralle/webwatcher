@@ -3,15 +3,23 @@ import Button from 'primevue/button';
 import Select from 'primevue/select';
 import ToggleSwitch from 'primevue/toggleswitch';
 import FloatLabel from 'primevue/floatlabel';
-
+import { InputText } from 'primevue';
+import GraphRenderer from './GraphRenderer.vue';
 
 import { useGraphConstructor } from '@/composable/jobs/GraphDataHandler';
 import router from '@/router';
 
+import SmallSeperator from '../reusables/SmallSeperator.vue'; 
+import { type flattendJobEnty } from '@/composable/jobs/JobDataHandler'
+import { ref, type ComputedRef } from 'vue';
 
 const props = defineProps<{
     graphConstructor: ReturnType<typeof useGraphConstructor>;
+    computedDisplayData: ComputedRef<flattendJobEnty[]>
+
 }>();
+
+const title = ref('');
 </script>
 
 <template>
@@ -53,11 +61,28 @@ const props = defineProps<{
             label="Select Columns and Rows"
             @click="router.push({ hash: `#table${graphConstructor.jobId}` })"
         />
-        <Button
-            v-else
-            label="Generate Graph"
-            class="w-full"
-            @click="console.log(graphConstructor.getGraph())"
-        />
+
+        <template  v-if="graphConstructor.curentGraph.value">
+            <SmallSeperator />
+
+            <div  class="flex flex-row">
+                <FloatLabel>
+                    <InputText
+                        v-model="title"
+                    />
+                        <label>Graph Title</label>
+                </FloatLabel>
+
+                <Button
+                    label="Save"/>
+        </div>
+            <GraphRenderer
+                :graphData="graphConstructor.curentGraph.value"
+                :computedDisplayData="props.computedDisplayData"
+            />
+        </template>
     </div>
+    
+
+
 </template>

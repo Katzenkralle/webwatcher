@@ -35,7 +35,6 @@ export const getUser = async (forceRefetch:  boolean = false): Promise<User> => 
         switch (response.providedTypes[0].type) {
             case "User":
                 curentUser.value = response.data.user as User;
-                console.log("User fetched", curentUser.value);
                 return curentUser.value;
             default:
                 throw response
