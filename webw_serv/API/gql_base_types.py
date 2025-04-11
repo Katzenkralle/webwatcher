@@ -2,11 +2,9 @@ import strawberry
 from enum import Enum
 from typing import Annotated, Union, Optional
 
-from webw_serv.db_handler.maria_schemas import DbUser, DbSession
-
+from webw_serv.db_handler.maria_schemas import DbUser, DbSession, DbUserDisplayConfig
 
 from webw_serv.utility.toolbox import extend_enum
-
 
 class MessageType(Enum):
     SECONDARY = "secondary"
@@ -69,9 +67,9 @@ class SessionList():
     sessions: list[Session]
 
 @strawberry.type()
-class UserJobDisplayConfig:
-    filter: str # JSON
-    group: str # JSON
+class UserDisplayConfig(DbUserDisplayConfig):
+    graph_config: Optional[JsonStr]
+    filter_config: Optional[JsonStr]
 
 @strawberry.type
 class Message:

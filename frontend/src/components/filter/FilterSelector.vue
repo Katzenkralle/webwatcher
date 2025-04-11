@@ -7,7 +7,7 @@ import Galleria from 'primevue/galleria';
 
 import { jobUserDisplayConfig } from '@/composable/jobs/UserConfig';
 import { type Group, type IterationContext } from '@/composable/jobs/FilterGroups';
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useStatusMessage } from "@/composable/core/AppState";
 
 import PopupDialog from '@/components/reusables/PopupDialog.vue';
@@ -21,8 +21,15 @@ const getCopyJsonSaveConfig = () => {
 
 const props = defineProps<{
   filterContext: IterationContext;
-  filterConfig: ReturnType<typeof jobUserDisplayConfig>
+  userConfig: ReturnType<typeof jobUserDisplayConfig>
 }>();
+
+
+const filterOptions = ref<string[]>([]);
+watch(() => props.userConfig.filter.value, async (newVal) => {
+    filterOptions.value = Object.keys(await newVal);
+  
+}, { immediate: true });
 
 const helpPopup = ref();
 
@@ -98,7 +105,7 @@ const helpImages = [
         @click="() => {
             if (newFilterConfigName){
                 activeFilterConfig = newFilterConfigName
-                props.filterConfig.filter.value[newFilterConfigName] = getCopyJsonSaveConfig()
+                props.userConfig.filter.value = {add: {[newFilterConfigName]: getCopyJsonSaveConfig()}}
             } else {
                 useStatusMessage().newStatusMessage('Invalide name for Filter', 'danger');
             }
@@ -108,11 +115,14 @@ const helpImages = [
     <InputGroup class="w-min">
         <Select
             v-model="activeFilterConfig"
-            :options="Object.keys(props.filterConfig.filter.value)"
-            @update:model-value="(e: string) => {
+            :options="filterOptions"
+            @update:model-value="async(e: string) => {
                 activeFilterConfig = e;
                 newFilterConfigName = e;
-                props.filterContext.replaceRoot(props.filterConfig.filter.value[e])
+                const savedConfig = (await props.userConfig.filter.value)[e];
+                const group = props.filterContext.getStandartEvaluable('Group') as Group;
+                Object.assign(group, savedConfig);
+                props.filterContext.replaceRoot(group);
             }"
             placeholder="Select Filter"
             size="small"        
@@ -121,7 +131,7 @@ const helpImages = [
             icon="pi pi-trash"
             @click="() => {
                 if (activeFilterConfig){
-                delete props.filterConfig.filter.value[activeFilterConfig]
+                props.userConfig.filter.value = {delete: [activeFilterConfig]};
                 activeFilterConfig = '';
                 newFilterConfigName = '';
                 props.filterContext.replaceRoot(

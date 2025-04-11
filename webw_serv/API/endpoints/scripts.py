@@ -55,11 +55,6 @@ class Mutation:
     def delete_entry_in_job(self, id_: int = strawberry.argument(name="id")) -> job_entry_result:
         pass
 
-    @strawberry.mutation
-    @admin_guard()
-    def user_job_display_config(self, group: JsonStr, filter_: Optional[JsonStr] = strawberry.argument(name="filter")) -> Message:
-        pass
-
 
 @strawberry.type
 class Query:

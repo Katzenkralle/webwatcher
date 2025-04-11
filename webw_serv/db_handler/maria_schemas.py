@@ -12,3 +12,10 @@ class DbSession:
     session_id: str
     name: str
     created: str
+
+@dataclass
+class DbUserDisplayConfig:
+    username: str
+    session_id: int
+    filter_config: str
+    graph_config: str

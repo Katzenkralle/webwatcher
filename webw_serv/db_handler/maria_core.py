@@ -4,9 +4,10 @@ import asyncio
 import random
 import string
 import time
+from typing import Optional
 
 from webw_serv.db_handler.misc import libroot, read_sql_blocks
-from webw_serv.db_handler.maria_schemas import DbUser, DbSession
+from .maria_schemas import DbUser, DbSession, DbUserDisplayConfig
 
 from webw_serv.utility import DEFAULT_LOGGER as logger
 from webw_serv.configurator import Config
@@ -19,6 +20,7 @@ class MariaDbHandler:
     SQL_DIR = f"{libroot}/sql/"
     EXPECTED_TABLES = [ 'cron_list',
                         'job_input_settings',
+                        'job_display_user_config',
                         'job_list',
                         'script_input_info',
                         'script_list',
@@ -159,6 +161,29 @@ class MariaDbHandler:
         self.__cursor.execute("SELECT * FROM web_users")
         db_users = self.__cursor.fetchall()
         return [DbUser(*user) for user in db_users]
+
+    async def get_user_config_for_job(self, username: str, job: int) -> dict:
+        self.__cursor.execute("SELECT * FROM job_display_user_config WHERE username = ? AND job_id = ?", (username, job))
+        db_config = self.__cursor.fetchone()
+        if db_config is None:
+            raise ValueError("No user config found for this job")
+        return DbUserDisplayConfig(*db_config)
+
+    async def set_user_config_for_job(self, username: str, job: int,
+                                       filter_config: Optional[str], graph_config: Optional[str]) -> bool:
+        self.__cursor.execute("SELECT * FROM job_display_user_config WHERE username = ? AND job_id = ?", (username, job))
+        db_config = self.__cursor.fetchone()
+        if db_config:
+            if filter_config is None:
+                filter_config = db_config[2]
+            if graph_config is None:
+                graph_config = db_config[3]
+            self.__cursor.execute("UPDATE job_display_user_config SET filter_config = ?, graph_config = ? WHERE username = ? AND job_id = ?",
+                                  (filter_config, graph_config, username, job))
+        else:
+            self.__cursor.execute("INSERT INTO job_display_user_config (username, job_id, filter_config, graph_config) VALUES (?, ?, ?, ?)",
+                                  (username, job, filter_config, graph_config))
+        self.__conn.commit()
 
     def close(self):
         self.__cursor.close()

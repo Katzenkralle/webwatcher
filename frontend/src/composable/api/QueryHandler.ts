@@ -20,13 +20,16 @@ export interface GQLResponse {
 }
 export const GQL_ENDPOINT = '/gql'
 
-export function queryGql(query: string): Promise<GQLResponse> {
+export function queryGql(query: string, variables:  Record<string, any>|undefined = undefined): Promise<GQLResponse> {
     return fetch(GQL_ENDPOINT, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ query: query }),
+        body: JSON.stringify({ 
+            query: query,
+            variables: variables ?? {}
+            }),
     }).then(async response => {
         return response.json().then(content => {
             if (!(content.data)){

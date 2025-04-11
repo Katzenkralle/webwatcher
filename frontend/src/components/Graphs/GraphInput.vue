@@ -8,19 +8,28 @@ import InputNumber from 'primevue/inputnumber';
 import InputGroup from 'primevue/inputgroup';
 import GraphRenderer from './GraphRenderer.vue';
 import AnimatedArrow from '@/components/reusables/AnimatedArrow.vue';
-import { useGraphConstructor } from '@/composable/jobs/GraphDataHandler';
 import Checkbox from 'primevue/checkbox';
-import router from '@/router';
 
 import SmallSeperator from '../reusables/SmallSeperator.vue'; 
-import { type flattendJobEnty } from '@/composable/jobs/JobDataHandler'
-import { computed, ref, type ComputedRef } from 'vue';
+import { computed, ref, type ComputedRef,  type Reactive } from 'vue';
+
+import { useGraphConstructor, type GraphInput } from '@/composable/jobs/GraphDataHandler';
+import { useJobDataHandler } from '@/composable/jobs/JobDataHandler';
+import { jobUserDisplayConfig } from '@/composable/jobs/UserConfig';
 
 const props = defineProps<{
-    graphConstructor: ReturnType<typeof useGraphConstructor>;
-    computedDisplayData: ComputedRef<flattendJobEnty[]>
-
+    jobData: ReturnType<typeof useJobDataHandler>;
+    userConfig?: ReturnType<typeof jobUserDisplayConfig>; 
 }>();
+
+const graphConstructor = computed(() => {
+    return useGraphConstructor(props.jobData);
+});
+
+defineExpose<{tableInputForGraph: Reactive<GraphInput>}>({
+    tableInputForGraph  :graphConstructor.value.graphInput
+});
+
 
 const scrollToTable = (id: number) => {
     const element = document.getElementById(`table${id}`);
@@ -130,7 +139,7 @@ const title = ref('');
             </template>
             <template v-else>
                 <div class="flex flex-row w-full">
-                    <InputGroup class="max-w-80">
+                    <InputGroup  v-if="props.userConfig" class="max-w-80">
                         <InputText
                         placeholder="Save as..."
                         v-model="title"
@@ -138,14 +147,16 @@ const title = ref('');
                         />
                         <Button
                         icon="pi pi-save"
-                        @click="() => {
+                        @click="async() => {
+                            if(!props.userConfig || !graphConstructor.curentGraph.value) return
+                            props.userConfig.graph.value = {add: { [title]: graphConstructor.curentGraph.value }};
                         }"/>
                     </InputGroup>
                 </div>
                 <GraphRenderer
                     class="w-full h-full"
                     :graphData="graphConstructor.curentGraph.value"
-                    :computedDisplayData="props.computedDisplayData"
+                    :computedDisplayData="props.jobData.computeDisplayedData"
                 />
             </template>
         </div>

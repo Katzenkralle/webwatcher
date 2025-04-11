@@ -5,7 +5,8 @@ from dataclasses import asdict
 
 from ..endpoints.auth import get_hashed, admin_guard, user_guard, hash_context
 from ..gql_base_types import MessageType, Message, UserResult, SessionResult, AllUsersResult, \
-    User as StrawberryUser, Session as StrawberrySession, SessionList, UserList
+    User as StrawberryUser, Session as StrawberrySession, SessionList, UserList, UserDisplayConfig, JsonStr
+from ..gql_types import user_display_config_result
 
 
 @strawberry.type
@@ -50,6 +51,20 @@ class Mutation:
             return Message(message="User deleted successfully", status=MessageType.SUCCESS)
         except Exception as e:
             return Message(message=f"Failed to delete user; {e}", status=MessageType.DANGER)
+        
+    @strawberry.mutation
+    @user_guard()
+    async def userJobConfig(self, info: strawberry.Info, id: int,
+                    filter_config: Optional[JsonStr] = None,
+                    graph_config:  Optional[JsonStr] = None) -> Message:
+        if not id:
+            return Message(message="No job id provided", status=MessageType.DANGER)
+        try:
+            await info.context["request"].state.maria\
+                .set_user_config_for_job(info.context["user"].username, id, filter_config, graph_config)
+            return Message(message="User job config set successfully", status=MessageType.SUCCESS)
+        except Exception as e:
+            return Message(message=f"Failed to set user job config: {e}", status=MessageType.DANGER)
 
 @strawberry.type
 class Query:
@@ -76,3 +91,14 @@ class Query:
             return SessionList(sessions=[StrawberrySession(**asdict(session)) for session in db_sessions])
         except:
             return Message(message="Failed to get sessions", status=MessageType.DANGER)
+        
+    @strawberry.field
+    @user_guard()
+    async def user_job_config(self, info: strawberry.Info, id: int) -> user_display_config_result:
+        if not id:
+            return Message(message="No job id provided", status=MessageType.DANGER)
+        try:
+            return UserDisplayConfig(**asdict(await info.context["request"]
+                    .state.maria.get_user_config_for_job(info.context["user"].username, id)))
+        except Exception as e:
+            return Message(message=f"Failed to get user job config: {e}", status=MessageType.DANGER)

@@ -15,7 +15,8 @@ import JobMetaDisplay from "@/components/jobs/MetaData.vue";
 import SmallSeperator from "@/components/reusables/SmallSeperator.vue";
 import PopupDialog from "@/components/reusables/PopupDialog.vue";
 import FilterSelector from "@/components/filter/FilterSelector.vue";
-import GraphCoardinator from "@/components/Graphs/GraphCoardinator.vue";
+import GraphInput from "@/components/Graphs/GraphInput.vue";
+import GraphLoader from "@/components/Graphs/GraphLoader.vue";
 
 import Button  from "primevue/button";
 import Accordion from 'primevue/accordion';
@@ -100,9 +101,10 @@ const graphCoardinator = ref();
             <AccordionHeader>Graph Creator</AccordionHeader>
               <AccordionContent>
                 <div class="content-box flex flex-col">
-                    <GraphCoardinator
+                    <GraphInput
                       ref="graphCoardinator"
                       :jobData="jobHandler.jobDataHandler"
+                      :user-config="userConfig"
                     />
               </div>
               </AccordionContent>
@@ -114,7 +116,7 @@ const graphCoardinator = ref();
                 <div class="content-box flex flex-col">
                     <FilterSelector
                       :filterContext="jobHandler.filterContext"
-                      :filterConfig="userConfig"
+                      :userConfig="userConfig"
                       />
                     <SmallSeperator 
                       class="my-2 mx-auto" 
@@ -153,6 +155,11 @@ const graphCoardinator = ref();
         
       <div class="flex flex-col w-full h-full items-center">
         <SmallSeperator class="my-4" :is-dashed="true"/>
+        <GraphLoader
+          :job-id="currentJobId"
+          :user-config="userConfig"
+          :data-handler="jobHandler.jobDataHandler"
+          />
         <JobDataTable
           :jobHandler="jobHandler"
           :graph-input-handler="graphCoardinator?.tableInputForGraph"
