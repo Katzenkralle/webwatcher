@@ -22,15 +22,25 @@ interface ChartData {
     labels: string[];
     datasets: ChartDatasets[];
 }
+const getRowRange = (baseRange: number[]):  number[] => {
+    let data = props.graphData.options?.pullAllRows ?
+            props.computedDisplayData.value.map((row) => row.id)
+            : baseRange
+    if (props.graphData.options?.pullXNewRows) {
+        data.sort((a, b) => b - a);
+        data = data.slice(0, props.graphData.options.pullXNewRows).reverse();;
+    }
+    return data
+}
 
-const getData = (lable: string[], dataLocation: number[]): ChartData => {
+const getDataRowBased = (lable: string[], dataLocation: number[]): ChartData => {
     let usedDataLocations:number[] = [];
     return {
         datasets: lable.map((lable) => {
             const dataPoints: any[] = [];
             
             // We can not usee filter/map here, because we need to keep the order of the data
-            for (const id of dataLocation) {
+            for (const id of getRowRange(dataLocation)) {
                 const row = props.computedDisplayData.value.find(row => row.id === id);
                 if (row) {
                     if (!usedDataLocations.includes(row.id)) {
@@ -49,9 +59,10 @@ const getData = (lable: string[], dataLocation: number[]): ChartData => {
     }
 }
 
-const getDataTest = (lable: string[], dataLocation: number[]): ChartData => {
+const getDataColBased = (lable: string[], dataLocation: number[]): ChartData => {
+    const usedRows = getRowRange(dataLocation);
     return {
-        datasets: dataLocation.map((rowId) => {
+        datasets: usedRows.map((rowId) => {
             if(!props.computedDisplayData.value[rowId]){
                 useStatusMessage().newStatusMessage(
                     `Row with id ${rowId} not found in data. Please check your graph input.`,
@@ -86,13 +97,12 @@ const computedGraphInputData = computed((): ChartData => {
         }
     }
     if (props.graphData.data.source === "rowById"){
-        // needs work
         console.log('rowById')
-        return getData(props.graphData.label.includes, props.graphData.data.includes)
+        return getDataRowBased(props.graphData.label.includes, props.graphData.data.includes)
 
     } else if (props.graphData.data.source === "colByName"){
         console.log('colByName')
-        return getDataTest(props.graphData.data.includes,  props.graphData.label.includes)
+        return getDataColBased(props.graphData.data.includes,  props.graphData.label.includes)
     }
     useStatusMessage().newStatusMessage(
             'Unexpected graph data source. Please check your graph input.',

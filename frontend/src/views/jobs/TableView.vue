@@ -97,6 +97,18 @@ const graphCoardinator = ref();
         </AccordionPanel>
 
         <AccordionPanel value="1">
+            <AccordionHeader>Graph Creator</AccordionHeader>
+              <AccordionContent>
+                <div class="content-box flex flex-col">
+                    <GraphCoardinator
+                      ref="graphCoardinator"
+                      :jobData="jobHandler.jobDataHandler"
+                    />
+              </div>
+              </AccordionContent>
+        </AccordionPanel>
+
+        <AccordionPanel value="2">
             <AccordionHeader>Logical Filters</AccordionHeader>
               <AccordionContent>
                 <div class="content-box flex flex-col">
@@ -109,18 +121,6 @@ const graphCoardinator = ref();
                       :is-dashed="true"/>
                     <FilterGroupRenderer 
                       :jobHandler="jobHandler.jobDataHandler"/>
-              </div>
-              </AccordionContent>
-        </AccordionPanel>
-
-        <AccordionPanel value="2">
-            <AccordionHeader>Graphs</AccordionHeader>
-              <AccordionContent>
-                <div class="content-box flex flex-col">
-                    <GraphCoardinator
-                      ref="graphCoardinator"
-                      :jobData="jobHandler.jobDataHandler"
-                    />
               </div>
               </AccordionContent>
         </AccordionPanel>

@@ -4,14 +4,14 @@ import {computed, ref, watch, type ComputedRef, type Ref} from 'vue'
 export interface GraphInput {
     cols: {
       enabled: boolean
-      maxSelection: number // 0 means unlimited
+      maxSelection: ComputedRef<number> // 0 means unlimited
       allowedTypes: ComputedRef<string[]>
       invalid: ComputedRef<boolean>
       selected: string[]
     },
     rows: {
-      enabled: boolean
-      maxSelection: number // 0 means unlimited
+      enabled: ComputedRef<boolean>
+      maxSelection: ComputedRef<number> // 0 means unlimited
       invalid: ComputedRef<boolean>
       selected: number[]
     }
@@ -26,6 +26,10 @@ export interface GraphDataSeries {
     displayType: keyof typeof GraphConstraints;
     label: GraphDataSources;
     data: GraphDataSources;
+    options?: {
+        pullAllRows: boolean
+        pullXNewRows?: number
+    }
 }
 
 
@@ -43,10 +47,11 @@ interface GraphType {
     }
 }
 
+// ToDo: remove or change this arbitrary values
 export const GraphConstraints: GraphType = {
     pie: {
         multiRowView: {
-            maxCols: 1,
+            maxCols: 0,
             maxRows: 0
         },
         singelRowView: {
@@ -61,7 +66,7 @@ export const GraphConstraints: GraphType = {
         },
         singelRowView: {
             maxCols: 0,
-            maxRows: 1
+            maxRows: 0
         }
     },
     bar: {
@@ -78,32 +83,34 @@ export const GraphConstraints: GraphType = {
 
 
 export const useGraphConstructor = (jobDataHandler: ReturnType<typeof  useJobDataHandler>) => {
-    const multiRowView = ref(true) // ture: looks At multiple rows, false: looks at one row
+    const rowBasedView = ref(true) // ture: looks At multiple rows, false: looks at one row
     const graphInput = ref<GraphInput>({
         cols: {
             enabled: false,
-            maxSelection: 0,
+            maxSelection: computed(() => 0),
             allowedTypes: computed(() => []),
             invalid: computed(() => true),
             selected: []
         },
         rows: {
-            enabled: false,
-            maxSelection: 0,
+            enabled: computed(() => false),
+            maxSelection: computed(() => 0),
             invalid: computed(() => true),
             selected: []
         }
     })
+    const pullFutureRows = ref(false)
+    const pullXNewRows = ref<number>(0) // 0 means all rows
     const availableGraphTypes = ref<string[]>(Object.keys(GraphConstraints))
     const selectedGraphType = ref<string|undefined>()
 
-    watch(selectedGraphType, (newValue) => {
+    watch(selectedGraphType, () => {
         startGraphConstruction()
     })
-
-    watch(multiRowView, (newValue) => {
-        startGraphConstruction()
-    })
+    // We need to test if this is needed
+    //watch(rowBasedView, () => {
+    //    startGraphConstruction()
+    //})
 
     const allowedGraphTypes = computed((): string[] => {
         if (!graphInput.value || graphInput.value.cols.selected.length === 0) {
@@ -121,7 +128,7 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof  useJobDat
 
     const colsInvalide = computed(() => {
         if (!selectedGraphType.value) return true
-        const maxColsCurentMode = multiRowView.value 
+        const maxColsCurentMode = rowBasedView.value 
         ? GraphConstraints[selectedGraphType.value].multiRowView.maxCols
         : GraphConstraints[selectedGraphType.value].singelRowView.maxCols
         const maxSelection = maxColsCurentMode === 0
@@ -133,7 +140,7 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof  useJobDat
 
     const rowInvalide = computed(() => {
         if (!selectedGraphType.value) return true
-        const maxRowsCurentMode = multiRowView.value 
+        const maxRowsCurentMode = rowBasedView.value 
         ? GraphConstraints[selectedGraphType.value].multiRowView.maxRows
         : GraphConstraints[selectedGraphType.value].singelRowView.maxRows
         const maxSelection = maxRowsCurentMode === 0
@@ -151,18 +158,19 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof  useJobDat
         graphInput.value = {
             cols: {
                 enabled: true,
-                maxSelection: multiRowView.value 
-                    ? GraphConstraints[selectedGraphType.value].multiRowView.maxCols
-                    : GraphConstraints[selectedGraphType.value].singelRowView.maxCols,
+                // this is problematic, but __shold__ nver happen
+                maxSelection: computed(() => rowBasedView.value 
+                    ? GraphConstraints[selectedGraphType.value?? ''].multiRowView.maxCols
+                    : GraphConstraints[selectedGraphType.value?? ''].singelRowView.maxCols),
                 allowedTypes: allowedGraphTypes,
                 invalid: colsInvalide,
                 selected: []
             },
             rows: {
-                enabled: true,
-                maxSelection: multiRowView.value 
-                ? GraphConstraints[selectedGraphType.value].multiRowView.maxRows
-                : GraphConstraints[selectedGraphType.value].singelRowView.maxRows,
+                enabled: computed(() => !pullFutureRows.value),
+                maxSelection: computed(() =>rowBasedView.value 
+                ? GraphConstraints[selectedGraphType.value??''].multiRowView.maxRows
+                : GraphConstraints[selectedGraphType.value??''].singelRowView.maxRows),
                 invalid: rowInvalide,
                 selected: []
             }
@@ -172,24 +180,27 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof  useJobDat
         graphInput.value = {
             cols: {
                 enabled: false,
-                maxSelection: 0,
+                maxSelection: computed(() => 0),
                 allowedTypes: computed(() => []),
                 invalid: computed(() => true),
                 selected: []
             },
             rows: {
-                enabled: false,
-                maxSelection: 0,
+                enabled: computed(() => false),
+                maxSelection: computed(() => 0),
                 invalid: computed(() => true),
                 selected: []
             }
         }
+        pullFutureRows.value = false
+        pullXNewRows.value = 0
         selectedGraphType.value = undefined
-        multiRowView.value = true
+        rowBasedView.value = true
     }
 
     const curentGraph = computed((): GraphDataSeries | undefined => {
-        if(!graphInput.value || graphInput.value.cols.invalid || graphInput.value.rows.invalid){
+        if(!graphInput.value || graphInput.value.cols.invalid || 
+            (graphInput.value.rows.invalid  && !pullFutureRows.value) ){
             return undefined
         }
         const rows: GraphDataSources  = {
@@ -200,15 +211,21 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof  useJobDat
             source:  "colByName",
             includes: graphInput.value.cols.selected
         }
-
-        return multiRowView.value
-        ? {
+        const additionaOptions ={
             displayType: selectedGraphType.value as string,
+            options: {
+                pullAllRows: pullFutureRows.value,
+                pullXNewRows: pullXNewRows.value
+            }
+        }
+        return rowBasedView.value
+        ? {
+            ...additionaOptions,
             label: cols,
             data: rows 
         }
         : {
-            displayType: selectedGraphType.value as string,
+            ...additionaOptions,
             label: rows,
             data: cols,
         }
@@ -216,7 +233,9 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof  useJobDat
 
     return{
         jobId: jobDataHandler.jobId,
-        multiRowView,
+        rowBasedView,
+        pullFutureRows,
+        pullXNewRows,
         graphInput,
         availableGraphTypes,
         selectedGraphType,
