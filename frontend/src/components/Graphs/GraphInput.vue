@@ -109,18 +109,18 @@ const title = ref('');
                 <div v-if="graphConstructor.selectedGraphType.value"
                     class="flex flex-col items-center">
                     <span>
-                    Select <a class="text-info">{{ graphConstructor.graphInput.value.cols.maxSelection !== 0 
-                    ? graphConstructor.graphInput.value.cols.maxSelection
+                    Select <a class="text-info">{{ graphConstructor.graphInput.cols.maxSelection !== 0 
+                    ? graphConstructor.graphInput.cols.maxSelection
                     : 'up to all'}} column(s)</a> 
                     <template v-if="!graphConstructor.pullFutureRows.value"> 
-                        and  <a class="text-info">{{ graphConstructor.graphInput.value.rows.maxSelection !== 0 
-                        ? graphConstructor.graphInput.value.rows.maxSelection
+                        and  <a class="text-info">{{ graphConstructor.graphInput.rows.maxSelection !== 0 
+                        ? graphConstructor.graphInput.rows.maxSelection
                         : 'up to all'}} row(s)</a>  
                     </template>
                     </span> 
                     <h3  class="text-warning">Use Checkboxes in the Table</h3>
                     <AnimatedArrow
-                        v-if="graphConstructor.graphInput.value.cols.invalid || graphConstructor.graphInput.value.rows.invalid"
+                        v-if="graphConstructor.graphInput.cols.invalid || graphConstructor.graphInput.rows.invalid"
                         @click="scrollToTable(graphConstructor.jobId)"
                     />
                 </div>
