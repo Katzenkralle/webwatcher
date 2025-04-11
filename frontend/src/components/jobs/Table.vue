@@ -148,7 +148,7 @@ const checkAllVisibleRows = () => {
     // Add visible rows up to maxSelection limit
     visibleEntries.forEach((entry: flattendJobEnty) => {
       if (rows.selected.length < maxSelection && !rows.selected.includes(entry.id)) {
-        rows.selected.push(entry.id as number);
+        rows.selected =  [...rows.selected, entry.id] // using .push() would not trigger reactivity
       }
     });
   }

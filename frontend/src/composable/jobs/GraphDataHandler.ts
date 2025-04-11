@@ -37,12 +37,16 @@ export interface GraphDataSeries {
 interface GraphType {
     [graphType: string]: {
         multiRowView: {
-            maxCols: number
-            maxRows: number
+            max: {
+                cols: 0,
+                rows: 0
+            }
         },
         singelRowView: {
-            maxCols: number
-            maxRows: number
+            max: {
+                cols: 0,
+                rows: 0
+            }
         }
     }
 }
@@ -51,32 +55,44 @@ interface GraphType {
 export const GraphConstraints: GraphType = {
     pie: {
         multiRowView: {
-            maxCols: 0,
-            maxRows: 0
+            max: {
+                cols: 0,
+                rows: 0
+            }
         },
         singelRowView: {
-            maxCols: 0,
-            maxRows: 0
+            max: {
+                cols: 0,
+                rows: 0
+            }
         }
     },
     line: {
         multiRowView: {
-            maxCols: 0,
-            maxRows: 0
+            max: {
+                cols: 0,
+                rows: 0
+            }
         },
         singelRowView: {
-            maxCols: 0,
-            maxRows: 0
+            max: {
+                cols: 0,
+                rows: 0
+            }
         }
     },
     bar: {
         multiRowView: {
-            maxCols: 0,
-            maxRows: 0
+            max: {
+                cols: 0,
+                rows: 0
+            }
         },
         singelRowView: {
-            maxCols: 0,
-            maxRows: 0
+            max: {
+                cols: 0,
+                rows: 0
+            }
         }
     }
 } as const
@@ -108,28 +124,25 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof  useJobDat
         if (!selectedGraphType.value){
             graphInput.cols.enabled = false
             graphInput.rows.enabled = false
-
         }  else {
         graphInput.cols.enabled = true
-        graphInput.rows.enabled = true
-        }
-    })
-    // We need to test if this is needed
-    watch(rowBasedView, () => {
-        if (!selectedGraphType.value) return
-        const curenntCols = graphInput.cols.selected
-        const curenntRows = graphInput.rows.selected    
-        if (GraphConstraints[selectedGraphType.value].multiRowView.maxCols !== 0 
-            && curenntCols.length > GraphConstraints[selectedGraphType.value].multiRowView.maxCols) {
-            graphInput.cols.selected = []
-        }
-        if (GraphConstraints[selectedGraphType.value].multiRowView.maxRows !== 0 
-            && curenntRows.length > GraphConstraints[selectedGraphType.value].multiRowView.maxRows) {
-            graphInput.rows.selected = []
+        graphInput.rows.enabled = !pullFutureRows.value
         }
     })
 
-    const allowedGraphTypes = computed((): string[] => {
+    const checkInvalid = (targer: 'cols'|'rows'): boolean => {     
+        if (!selectedGraphType.value) return true
+        const maxColsCurentMode = rowBasedView.value 
+        ? GraphConstraints[selectedGraphType.value].multiRowView.max[targer]
+        : GraphConstraints[selectedGraphType.value].singelRowView.max[targer]
+        const maxSelection = maxColsCurentMode === 0
+            ? Infinity
+            : maxColsCurentMode
+        return graphInput[targer].selected.length <= 0 
+        || graphInput[targer].selected.length > maxSelection
+    }
+
+    const setAllowedTypes = () => {
         if (!graphInput || graphInput.cols.selected.length === 0) {
             return []
         }
@@ -141,32 +154,42 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof  useJobDat
             return []
         }
         return [usedRow]
+    }
+
+    // We need to test if this is needed
+    watch(rowBasedView, () => {
+        if (!selectedGraphType.value) return
+        const curenntCols = graphInput.cols.selected
+        const curenntRows = graphInput.rows.selected    
+        if (GraphConstraints[selectedGraphType.value].multiRowView.max.cols !== 0 
+            && curenntCols.length > GraphConstraints[selectedGraphType.value].multiRowView.max.cols) {
+            graphInput.cols.selected = []
+        }
+        if (GraphConstraints[selectedGraphType.value].multiRowView.max.rows !== 0 
+            && curenntRows.length > GraphConstraints[selectedGraphType.value].multiRowView.max.rows) {
+            graphInput.rows.selected = []
+        }
     })
 
-    const colsInvalide = computed(() => {
-        if (!selectedGraphType.value) return true
-        const maxColsCurentMode = rowBasedView.value 
-        ? GraphConstraints[selectedGraphType.value].multiRowView.maxCols
-        : GraphConstraints[selectedGraphType.value].singelRowView.maxCols
-        const maxSelection = maxColsCurentMode === 0
-            ? Infinity
-            : maxColsCurentMode
-        return graphInput.cols.selected.length <= 0 
-        || graphInput.cols.selected.length > maxSelection
+    watch(() => pullFutureRows.value, (newValue) => {
+        if (newValue) {
+            graphInput.rows.enabled = false
+        } else if (graphInput.cols.enabled) {
+            graphInput.rows.enabled = true
+        }
     })
 
-    const rowInvalide = computed(() => {
-        if (!selectedGraphType.value) return true
-        const maxRowsCurentMode = rowBasedView.value 
-        ? GraphConstraints[selectedGraphType.value].multiRowView.maxRows
-        : GraphConstraints[selectedGraphType.value].singelRowView.maxRows
-        const maxSelection = maxRowsCurentMode === 0
-            ? Infinity
-            : maxRowsCurentMode
-        return graphInput.rows.selected.length <= 0 
-        || graphInput.rows.selected.length > maxSelection
+    watch(() => [graphInput.cols.selected, graphInput.rows.selected], ([newCols, newRows]) => {
+        console.log('wew')
+        if(newCols) {
+            graphInput.cols.invalid = checkInvalid('cols')
+            setAllowedTypes()
+        }
+        if(newRows) {
+            console.log(checkInvalid('rows'))
+            graphInput.rows.invalid = checkInvalid('rows')
+        }
     })
-
 
     const reset = () => {
         graphInput.cols = {
