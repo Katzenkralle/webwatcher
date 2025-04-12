@@ -149,7 +149,7 @@ const title = ref('');
                         icon="pi pi-save"
                         @click="async() => {
                             if(!props.userConfig || !graphConstructor.curentGraph.value) return
-                            props.userConfig.graph.value = {add: { [title]: graphConstructor.curentGraph.value }};
+                            props.userConfig.graph.value = {add: [{name: title, data: graphConstructor.curentGraph.value}]};
                         }"/>
                     </InputGroup>
                 </div>
@@ -157,6 +157,7 @@ const title = ref('');
                     class="w-full h-full"
                     :graphData="graphConstructor.curentGraph.value"
                     :computedDisplayData="props.jobData.computeDisplayedData"
+                    :fetch-specific-data="props.jobData.retriveRowsById"
                 />
             </template>
         </div>

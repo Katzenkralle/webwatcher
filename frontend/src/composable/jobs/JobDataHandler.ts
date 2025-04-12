@@ -1,5 +1,6 @@
 import {ref, computed, type Ref, type ComputedRef} from 'vue';
 import { useJobData, type jobEnty, type TableLayout, DUMMY_JOB_ENTRY } from '../api/JobAPI';
+import { reportError } from '@/composable/api/QueryHandler';
 import type { IterationContext } from './FilterGroups';
 import { useLoadingAnimation, useStatusMessage } from '../core/AppState';
 import { useFilterIterationContext} from "@/composable/jobs/FilterGroups";
@@ -58,10 +59,102 @@ export const useJobDataHandler = (
     sortByString: ComputedRef<sortByString> | undefined = undefined, // [key, [columns_NOT_to_sort_by]]
     filters: IterationContext|undefined = undefined,
     ) => {
-    const localJobData: Ref<Record<number, jobEnty>> = ref([]);
+    if (globalJobData[jobId] === undefined) {
+        globalJobData[jobId] = ref([]);
+    }    
+    const localJobData: Ref<Record<number, jobEnty>> = globalJobData[jobId];
     const apiHandler = useJobData(jobId)
     const allFetched = ref(false);
     const highlightSubstring = ref<Record<number, Record<string, HighlightSubstring[]>>>({})
+
+    const lazyFetch = async(startAt: number|undefined = undefined, all: boolean = false) => {
+        useLoadingAnimation().setState(true);
+        startAt = startAt || Object.keys(localJobData.value).length;
+        if (Object.keys(localJobData.value).length < startAt + fetchAmount.value && !allFetched.value) {
+            localJobData.value = {
+                ...localJobData.value,
+                ...await apiHandler.fetchData(!all ? [startAt, startAt + fetchAmount.value] : undefined)
+                    .then((data) => {
+                        if (Object.keys(data).length < fetchAmount.value) {
+                            allFetched.value = true;
+                        }
+                        return data;
+                    })
+                    .catch((e) => {
+                        reportError(e);
+                        return {}
+                    })
+                };
+        }
+        if (all) {
+            useStatusMessage().newStatusMessage("All data fetched", "success");
+            allFetched.value = true;
+        }
+        useLoadingAnimation().setState(false);
+    }
+
+    const retriveRowsById = async(options: {id?: number[],  all?: boolean, newestNRows?:  number}): Promise<number> =>  {
+        // Returns number of unresolved entrys
+
+        let rowsToFetch: number = function() {
+            if (options.id && options.id.length) {
+                return options.id.reduce((acc: number, curr:  number) => {
+                    if (localJobData.value[curr] === undefined) {
+                        return acc+1;
+                    }
+                    options.id = options.id!.filter((id) => id !== curr);
+                    return acc;
+                },0);
+            }
+            if (options.all) {
+                return Infinity;
+            }
+            if (options.newestNRows) {
+                return options.newestNRows;
+            }
+            return 0;
+        }()
+        console.log("Rows to fetch: ", rowsToFetch, options);
+        if (rowsToFetch === 0) {
+            return rowsToFetch;
+        }
+        return apiHandler.fetchData(undefined, options.id, options.newestNRows)
+            .then((data) => {
+                const currentKeys = Object.keys(localJobData.value);
+                data = Object.keys(data)
+                    .filter((key) => !currentKeys.includes(key))
+                    .reduce((acc: Record<number, jobEnty>, key) => {
+                        const index = parseInt(key);
+                        acc[index] = data[index];
+                        return acc;
+                    }, {});
+                if (options.id) {
+                    rowsToFetch = options.id.reduce((acc: number, curr: number) => {  
+                            if (data[curr] === undefined) {
+                                acc++;
+                            }
+                            return acc;
+                        }, 0) + Object.keys(data).length  // + object length, because we subtract it in the return   
+                        
+                }
+                if (Object.keys(data).length === 0) {
+                    return 0;
+                }
+                localJobData.value = {
+                    ...localJobData.value,
+                    ...data
+                };
+                if (rowsToFetch === Infinity) {
+                    return 0;
+                } 
+                return Math.max(0, rowsToFetch - Object.keys(data).length);
+            }).catch((e) => {
+                reportError(e);
+                return rowsToFetch
+            }
+        );
+    }   
+
 
     const getColumnsByType = (type: string|undefined, includeHiddenColumns: boolean = true): string[] => {
         /*
@@ -92,16 +185,18 @@ export const useJobDataHandler = (
         ];
           
         const contextColNames: TableLayout[] = Object.values(localJobData.value).flatMap((row: jobEnty) => 
-            Object.entries(row.context).map(([key, value]) => ({ key, type: typeof value }))
-        ).reduce((acc: TableLayout[], curr: TableLayout) => {
-            const existing = acc.find((layout) => layout.key === curr.key);
-            if (!existing) {
-                acc.push(curr);
-            } else if (existing.type !== curr.type) {
-                existing.type += "|" + curr.type;
-            }
-            return acc;
-        }, []);
+                Object.entries(row.context)
+                .map(([key, value]) => ({ key, type: typeof value }))
+            )
+            .reduce((acc: TableLayout[], curr: TableLayout) => {
+                const existing = acc.find((layout) => layout.key === curr.key);
+                if (!existing) {
+                    acc.push(curr);
+                } else if (!existing.type.split("|").includes(curr.type)) {
+                    existing.type += "|" + curr.type;
+                }
+                return acc;
+            }, []);
 
         return [
             ...staticSchema,
@@ -112,31 +207,6 @@ export const useJobDataHandler = (
         return computeLayoutUnfiltered.value.filter((layout) => !hiddenColumns.value.includes(layout.key));
     });
 
-    const lazyFetch = async(startAt: number|undefined = undefined, all: boolean = false) => {
-        useLoadingAnimation().setState(true);
-        startAt = startAt || Object.keys(localJobData.value).length;
-        if (Object.keys(localJobData.value).length < startAt + fetchAmount.value && !allFetched.value) {
-            localJobData.value = {
-                ...localJobData.value,
-                ...await apiHandler.fetchData(!all ? [startAt, startAt + fetchAmount.value] : undefined)
-                    .then((data) => {
-                        if (Object.keys(data).length < fetchAmount.value) {
-                            allFetched.value = true;
-                        }
-                        return data;
-                    })
-                    .catch(() => {
-                        useStatusMessage().newStatusMessage("Failed to fetch additional data", "danger");
-                        return {}
-                    })
-                };
-        }
-        if (all) {
-            useStatusMessage().newStatusMessage("All data fetched", "success");
-            allFetched.value = true;
-        }
-        useLoadingAnimation().setState(false);
-    }
     const computedFilterdJobData = computed(() => {
         console.debug("Recomputed Display Data");
         let flattendJobEntys: flattendJobEnty[] = Object.keys(localJobData.value).map((key: string) => {
@@ -269,6 +339,7 @@ export const useJobDataHandler = (
         filters,
         saveToFile,
         lazyFetch,
+        retriveRowsById,
         getColumnsByType
     };
 }

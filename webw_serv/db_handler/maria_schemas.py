@@ -16,6 +16,6 @@ class DbSession:
 @dataclass
 class DbUserDisplayConfig:
     username: str
-    session_id: int
+    job_id: int
     filter_config: str
     graph_config: str

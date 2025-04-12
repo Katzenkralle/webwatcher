@@ -57,8 +57,6 @@ class Mutation:
     async def userJobConfig(self, info: strawberry.Info, id: int,
                     filter_config: Optional[JsonStr] = None,
                     graph_config:  Optional[JsonStr] = None) -> Message:
-        if not id:
-            return Message(message="No job id provided", status=MessageType.DANGER)
         try:
             await info.context["request"].state.maria\
                 .set_user_config_for_job(info.context["user"].username, id, filter_config, graph_config)
@@ -95,10 +93,17 @@ class Query:
     @strawberry.field
     @user_guard()
     async def user_job_config(self, info: strawberry.Info, id: int) -> user_display_config_result:
-        if not id:
+        if id is None:
             return Message(message="No job id provided", status=MessageType.DANGER)
         try:
             return UserDisplayConfig(**asdict(await info.context["request"]
                     .state.maria.get_user_config_for_job(info.context["user"].username, id)))
+        except ValueError as e:
+            return UserDisplayConfig(
+                username=info.context["user"].username,
+                job_id=id,
+                filter_config=None,
+                graph_config=None,
+            )
         except Exception as e:
             return Message(message=f"Failed to get user job config: {e}", status=MessageType.DANGER)

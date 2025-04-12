@@ -1,13 +1,14 @@
 <script setup lang="tsx">
 import Chart from 'primevue/chart';
 import { type GraphDataSeries, type GraphDataSources } from '@/composable/jobs/GraphDataHandler';
-import { computed, ref, type ComputedRef } from 'vue';
-import { type flattendJobEnty } from '@/composable/jobs/JobDataHandler';
+import { computed, ref, watch, type ComputedRef } from 'vue';
+import { type flattendJobEnty, useJobDataHandler } from '@/composable/jobs/JobDataHandler';
 import { useStatusMessage } from '@/composable/core/AppState';
 
 const props = defineProps<{
     graphData: GraphDataSeries;
-    computedDisplayData: ComputedRef<flattendJobEnty[]>
+    computedDisplayData: ComputedRef<flattendJobEnty[]>;
+    fetchSpecificData: ReturnType<typeof useJobDataHandler>['retriveRowsById'];
 }>();
 
 interface ChartDatasets {
@@ -22,7 +23,21 @@ interface ChartData {
     labels: string[];
     datasets: ChartDatasets[];
 }
-const getRowRange = (baseRange: number[]):  number[] => {
+const getRowRange = async(baseRange: number[]):  Promise<number[]> => {
+    console.log(props.graphData.options)
+    await props.fetchSpecificData({
+        id: !props.graphData.options?.pullAllRows || props.graphData.options?.pullXNewRows !== undefined 
+            ? baseRange : undefined,
+        all: props.graphData.options?.pullAllRows && !props.graphData.options?.pullXNewRows, 
+        newestNRows: props.graphData.options?.pullXNewRows  
+    }).then((result) => {
+        if (result!== 0){
+            useStatusMessage().newStatusMessage(
+                `${result} rows for a Graph could not be fetched!`,
+                'warn'
+            )
+        }
+    })
     let data = props.graphData.options?.pullAllRows ?
             props.computedDisplayData.value.map((row) => row.id)
             : baseRange
@@ -33,14 +48,14 @@ const getRowRange = (baseRange: number[]):  number[] => {
     return data
 }
 
-const getDataRowBased = (lable: string[], dataLocation: number[]): ChartData => {
+const getDataRowBased = async(lable: string[], dataLocation: number[]): Promise<ChartData> => {
     let usedDataLocations:number[] = [];
     return {
-        datasets: lable.map((lable) => {
+        datasets: await Promise.all(lable.map(async(lable) => {
             const dataPoints: any[] = [];
             
             // We can not usee filter/map here, because we need to keep the order of the data
-            for (const id of getRowRange(dataLocation)) {
+            for (const id of await getRowRange(dataLocation)) {
                 const row = props.computedDisplayData.value.find(row => row.id === id);
                 if (row) {
                     if (!usedDataLocations.includes(row.id)) {
@@ -54,20 +69,17 @@ const getDataRowBased = (lable: string[], dataLocation: number[]): ChartData => 
                 label: lable,
                 data: dataPoints
             }
-        }),
+        })),
         labels: usedDataLocations.map((entry) =>  String(entry))
     }
 }
 
-const getDataColBased = (lable: string[], dataLocation: number[]): ChartData => {
-    const usedRows = getRowRange(dataLocation);
+const getDataColBased = async (lable: string[], dataLocation: number[]): Promise<ChartData> => {
+    const usedRows = await getRowRange(dataLocation);
     return {
         datasets: usedRows.map((rowId) => {
             if(!props.computedDisplayData.value[rowId]){
-                useStatusMessage().newStatusMessage(
-                    `Row with id ${rowId} not found in data. Please check your graph input.`,
-                    'warn'
-                )
+                //  A row could not be found
                 return {
                     label: String(rowId),
                     data: []
@@ -85,7 +97,7 @@ const getDataColBased = (lable: string[], dataLocation: number[]): ChartData => 
 }
 
 
-const computedGraphInputData = computed((): ChartData => {
+const computedGraphInputData = computed(async(): Promise<ChartData> => {
     if (props.graphData.data.source  ===  props.graphData.label.source){
         useStatusMessage().newStatusMessage(
             'Graph data source and label source are the same. Please check your graph input.',
@@ -114,17 +126,20 @@ const computedGraphInputData = computed((): ChartData => {
         }
 })
 
+// Create a reactive variable to hold the resolved chart data
+const chartData = ref<ChartData>({
+    datasets: [],
+    labels: []
+});
+
+// Update chartData whenever computedGraphInputData changes
+watch(computedGraphInputData, async () => {
+    chartData.value = await computedGraphInputData.value;
+}, { immediate: true });
 </script>
 
-<template>
-
-    <div>
-        <Chart
-            :type="props.graphData.displayType as string"
-            
-            :data="computedGraphInputData"
-        ></Chart>
-
-    </div>
-
+<template>    
+    <Chart
+        :type="props.graphData.displayType as string"
+        :data="chartData"/>
 </template>

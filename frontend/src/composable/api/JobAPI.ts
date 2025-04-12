@@ -223,7 +223,7 @@ export const DUMMY_JOB_ENTRY: jobEnty = {
 export const useJobData = (jobId: number) => {
     const FETCH_AT_ONCE = 10; 
     
-    const fetchData = async (range: [Number, Number]|undefined = undefined): Promise<Record<number, jobEnty>> => {
+    const fetchData = async (range: [Number, Number]|undefined = undefined, specificRows: number[]|undefined = undefined, lastN: number|undefined=undefined): Promise<Record<number, jobEnty>> => {
         return new Promise(async (resolve, reject) => {
             const query = `
                 query {
@@ -271,7 +271,7 @@ export const useJobData = (jobId: number) => {
                     };
                 };
 
-                const data = Array.from({ length: 15 }, (_, index) => ({
+                const data = Array.from({ length: 37 }, (_, index) => ({
                     [index]: generateRandomJobEntry()
                 })).reduce((acc, entry) => {
                     return { ...acc, ...entry };

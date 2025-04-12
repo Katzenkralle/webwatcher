@@ -38,7 +38,7 @@ export function queryGql(query: string, variables:  Record<string, any>|undefine
             let data = content.data;
             let errors = content.errors;
             let providedTypes: {type: string, field: string}[] = [];
-            for (let key of  Object.keys(data)) {
+            for (let key of Object.keys(data)) {
                 let __typename = data[key].__typename;
                 providedTypes.push({type: __typename, field: key});
                 delete data[key].__typename;
