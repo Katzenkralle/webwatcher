@@ -155,15 +155,17 @@ const graphCoardinator = ref();
         
       <div class="flex flex-col w-full h-full items-center">
         <SmallSeperator class="my-4" :is-dashed="true"/>
-        <GraphLoader
-          :job-id="currentJobId"
-          :user-config="userConfig"
-          :data-handler="jobHandler.jobDataHandler"
-          />
+        <h2 class="mb-2">Tabular</h2>
         <JobDataTable
           :jobHandler="jobHandler"
           :graph-input-handler="graphCoardinator?.tableInputForGraph"
           />
+        <GraphLoader
+        class="mt-5"
+        :job-id="currentJobId"
+        :user-config="userConfig"
+        :data-handler="jobHandler.jobDataHandler"
+        />
       </div>
 
       <PopupDialog ref="downloadSuccessPopup"

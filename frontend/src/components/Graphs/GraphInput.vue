@@ -16,6 +16,7 @@ import { computed, ref, type ComputedRef,  type Reactive } from 'vue';
 import { useGraphConstructor, type GraphInput } from '@/composable/jobs/GraphDataHandler';
 import { useJobDataHandler } from '@/composable/jobs/JobDataHandler';
 import { jobUserDisplayConfig } from '@/composable/jobs/UserConfig';
+import { scrollToElement } from '@/composable/core/helpers';
 
 const props = defineProps<{
     jobData: ReturnType<typeof useJobDataHandler>;
@@ -31,14 +32,9 @@ defineExpose<{tableInputForGraph: Reactive<GraphInput>}>({
 });
 
 
-const scrollToTable = (id: number) => {
-    const element = document.getElementById(`table${id}`);
-    if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-    }
-};
 
 const title = ref('');
+const lastSavedTitle = ref<string | undefined>(undefined);
 </script>
 
 <template>
@@ -130,7 +126,7 @@ const title = ref('');
                     <h3  class="text-warning">Use Checkboxes in the Table</h3>
                     <AnimatedArrow
                         v-if="graphConstructor.graphInput.cols.invalid || graphConstructor.graphInput.rows.invalid"
-                        @click="scrollToTable(graphConstructor.jobId)"
+                        @click="scrollToElement(`table${graphConstructor.jobId}`)"
                     />
                 </div>
                 <span v-else>
@@ -138,20 +134,32 @@ const title = ref('');
                 </span>
             </template>
             <template v-else>
-                <div class="flex flex-row w-full">
+                <div class="flex flex-row w-full justify-between items-center">
                     <InputGroup  v-if="props.userConfig" class="max-w-80">
                         <InputText
                         placeholder="Save as..."
                         v-model="title"
+                        @change="() => {
+                            lastSavedTitle = undefined
+                        }"
                         size="small"
                         />
                         <Button
                         icon="pi pi-save"
                         @click="async() => {
                             if(!props.userConfig || !graphConstructor.curentGraph.value) return
+                            lastSavedTitle = title;
                             props.userConfig.graph.value = {add: [{name: title, data: graphConstructor.curentGraph.value}]};
                         }"/>
                     </InputGroup>
+                    <Button v-if="lastSavedTitle === title"    
+                    label="Go to saved graph"
+                        icon="pi pi-arrow-down"
+                        @click="() => {
+                            if (!lastSavedTitle) return
+                            scrollToElement('graph-' + lastSavedTitle);
+                        }"  
+                    />
                 </div>
                 <GraphRenderer
                     class="w-full h-full"

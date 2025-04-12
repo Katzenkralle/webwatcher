@@ -140,6 +140,7 @@ watch(computedGraphInputData, async () => {
 
 <template>    
     <Chart
+        class="max-h-150 w-full flex justify-center items-center"
         :type="props.graphData.displayType as string"
         :data="chartData"/>
 </template>

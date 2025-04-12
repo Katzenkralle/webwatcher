@@ -15,3 +15,10 @@ export function getCssColors(): {
         'text': styles.getPropertyValue('--color-text'),
     }
 }
+
+export const scrollToElement = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+    }
+};

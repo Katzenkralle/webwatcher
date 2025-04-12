@@ -29,7 +29,7 @@ watch(()  => props.userConfig.graph.value, async(newVal) => {
 
 <template>
     <div v-if="graphs && graphs?.length > 0" class="flex flex-col w-full items-center">
-        <h4 class="text-center">Graphs</h4>
+        <h2 class="text-center mb-2">Graphinised</h2>
         <div class="flex flex-wrap w-[98%] gap-2 justify-center">
             <div v-for="graph, index in graphs" :key="graph.name" 
                 class="flex flex-col gap-2 w-full max-w-200 p-2 bg-crust
@@ -72,6 +72,8 @@ watch(()  => props.userConfig.graph.value, async(newVal) => {
                     </template>
                 </InputGroup>
                 <GraphRenderer
+                    :id="`graph-${changedGraphNames[index] ?? graph.name}`"
+                    class="my-auto"
                     :graph-data="graph.data"
                     :computed-display-data="dataHandler.computeDisplayedData"
                     :fetch-specific-data="dataHandler.retriveRowsById"
