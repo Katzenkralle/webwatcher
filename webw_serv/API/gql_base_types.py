@@ -119,7 +119,12 @@ class JobEntry:
     runtime: int
     result: ResultType
     script_failure: bool
-    context: JsonStr
+    context: Optional[JsonStr] = None
+
+
+@strawberry.input
+class JobEntyInput(JobEntry):
+    call_id: Optional[int] = None
 
 UserResult = Annotated[Union[User, Message], strawberry.union("UserResult")]
 AllUsersResult = Annotated[Union[UserList, Message], strawberry.union("AllUsersResult")]

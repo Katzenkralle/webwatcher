@@ -3,7 +3,7 @@ from strawberry.tools import merge_types
 from strawberry.schema import Schema
 from fastapi import APIRouter, Request, Depends
 
-from ..API.endpoints import auth, users, test, scripts
+from .endpoints import auth, users, test, scripts, jobs
 from webw_serv.db_handler.maria_schemas import DbUser
 
 async def get_context(request:Request, 
@@ -17,7 +17,7 @@ async def get_context(request:Request,
 def get_routes():
     # Registering the endpoints
     gql_querys = merge_types("ComboQuery", (test.Query, users.Query, scripts.Query))
-    gql_mutations = merge_types("ComboMutation", (users.Mutation, scripts.Mutation))
+    gql_mutations = merge_types("ComboMutation", (users.Mutation, scripts.Mutation, jobs.Mutation))
     gql_schema = Schema(query=gql_querys, mutation=gql_mutations)
     
     # Creating the GQL router, providing context
