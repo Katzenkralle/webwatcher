@@ -180,13 +180,11 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof  useJobDat
     })
 
     watch(() => [graphInput.cols.selected, graphInput.rows.selected], ([newCols, newRows]) => {
-        console.log('wew')
         if(newCols) {
             graphInput.cols.invalid = checkInvalid('cols')
             setAllowedTypes()
         }
         if(newRows) {
-            console.log(checkInvalid('rows'))
             graphInput.rows.invalid = checkInvalid('rows')
         }
     })

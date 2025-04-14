@@ -19,7 +19,6 @@ const graphs = ref<GraphConfig[]>();
 const changedGraphNames = ref<Record<number, string>>({});
 
 watch(()  => props.userConfig.graph.value, async(newVal) => {
-    console.log("localConfigChange:", await newVal);
     if (newVal) {
         graphs.value = await newVal;
     }

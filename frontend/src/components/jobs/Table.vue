@@ -3,6 +3,7 @@ import { useJobUiCreator, type flattendJobEnty, type HighlightSubstring } from "
 import { useStatusMessage } from "@/composable/core/AppState";
 
 import DataTable from 'primevue/datatable';
+import Button from 'primevue/button';
 import Column from 'primevue/column';
 import SplitButton from "primevue/splitbutton";
 import ColumnGroup from 'primevue/columngroup';
@@ -63,7 +64,7 @@ onUnmounted(() => {
 
 
 
-const entryEditMenu = (forId: number | [number, number]): MenuItem[] => {
+const entryEditMenu = (forId: number | number[]): MenuItem[] => {
   return [
     {
       label: 'Edit',
@@ -304,9 +305,9 @@ watch(
             <template #body="slotProps">
                 <EditEntryPopup
                   v-if="openEditor.id === slotProps.data.id"
-                  :can-modify-schema="true"
+                  :can-modify-schema="!jobHandler.jobDataHandler.hasStaticContext.value"
                   :internal-columns="jobHandler.intenalColums"
-                  :layout="Object.assign({}, ...jobHandler.jobDataHandler.computeLayout.value
+                  :layout="Object.assign({}, ...jobHandler.jobDataHandler.computeLayoutUnfiltered.value
                     .map((col) => ({[col.key]: col.type})))"
                   :readonly="openEditor.readonly"
                   :entry-values="slotProps.data"
@@ -339,6 +340,30 @@ watch(
               />
             </template>
           </Column>
+
+        <template #paginatorstart>
+          <p></p>
+        </template>
+
+        <template #paginatorend>
+          <EditEntryPopup
+                  v-if="openEditor.id === -1"
+                  :can-modify-schema="!jobHandler.jobDataHandler.hasStaticContext.value"
+                  :internal-columns="jobHandler.intenalColums"
+                  :layout="Object.assign({}, ...jobHandler.jobDataHandler.computeLayoutUnfiltered.value
+                    .map((col) => ({[col.key]: col.type})))"
+                  :readonly="openEditor.readonly"
+                  :entry-values="{}"
+                  :new-entry="true"
+                  @update="(obj) => {console.debug(obj, 'ToDo: send me to the webw_serv'); openEditor.id = undefined}"
+                  @close="() =>  openEditor.id = undefined"
+                  />
+          <Button 
+            icon="pi pi-pen-to-square"
+            label="Add entry"
+            @click="() => openEditor = {id: -1, readonly: false}"
+            />
+        </template>
       </DataTable>
 </template>
 

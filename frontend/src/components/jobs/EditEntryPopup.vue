@@ -5,6 +5,8 @@ import SmallSeperator from '../reusables/SmallSeperator.vue';
 
 import Textarea from 'primevue/textarea';
 import InputNumber from 'primevue/inputnumber';
+import InputText from 'primevue/inputtext';
+import InputGroup from 'primevue/inputgroup';
 import Checkbox from 'primevue/checkbox';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
@@ -15,20 +17,41 @@ const props = defineProps<{
     entryValues: Record<string, any>,
     internalColumns: string[],
     canModifySchema: boolean,
-    readonly: boolean
+    readonly: boolean,
+    newEntry?: boolean
 }>();
 const emits = defineEmits(['update', 'close']);
 
 const popup = ref();
-const writableEntryValues = ref(props.entryValues);
+const layout = ref(!props.newEntry ? props.layout : (() => {
+    const new_layout = props.layout
+    delete new_layout['id']
+    return new_layout
+    })());  
+const writableEntryValues = ref(Object.keys(layout.value).reduce((acc, key: string) => {
+    const get_default_val = () => {
+      switch (layout.value[key]) {
+        case 'string':
+          return '';
+        case 'number':
+          return 0;
+        default:
+          return false;
+      }
+    };
+    acc[key] = props.entryValues[key] ?? get_default_val();
+    return acc;
+}, {} as Record<string, any>));
 const externalColumns = ref(
-    Object.keys(props.layout).filter((key) => !props.internalColumns.includes(key))
+    Object.keys(layout.value).filter((key) => !props.internalColumns.includes(key))
 );
+
 
 onMounted(() => {
     popup.value.openDialog();
 })
 
+const newColumnName = ref<string>('');
 
 
 
@@ -45,8 +68,8 @@ const getElementForColumn = defineComponent({
     },
     emits: ['onUpdate:modelValue'],
     setup(subprops: any, { emit, slots }: any) {
-        const availableTypes = props.canModifySchema ? "string|number|boolean" : props.layout[subprops.column];
-        const selectedType = ref<string>(props.layout[subprops.column].split("|")[0]);
+        const availableTypes = props.canModifySchema ? "string|number|boolean" : layout.value[subprops.column];
+        const selectedType = ref<string>(layout.value[subprops.column].split("|")[0]);
         const moduleValue = ref(subprops.moduleValue);
 
         watchEffect(() => {
@@ -76,13 +99,13 @@ const getElementForColumn = defineComponent({
                     return h(FloatLabel, { variant: "in", class: 'w-full' }, {
                         default: () => [
                             h('label', { for: `${subprops.column}-number`, class: "z-10" }, [
-                                props.readonly ? h('span', {class: 'text-warning mr-2'}, 'Readonly') : '', 
+                                props.readonly || subprops.column === 'id' ? h('span', {class: 'text-warning mr-2'}, 'Readonly') : '', 
                                 "Number"
                             ]),
                             h(InputNumber, {
                                 class: "w-full",
                                 inputId: `${subprops.column}-number`,
-                                readonly: props.readonly,
+                                readonly: props.readonly || subprops.column === 'id', 
                                 modelValue: moduleValue.value as number,
                                 "onUpdate:modelValue": (e: number) => moduleValue.value = e
                             })
@@ -90,8 +113,9 @@ const getElementForColumn = defineComponent({
                     });
 
                 case 'boolean':
-                    return h("div", {class: 'w-full flex flex-col bg-crust p-2 rounded-lg border-info border-1 hover:border-app'}, [
-                        h('label', { for: `${subprops.column}-boolean`, class: 'text-info text-sm mb-3' }, [
+                    return h("div", {class: 'w-full flex flex-col bg-crust p-2 rounded-lg border-info border-1 hover:border-app color-change-trans \
+                        text-(--p-floatlabel-active-color) hover:text-(--p-floatlabel-focus-color)'}, [
+                        h('label', { for: `${subprops.column}-boolean`, class: 'text-sm mb-3' }, [
                                 props.readonly ? h('span', {class: 'text-warning mr-2'}, 'Readonly') : '', 
                                 "Boolean"
                             ]),    
@@ -211,11 +235,35 @@ const waitEmitClose = () => {
                         </template>
                     </div>
                 </div>
+
+
+                <div v-if="props.canModifySchema && !props.readonly" 
+                    class="flex flex-col items-center w-full mt-6">
+                    <InputGroup class="mt-2 max-w-128">
+                        <FloatLabel variant="in">
+                            <InputText
+                                v-model="newColumnName"
+                                :disabled="props.readonly"/>
+                            <label for="newColumnName">Add new Column: Name</label>
+                        </FloatLabel>
+                        <Button
+                            :disabled="props.readonly"
+                            icon="pi pi-plus"
+                            @click="() => {
+                                if (newColumnName !== '') {
+                                    externalColumns.push(newColumnName);
+                                    writableEntryValues[newColumnName] = '';
+                                    layout[newColumnName] = 'string';
+                                    newColumnName = '';
+                                }
+                            }"/>
+                    </InputGroup>
+                    </div>
             </div>
         </template>
 
         <template v-if="props.readonly" #footer>
-            <dev class="h-full w-full justify-end flex flex-row">
+            <dev class="w-full justify-end flex flex-row mt-auto">
                 <Button 
                     label="Cancel" 
                     @click="waitEmitClose" 

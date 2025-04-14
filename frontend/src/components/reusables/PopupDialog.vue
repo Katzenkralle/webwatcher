@@ -53,7 +53,7 @@ defineExpose({ openDialog, closeDialog });
                 <SmallSeperator v-if="!props.hideSeperator" class="my-2" />
                 <a v-else class="my-2"></a>
                 <slot name="footer">
-                    <div class="flex flex-row w-full justify-end space-x-2">
+                    <div class="flex flex-row w-full justify-end space-x-2 mt-auto">
                         <Button 
                             size="small" 
                             label="Cancel" 

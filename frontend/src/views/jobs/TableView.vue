@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { getJobMetaData } from "@/composable/api/JobAPI";
-import { useJobDataHandler, useJobUiCreator } from "@/composable/jobs/JobDataHandler";
+import { useJobUiCreator } from "@/composable/jobs/JobDataHandler";
 import { jobUserDisplayConfig } from "@/composable/jobs/UserConfig";
 
 import router from "@/router";
 
 import FilterGroupRenderer from "@/components/filter/FilterGroupRenderer.vue";              
+import NavButtons from "@/components/reusables/NavButtons.vue";
 
 import ConfirmableButton from "@/components/reusables/ConfirmableButton.vue";
 import ColumnSelection from "@/components/jobs/ColumnSelection.vue";
@@ -24,17 +24,12 @@ import AccordionPanel from 'primevue/accordionpanel';
 import AccordionHeader from 'primevue/accordionheader';
 import AccordionContent from 'primevue/accordioncontent';
 
-import NavButtons from "@/components/reusables/NavButtons.vue";
-
-import { ProgressSpinner, SplitButton } from "primevue";
+import SplitButton from "primevue/splitbutton";
 
 import { ref, watch, computed } from "vue";
 
 const currentJobId = ref(Number(router.currentRoute.value.params.id));
 const downloadSuccessPopup = ref();
-
-const tableMetadata = ref();
-
 
 const changeJob = (newVal: any) => {
   if (!newVal) return;
@@ -43,9 +38,6 @@ const changeJob = (newVal: any) => {
       if (!currentJobId.value || (currentJobId.value && currentJobId.value !== newId)) {
         currentJobId.value = newId;
         jobHandler = useJobUiCreator(newId);
-        getJobMetaData(newId).then((data) => {
-          tableMetadata.value = data;
-        });
       }
     } catch (e) {
       console.error(e);
@@ -61,9 +53,6 @@ watch(
 // This cannot be compute, if it would be, random recomputations would happen
 // when pressing some buttons - houres wasted: 2
 let jobHandler = useJobUiCreator(currentJobId.value);
-getJobMetaData(currentJobId.value).then((data) => {
-    tableMetadata.value = data;
-  });
 
 const userConfig = computed(() => {
   return jobUserDisplayConfig(currentJobId.value);
@@ -91,8 +80,8 @@ const graphCoardinator = ref();
             <AccordionHeader>Overview</AccordionHeader>
               <AccordionContent>
                 <JobMetaDisplay 
-                  v-if="tableMetadata"
-                  :metaData="tableMetadata"
+                  v-if="jobHandler?.metaData.value"
+                  :metaData="jobHandler.metaData.value"
                   />
               </AccordionContent>
         </AccordionPanel>

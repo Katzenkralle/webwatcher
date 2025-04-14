@@ -116,8 +116,6 @@ export const jobUserDisplayConfig = (id: number) => {
             }
         `, {id: id, filterConfig: newFilterConfig, graphConfig: newGraphConfig}).then((response) => {
             if (response.providedTypes[0].type !== "Message" || response.data.userJobConfig.status !== "SUCCESS") {
-
-                console.log(response);
                 throw response;        
             }
         }).catch((error) => {

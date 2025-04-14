@@ -1,5 +1,5 @@
 import {ref, computed, type Ref, type ComputedRef} from 'vue';
-import { useJobData, type jobEnty, type TableLayout, DUMMY_JOB_ENTRY } from '../api/JobAPI';
+import { useJobData, type jobEnty, type TableLayout, DUMMY_JOB_ENTRY, type  TableMetaData, getJobMetaData } from '../api/JobAPI';
 import { reportError } from '@/composable/api/QueryHandler';
 import type { IterationContext } from './FilterGroups';
 import { useLoadingAnimation, useStatusMessage } from '../core/AppState';
@@ -13,7 +13,6 @@ remote: referse to data on the server
 */
 
 let globalJobData: Record<number, Ref<Record<number, jobEnty>>> = {}
-export let handlerRefs: Record<number, Ref<jobEnty[]>> = {}
 
 export interface flattendJobEnty {
     [key: string]: any;
@@ -58,6 +57,7 @@ export const useJobDataHandler = (
     hiddenColumns: Ref<string[]> = ref([]),
     sortByString: ComputedRef<sortByString> | undefined = undefined, // [key, [columns_NOT_to_sort_by]]
     filters: IterationContext|undefined = undefined,
+    staticContextSchema: ComputedRef<Record<string,string>|undefined>
     ) => {
     if (globalJobData[jobId] === undefined) {
         globalJobData[jobId] = ref([]);
@@ -114,7 +114,6 @@ export const useJobDataHandler = (
             }
             return 0;
         }()
-        console.log("Rows to fetch: ", rowsToFetch, options);
         if (rowsToFetch === 0) {
             return rowsToFetch;
         }
@@ -184,10 +183,13 @@ export const useJobDataHandler = (
             }).filter((layout): layout is TableLayout => layout !== null)
         ];
           
-        const contextColNames: TableLayout[] = Object.values(localJobData.value).flatMap((row: jobEnty) => 
+        const contextColNames: TableLayout[] = [...Object.values(localJobData.value).flatMap((row: jobEnty) => 
                 Object.entries(row.context)
                 .map(([key, value]) => ({ key, type: typeof value }))
-            )
+            ), ...(staticContextSchema.value 
+                ?  Object.entries(staticContextSchema.value)
+                    .map(([key, value]) => ({ key, type: value }))
+                : [])]
             .reduce((acc: TableLayout[], curr: TableLayout) => {
                 const existing = acc.find((layout) => layout.key === curr.key);
                 if (!existing) {
@@ -334,6 +336,7 @@ export const useJobDataHandler = (
         highlightSubstring,
         computeLayout,
         computeLayoutUnfiltered,
+        hasStaticContext: computed(() => staticContextSchema.value !== undefined && Object.keys(staticContextSchema.value).length > 0),
         computedAllFetched: computed(() => allFetched.value),
         localJobData,
         filters,
@@ -354,12 +357,19 @@ export const useJobUiCreator = (jobId: number) => {
 
     const mainDataTable = ref<any>(null);
     const filterContext = useFilterIterationContext();
+    
+    const metaData = ref<TableMetaData|undefined>(undefined);
+
+    getJobMetaData(jobId).then((data) => {
+        metaData.value = data;
+    })
 
     const jobDataHandler = useJobDataHandler(jobId,
         computed(() => fetchAmount.value+1),
         hiddenColumns,
         computed(() => sortByString.value),
-        filterContext);
+        filterContext,
+        computed(() => metaData.value?.expectedReturnSchema));
     
     const unsetSortByString = () => {
         sortByString.value.key = "";
@@ -376,6 +386,7 @@ export const useJobUiCreator = (jobId: number) => {
         fetchAmount,
         intenalColums,
         page,
+        metaData,
         sortByString,
         filterContext,
         unsetSortByString,

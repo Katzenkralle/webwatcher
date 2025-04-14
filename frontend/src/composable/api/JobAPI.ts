@@ -265,7 +265,6 @@ export const useJobData = (jobId: number) => {
                         result: Math.random() > 0.5 ? "SUCCESS" : "FAILURE",
                         scriptFailure: Math.random() > 0.5,
                         context: {
-                            "some": Math.random().toString(36)+ " " + Math.random().toString(36),
                             "aNumber": Math.floor(Math.random() * 100)
                         }
                     };
@@ -282,7 +281,6 @@ export const useJobData = (jobId: number) => {
                     result: "CATS_AND_DOGS",
                     scriptFailure: false,
                     context: {
-                        "some": 0,
                         "aNumber": 1
                     }
                 }

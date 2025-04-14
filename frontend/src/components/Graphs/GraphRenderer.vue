@@ -24,7 +24,6 @@ interface ChartData {
     datasets: ChartDatasets[];
 }
 const getRowRange = async(baseRange: number[]):  Promise<number[]> => {
-    console.log(props.graphData.options)
     await props.fetchSpecificData({
         id: !props.graphData.options?.pullAllRows || props.graphData.options?.pullXNewRows !== undefined 
             ? baseRange : undefined,
@@ -109,11 +108,9 @@ const computedGraphInputData = computed(async(): Promise<ChartData> => {
         }
     }
     if (props.graphData.data.source === "rowById"){
-        console.log('rowById')
         return getDataRowBased(props.graphData.label.includes, props.graphData.data.includes)
 
     } else if (props.graphData.data.source === "colByName"){
-        console.log('colByName')
         return getDataColBased(props.graphData.data.includes,  props.graphData.label.includes)
     }
     useStatusMessage().newStatusMessage(

@@ -33,8 +33,6 @@ def generate_token(data: dict):
     return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
 
 async def retrieve_oauth_token(request: Request) -> str:
-    # 
-    # 
     token = request.headers.get("Authorization", "")
     if not token and "oauth2" in request.cookies:
         token = request.cookies.get("oauth2")
