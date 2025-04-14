@@ -1,6 +1,7 @@
 import pymongo
 from webw_serv.utility import DEFAULT_LOGGER as logger
 import logging
+from enum import Enum
 
 class MongoDbHandler:
     def __init__(self, mongo_config):
@@ -20,7 +21,7 @@ class MongoDbHandler:
             self.__db.create_collection(collection_name)
         return
     
-    def check_if_job_exists(self, jobId: int) -> bool:
+    async def check_if_job_exists(self, jobId: int) -> bool:
         """
         Check if a job exists in the database
         """
@@ -30,22 +31,40 @@ class MongoDbHandler:
         else:
             return False
 
-    def register_job(self, jobId: int):
+    async def register_job(self, jobId: int):
         """
         Register a job in the database
         """
         # Check if the jobId already exists
-        if not self.check_if_job_exists(jobId):
+        if await self.check_if_job_exists(jobId):
             raise ValueError(f"Job {jobId} already exists")
 
         # Create the job
         logger.debug(f"MONGO: Creating job {jobId}")
-        self.__db.jobs.insert_one({"jobId": jobId, "entries": []})
+        self.__db.job_regestry.insert_one({"jobId": jobId})
+        return
+    
+    async def delete_job(self, jobId: int):
+        """
+        Delete a job from the database
+        """
+        # Check if the jobId exists
+        if not await self.check_if_job_exists(jobId):
+            raise ValueError(f"Job {jobId} not registered")
+
+        # Delete the job
+        logger.debug(f"MONGO: Deleting job {jobId}")
+        self.__db.job_data.delete_many({"jobId": jobId})
+        self.__db.job_regestry.delete_one({"jobId": jobId})
         return
         
-
+    @staticmethod
+    def phrase_data(data: dict) -> dict:
+        if data.get("result", None) and isinstance(data["result"], Enum):
+            data["result"] = data["result"].value
+        return data
     
-    def create_or_modify_job_entry(self, jobId: int, entryId:  int|None, data: dict):
+    async def create_or_modify_job_entry(self, jobId: int, entryId:  int|None, data: dict):
         """
         Note: We need to use a structure like this
         {
@@ -56,15 +75,19 @@ class MongoDbHandler:
         for ideal performanc, mongodb has a maximum of 16MB per document,
         so each entry should be a single document
         """
+        data = self.phrase_data(data)
         # Check if the jobId exists
         if not self.check_if_job_exists(jobId):
             raise ValueError(f"Job {jobId} not registered")
 
+        entry = self.__db.job_data.find_one({"jobId": jobId, "entryId": entryId})
+
         if entryId is None:
             # Generate a new entryId
             entryId = self.__db.job_data.count_documents({"jobId": jobId}) + 1
+        elif not entry:
+            raise ValueError(f"Tried to update inexistent entry {entryId} in job {jobId}")
 
-        entry = self.__db.job_data.find_one({"jobId": jobId, "entryId": entryId})
         if entry:
             # Update the entry
             logger.debug(f"MONGO: Updating entry {entryId} in job {jobId}")
@@ -73,10 +96,24 @@ class MongoDbHandler:
             # Create the entry
             logger.debug(f"MONGO: Creating entry {entryId} in job {jobId}")
             self.__db.job_data.insert_one({"jobId": jobId, "entryId": entryId, **data})
-        
-        return
+        return {"call_id": entryId, **data}
 
+    async def delete_job_entry(self, jobId: int, entryIds: list[int]):
+        """
+        Delete multiple job entries from the database.
+        """
+        # Check if the jobId exists
+        if not await self.check_if_job_exists(jobId):
+            raise ValueError(f"Job {jobId} not registered")
 
+        # Delete the entries
+        logger.debug(f"MONGO: Deleting entries {entryIds} in job {jobId}")
+        result = self.__db.job_data.delete_many({
+            "jobId": jobId,
+            "entryId": {"$in": entryIds}
+        })
+        return result.deleted_count
+    
     def close(self):
         self.__db.client.close()
         logger.debug("MONGO: Closed connection")
