@@ -2,17 +2,26 @@ import strawberry
 from enum import Enum
 from typing import Annotated, Union, Optional
 
-from webw_serv.db_handler.maria_schemas import DbUser
+from webw_serv.db_handler.maria_schemas import DbUser, DbSession, DbUserDisplayConfig
 
 from webw_serv.utility.toolbox import extend_enum
 
-class BaseResultType(Enum):
+class MessageType(Enum):
+    SECONDARY = "secondary"
     SUCCESS = "success"
+    INFO = "info"
+    WARN = "warn"
+    HELP = "help"
+    DANGER = "danger" 
+    CONTRAST = "contrast"
     AUTH_ERROR = "auth_error"
+
+
+@extend_enum(MessageType)
+class BaseResultType(Enum):
     PERMISSION_ERROR = "permission_error"
     FAILURE = "failure"
     NETWORK_ERROR = "network_error"
-    WARNING = "warning"
     OK = "ok"
     NOT_OK = "not_ok"
     UNHEALTHY = "unhealthy"
@@ -44,21 +53,32 @@ class ResultType(Enum):
     pass
 
 # Base types
-@strawberry.type
-class User:
-    username: str
-    password: Optional[str]
-    is_admin: bool
+@strawberry.type()
+class User(DbUser):
+    password: strawberry.Private[str]
 
 @strawberry.type()
-class UserJobDisplayConfig:
-    filter: str # JSON
-    group: str # JSON
+class UserList():
+    users: list[User]
+
+@strawberry.type
+class Session(DbSession):
+    # This is a private field, it will not be exposed in the schema
+    session_id: strawberry.Private[str]
+
+@strawberry.type
+class SessionList():
+    sessions: list[Session]
+
+@strawberry.type()
+class UserDisplayConfig(DbUserDisplayConfig):
+    graph_config: Optional[JsonStr]
+    filter_config: Optional[JsonStr]
 
 @strawberry.type
 class Message:
     message: str
-    status: ResultType
+    status: MessageType
 
 @strawberry.type
 class ScriptContent:
@@ -104,7 +124,13 @@ class JobEntry:
     runtime: int
     result: ResultType
     script_failure: bool
-    context: JsonStr
+    context: Optional[JsonStr] = None
 
 
-UserResult = Annotated[Union[DbUser, Message], strawberry.union("UserResult")]
+@strawberry.input
+class JobEntyInput(JobEntry):
+    call_id: Optional[int] = None
+
+UserResult = Annotated[Union[User, Message], strawberry.union("UserResult")]
+AllUsersResult = Annotated[Union[UserList, Message], strawberry.union("AllUsersResult")]
+SessionResult = Annotated[Union[SessionList, Message], strawberry.union("SessionResult")] 

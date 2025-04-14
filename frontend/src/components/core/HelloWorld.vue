@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, type Ref } from "vue";
 import Button from "primevue/button"
-import {useAuth, requireLogin} from "@/composable/api/Auth";
+import {logout} from "@/composable/api/Auth";
+import {getUser} from "@/composable/api/User";
 import {useStatusMessage, useLoadingAnimation} from "@/composable/core/AppState";
 import { useFilterIterationContext, type IterationContext, type Group } from "@/composable/jobs/FilterGroups";
 
@@ -13,7 +14,7 @@ import PopupDialog from "../reusables/PopupDialog.vue";
 const date = ref(new Date().toLocaleString());
 const user = ref<any>(null);
 
-useAuth().getUser().then((data) => {
+getUser().then((data) => {
     user.value = data;
 });
 
@@ -179,12 +180,11 @@ const testString = `{
     />
     <Button label="Logout"
             @click="() => {
-                requireLogin();
+                logout()
             }"
     />
     <Button label="Open Dialog"
             @click="() => {
-                console.log(popupRef);
                 popupRef.openDialog();
             }"
     />

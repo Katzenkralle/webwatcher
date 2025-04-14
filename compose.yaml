@@ -40,7 +40,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - ROOT_PASSWD=${ROOT_PASSWD:-} # default value is empty
       target: dev
+    stop_grace_period: 10s
     image: katzenkralle/webwatcher:dev 
     profiles: ["dev"]
     networks:

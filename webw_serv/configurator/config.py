@@ -10,6 +10,7 @@ class App:
     log_level: str = "info"
     default_admin_username: str = ""
     default_admin_hash: str = ""
+    disable_script_upload: bool = False   
 
 @dataclass
 class SqlConnection:

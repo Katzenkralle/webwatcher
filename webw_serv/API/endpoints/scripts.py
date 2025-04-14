@@ -8,15 +8,19 @@ from webw_serv import CONFIG
 
 from ..gql_base_types import PaginationInput, ResultType, JsonStr
 from ..endpoints.auth import admin_guard, user_guard
-from ..gql_base_types import ScriptValidationResult, Parameter, Message, B64Str
+from ..gql_base_types import ScriptValidationResult, Parameter, Message, MessageType, B64Str
 from ..gql_types import script_content_result, jobs_metadata_result, jobs_settings_result, jobs_entry_result, \
     user_job_config_result, job_metadata_result, job_full_info_result, job_entry_result
+from webw_serv.configurator.config import Config
 
 @strawberry.type
 class Mutation:
     @strawberry.mutation
+    @admin_guard()
     @admin_guard(use_http_exception=True)
     async def preupload_script(self, info: strawberry.Info, file: B64Str, name: Optional[str]) -> ScriptValidationResult:
+        if Config().app.disable_script_upload:
+            return Message(message="Script upload is disabled", status=MessageType.WARN)
         path = CONFIG.SCRIPTS_TEMP_PATH + info.context["user"].username + CONFIG.SCRIPTS_TEMP_SUFFIX
         b64_to_file(file, path)
         module_path = CONFIG.MODULE_TEMP_PREFIX + info.context["user"].username + CONFIG.MODULE_TEMP_SUFFIX
@@ -76,11 +80,6 @@ class Mutation:
     @strawberry.mutation
     @admin_guard()
     async def delete_entry_in_job(self, id_: int = strawberry.argument(name="id")) -> job_entry_result:
-        pass
-
-    @strawberry.mutation
-    @admin_guard()
-    async def user_job_display_config(self, group: JsonStr, filter_: Optional[JsonStr] = strawberry.argument(name="filter")) -> Message:
         pass
 
 

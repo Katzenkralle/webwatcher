@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { globalTableMetaData, fetchAllJobMetaData, deleteJob, type TableMetaData } from "@/composable/api/JobAPI";
+import { globalTableMetaData, getAllJobMetaData, deleteJob, type TableMetaData } from "@/composable/api/JobAPI";
 import Card from 'primevue/card';
 import Button from "primevue/button";
 import AutoComplete from 'primevue/autocomplete';
@@ -15,9 +15,7 @@ import { useStatusMessage } from "@/composable/core/AppState";
 const suggestedItems = ref<TableMetaData[]>([]);
 
 onMounted(async () => {
-  let a = await fetchAllJobMetaData();
-  console.log(a);
-  suggestedItems.value = a
+  suggestedItems.value = await getAllJobMetaData();
 });
 
 const recomputeSugestions = (search: string) => {
@@ -77,7 +75,7 @@ const elementColor = computed((): string[] => {
       <div class="flex flex-wrap justify-center">
         <template v-for="element, index in suggestedItems" :key="element.id">
           <Card class="w-83 min-h-95 m-4 border-2 border-info 
-            hover:border-app transition-colors duration-300">
+            hover:border-app color-change-trans">
             <template #title class="text-center">
               <h3 class="underline ">{{ element.name }}</h3>
             </template>

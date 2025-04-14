@@ -64,14 +64,11 @@ const getAvailableStrings = (async () => {
 
 
 const refreshJobMetaData = (id: string|string[]|undefined) => {
-    console.log('refreshJobMetaData', id);
     if (!id) {
             isEdit.value = false;
-            console.log('isEdit', isEdit.value);
             return;
     }
     let jobId: number =  Number(id);
-    console.log('jobId', jobId);
     getJobMetaData(Number(id)).then(async (data: TableMetaData) => { 
             jobMetaData.value = {...data, 
                 parameters: await newParameterKvLayout(data.script)
@@ -104,8 +101,8 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
                 <NavButtons />
                 <h1 v-if="!isEdit">Create Job</h1>
                 <h1 v-else>Edit Job</h1>
-                <div class="input-box !flex-row w-min items-center justify-self-end">
-                    <label for="enableToggle" class="!mb-0 mr-2">Enabled</label>
+                <div class="input-box !flex-row w-min items-center">
+                    <label for="enableToggle" class="!mb-0 mr-2 ml-auto">Enabled</label>
                     <InputSwitch id="enableToggle" v-model="jobMetaData.enabled" />
                 </div>
             </div>

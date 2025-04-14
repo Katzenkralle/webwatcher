@@ -15,38 +15,45 @@ export type ErrorTypes = "SUCCESS" |
 
 export interface GQLResponse {
     data: { [key: string]: any };
-    keys: string[];
+    providedTypes: {type: string, field: string}[];
     errors: any[];
 }
 export const GQL_ENDPOINT = '/gql'
 
-export function queryGql(query: string): Promise<GQLResponse> {
+export function queryGql(query: string, variables:  Record<string, any>|undefined = undefined): Promise<GQLResponse> {
     return fetch(GQL_ENDPOINT, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ query: query }),
+        body: JSON.stringify({ 
+            query: query,
+            variables: variables ?? {}
+            }),
     }).then(async response => {
         return response.json().then(content => {
             if (!(content.data)){
-                return { data: {}, keys: [], errors: content.errors } as GQLResponse;
+                throw content.errors
             }
             let data = content.data;
-            let keys = Object.keys(data);
             let errors = content.errors;
-            for (let key of keys) {
+            let providedTypes: {type: string, field: string}[] = [];
+            for (let key of Object.keys(data)) {
                 let __typename = data[key].__typename;
+                providedTypes.push({type: __typename, field: key});
                 delete data[key].__typename;
-                if (__typename === "ErrorMessage" && data[key].status === "AUTH_ERROR") {
+                if (__typename === "Message" && data[key].status === "AUTH_ERROR") {
+                    data[key].status = "danger";
                     requireLogin();
                 }
             }
-            return { data: data, keys, errors } as GQLResponse;
+            return { data: data, providedTypes: providedTypes, errors } as GQLResponse;
         });
     }).catch((error) => {
-        console.error(error);
-        return { data: {}, keys: [], errors: [error] } as GQLResponse;
+        if (!(error instanceof Array)) {
+            error = [error];
+        }
+        return { data: {}, providedTypes: [{type: "gqlAPIError", field: ''}], errors: error } as GQLResponse;
     });
 }
 
@@ -59,14 +66,15 @@ export function reportError(gql: GQLResponse|Error, includeDataErrors: boolean =
         statusMessage.fireBatch();
         return;
     }
-
-    for (let error of gql.errors) {
-        statusMessage.newStatusMessage(error.message, "danger");
+    if (gql.errors){
+        for (let error of gql.errors) {
+            statusMessage.newStatusMessage(error.message, "danger");
+        }
     }
     if (includeDataErrors){
-        for (let key of gql.keys) {
-            if (gql.data[key] === "ErrorMessage") {
-                statusMessage.newStatusMessage(gql.data[key].message, "danger");
+        for (let key of gql.providedTypes) {
+            if (key.type === "Message") {
+                statusMessage.newStatusMessage(gql.data[key.field].message, gql.data[key.field].status);
             }
         }
     }

@@ -1,21 +1,26 @@
 <script setup lang="ts">
-import { useJobUiCreator, type HighlightSubstring } from "@/composable/jobs/JobDataHandler";
+import { useJobUiCreator, type flattendJobEnty, type HighlightSubstring } from "@/composable/jobs/JobDataHandler";
 import { useStatusMessage } from "@/composable/core/AppState";
 
 import DataTable from 'primevue/datatable';
+import Button from 'primevue/button';
 import Column from 'primevue/column';
 import SplitButton from "primevue/splitbutton";
 import ColumnGroup from 'primevue/columngroup';
+import Checkbox from "primevue/checkbox";
 
 import Row from 'primevue/row';
-import { ref, onMounted, onUnmounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed, type Ref, type Reactive, watch } from "vue";
 import type { MenuItem } from "primevue/menuitem";
 
 import EditEntryPopup from "./EditEntryPopup.vue";
+import  {type GraphInput} from "@/composable/jobs/GraphDataHandler";
+
 
 
 const props = defineProps<{
   jobHandler: ReturnType<typeof useJobUiCreator>
+  graphInputHandler?: Reactive<GraphInput>
 }>();
 
 const computedTableSize = ref<string>("85vh");
@@ -59,7 +64,7 @@ onUnmounted(() => {
 
 
 
-const entryEditMenu = (forId: number | [number, number]): MenuItem[] => {
+const entryEditMenu = (forId: number | number[]): MenuItem[] => {
   return [
     {
       label: 'Edit',
@@ -110,6 +115,64 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
   }
   return segments;
 }
+
+
+
+const computedVisibleData = computed((): flattendJobEnty => {
+  if (!props.graphInputHandler?.rows.enabled ||  !props.jobHandler.mainDataTable.value){
+    return [];
+  }
+  return props.jobHandler.mainDataTable.value.processedData.slice(
+      props.jobHandler.page.value * props.jobHandler.fetchAmount.value,
+      (props.jobHandler.page.value + 1) * props.jobHandler.fetchAmount.value
+    )
+});
+
+const checkAllVisibleRows = () => {
+  if (!props.graphInputHandler?.rows.enabled) {
+    return;
+  }
+  
+  const { rows } = props.graphInputHandler;
+  const maxSelection = rows.maxSelection || Infinity;
+  const visibleEntries = computedVisibleData.value;
+  const selectedVisibleIds = visibleEntries
+    .filter((entry: flattendJobEnty) => rows.selected.includes(entry.id))
+    .map((entry: flattendJobEnty) => entry.id);
+  
+  // If all visible rows are already selected, deselect them
+  if (selectedVisibleIds.length === Math.min(maxSelection, visibleEntries.length)) {
+    // Remove all visible IDs from selection
+    rows.selected = rows.selected.filter(id => 
+      !visibleEntries.some((entry: flattendJobEnty) => entry.id === id));
+  } else {
+    // Add visible rows up to maxSelection limit
+    visibleEntries.forEach((entry: flattendJobEnty) => {
+      if (rows.selected.length < maxSelection && !rows.selected.includes(entry.id)) {
+        rows.selected =  [...rows.selected, entry.id] // using .push() would not trigger reactivity
+      }
+    });
+  }
+}
+
+watch(
+  () => computedVisibleData.value, 
+  (newVisibleData) => {
+    if(!props.graphInputHandler?.rows.enabled){
+      return;
+    }
+    // We ree-seelect selected entys to follow possible reordering
+    const oldSelectedRows = props.graphInputHandler.rows.selected;
+    props.graphInputHandler.rows.selected =  newVisibleData.map((entry: flattendJobEnty) => {
+      if (oldSelectedRows.includes(entry.id)){
+        return entry.id;
+      }
+    }).filter((entry: number | undefined) => entry !== undefined);
+  },
+  { immediate: true }
+)
+
+
 </script>
 
 <template>
@@ -118,6 +181,8 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
        <DataTable
         :ref="props.jobHandler.mainDataTable"
         :value="props.jobHandler.jobDataHandler.computeDisplayedData.value"
+        :id="`table${props.jobHandler.jobDataHandler.jobId}`"
+        dataKey="id"
         class="bg-panel-h main-table"
         removableSort
         sortMode="multiple"
@@ -157,7 +222,7 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
                 class="top-header border-r-2 h-min"
               />
               <Column
-                :colspan="1"
+                :colspan="2"
                 class="top-header h-min"
                />
             </Row>
@@ -169,7 +234,24 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
                     :header="`${col.key} (${col.type})`"
                     sortable
                     class="border-r-2 border-b-0  border-crust border-dashed"
-                    />
+                  >
+                    <template #header>
+                      <Checkbox
+                        v-if="props.graphInputHandler?.cols.enabled"
+                        :invalid="props.graphInputHandler.cols.invalid"
+                        :disabled="(!props.graphInputHandler.cols.allowedTypes.includes(col.type)
+                          && props.graphInputHandler.cols.allowedTypes.length !== 0)
+                          || (props.graphInputHandler.cols.selected.length
+                          >= props.graphInputHandler.cols.maxSelection
+                          && props.graphInputHandler.cols.maxSelection !== 0
+                          && !props.graphInputHandler.cols.selected.includes(col.key))"
+                           v-model:model-value="props.graphInputHandler.cols.selected"
+                        :inputId="`cb_${col.key}`"
+                        name="cb_col"
+                        :value="col.key"
+                        />
+                    </template>
+                  </Column>
               </template>
               <Column
                 field="vue_edit"
@@ -180,6 +262,23 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
                 'columnTitle': 'mx-auto'
               }"
               />
+              <Column>
+                <template #header>
+                  <Checkbox
+                    v-if="props.graphInputHandler?.rows.enabled"
+                    :invalid="props.graphInputHandler?.rows.invalid"
+                    name="cb_row_all"
+                    @click="() => checkAllVisibleRows()"
+                    :binary="true"
+                    :default-value="computed(()  => computedVisibleData.filter((entry: flattendJobEnty) =>
+                        props.graphInputHandler?.rows.selected.includes(entry.id)
+                    ).length == Math.min((props.graphInputHandler?.rows.maxSelection || 0) === 0 
+                      ? Infinity 
+                      : props.graphInputHandler?.rows.maxSelection as number, computedVisibleData.length))"
+                    readonly
+                  />
+                </template>
+              </Column>
             </Row>
           </ColumnGroup>
 
@@ -206,9 +305,9 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
             <template #body="slotProps">
                 <EditEntryPopup
                   v-if="openEditor.id === slotProps.data.id"
-                  :can-modify-schema="true"
+                  :can-modify-schema="!jobHandler.jobDataHandler.hasStaticContext.value"
                   :internal-columns="jobHandler.intenalColums"
-                  :layout="Object.assign({}, ...jobHandler.jobDataHandler.computeLayout.value
+                  :layout="Object.assign({}, ...jobHandler.jobDataHandler.computeLayoutUnfiltered.value
                     .map((col) => ({[col.key]: col.type})))"
                   :readonly="openEditor.readonly"
                   :entry-values="slotProps.data"
@@ -226,6 +325,45 @@ const getHighlightedSegments = (text: string, highlighted: HighlightSubstring[])
               </div>
             </template>
           </Column>
+          <Column>
+            <template #body="slotProps">
+              <Checkbox
+                v-if="props.graphInputHandler?.rows.enabled"
+                :invalid="props.graphInputHandler.rows.invalid"
+                :disabled="props.graphInputHandler.rows.selected.length
+                          >= props.graphInputHandler.rows.maxSelection
+                          && props.graphInputHandler.rows.maxSelection !== 0
+                          && !props.graphInputHandler.rows.selected.includes(slotProps.data.id)"
+                v-model:modelValue="props.graphInputHandler.rows.selected"
+                :id="`cb_${slotProps.data.id}`"
+                :value="slotProps.data.id"
+              />
+            </template>
+          </Column>
+
+        <template #paginatorstart>
+          <p></p>
+        </template>
+
+        <template #paginatorend>
+          <EditEntryPopup
+                  v-if="openEditor.id === -1"
+                  :can-modify-schema="!jobHandler.jobDataHandler.hasStaticContext.value"
+                  :internal-columns="jobHandler.intenalColums"
+                  :layout="Object.assign({}, ...jobHandler.jobDataHandler.computeLayoutUnfiltered.value
+                    .map((col) => ({[col.key]: col.type})))"
+                  :readonly="openEditor.readonly"
+                  :entry-values="{}"
+                  :new-entry="true"
+                  @update="(obj) => {console.debug(obj, 'ToDo: send me to the webw_serv'); openEditor.id = undefined}"
+                  @close="() =>  openEditor.id = undefined"
+                  />
+          <Button 
+            icon="pi pi-pen-to-square"
+            label="Add entry"
+            @click="() => openEditor = {id: -1, readonly: false}"
+            />
+        </template>
       </DataTable>
 </template>
 

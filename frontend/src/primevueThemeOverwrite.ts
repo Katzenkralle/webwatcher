@@ -1,0 +1,352 @@
+import Lara from "@primevue/themes/lara";
+import { definePreset } from "@primevue/themes";
+
+export const MainTheme = definePreset(Lara, {
+    primitive: {
+        emerald: {
+            400: 'var(--color-app-d)',
+            500: 'var(--color-app)',
+            600: 'var(--color-app-h)',
+            50: 'var(--color-app-h)',
+            100: 'var(--color-app-h)',
+            200: 'var(--color-app-h)',
+            300: 'var(--color-app-h)',
+            700: 'var(--color-app-d)',
+            800: 'var(--color-app-d)',
+            900: 'var(--color-app-d)',
+            950: 'var(--color-app-d)'
+        },
+        green: {
+            400: 'var(--color-success-d)',
+            500: 'var(--color-success)',
+            600: 'var(--color-success-h)',
+            50: 'var(--color-success-h)',
+            100: 'var(--color-success-h)',
+            200: 'var(--color-success-h)',
+            300: 'var(--color-success-h)',
+            700: 'var(--color-success-d)',
+            800: 'var(--color-success-d)',
+            900: 'var(--color-success-d)',
+            950: 'var(--color-success-d)'
+        },
+        lime: {
+            400: 'var(--color-success-d)',
+            500: 'var(--color-success)',
+            600: 'var(--color-success-h)',
+            50: 'var(--color-success-h)',
+            100: 'var(--color-success-h)',
+            200: 'var(--color-success-h)',
+            300: 'var(--color-success-h)',
+            700: 'var(--color-success-d)',
+            800: 'var(--color-success-d)',
+            900: 'var(--color-success-d)',
+            950: 'var(--color-success-d)'
+        },
+
+        yellow: {
+            400: 'var(--color-warning-d)',
+            500: 'var(--color-warning)',
+            600: 'var(--color-warning-h)',
+            50: 'var(--color-warning-h)',
+            100: 'var(--color-warning-h)',
+            200: 'var(--color-warning-h)',
+            300: 'var(--color-warning-h)',
+            700: 'var(--color-warning-d)',
+            800: 'var(--color-warning-d)',
+            900: 'var(--color-warning-d)',
+            950: 'var(--color-warning-d)'
+        },
+        amber: {
+            400: 'var(--color-deep-d)',
+            500: 'var(--color-deep)',
+            600: 'var(--color-deep-h)',
+            50: 'var(--color-deep-h)',
+            100: 'var(--color-deep-h)',
+            200: 'var(--color-deep-h)',
+            300: 'var(--color-deep-h)',
+            700: 'var(--color-deep-d)',
+            800: 'var(--color-deep-d)',
+            900: 'var(--color-deep-d)',
+            950: 'var(--color-deep-d)'
+        },
+        orange: {
+            400: 'var(--color-deep-d)',
+            500: 'var(--color-deep)',
+            600: 'var(--color-deep-h)',
+            50: 'var(--color-deep-h)',
+            100: 'var(--color-deep-h)',
+            200: 'var(--color-deep-h)',
+            300: 'var(--color-deep-h)',
+            700: 'var(--color-deep-d)',
+            800: 'var(--color-deep-d)',
+            900: 'var(--color-deep-d)',
+            950: 'var(--color-deep-d)'
+        },
+        red: {
+            400: 'var(--color-error-d)',
+            500: 'var(--color-error)',
+            600: 'var(--color-error-h)',
+            50: 'var(--color-error-h)',
+            100: 'var(--color-error-h)',
+            200: 'var(--color-error-h)',
+            300: 'var(--color-error-h)',
+            700: 'var(--color-error-d)',
+            800: 'var(--color-error-d)',
+            900: 'var(--color-error-d)',
+            950: 'var(--color-error-d)'
+        },
+        rose: {
+            400: 'var(--color-error-d)',
+            500: 'var(--color-error)',
+            600: 'var(--color-error-h)',
+            50: 'var(--color-error-h)',
+            100: 'var(--color-error-h)',
+            200: 'var(--color-error-h)',
+            300: 'var(--color-error-h)',
+            700: 'var(--color-error-d)',
+            800: 'var(--color-error-d)',
+            900: 'var(--color-error-d)',
+            950: 'var(--color-error-d)'
+        },
+
+        fuchsia: {
+            400: 'var(--color-fun-d)',
+            500: 'var(--color-fun)',
+            600: 'var(--color-fun-h)',
+            50: 'var(--color-fun-h)',
+            100: 'var(--color-fun-h)',
+            200: 'var(--color-fun-h)',
+            300: 'var(--color-fun-h)',
+            700: 'var(--color-fun-d)',
+            800: 'var(--color-fun-d)',
+            900: 'var(--color-fun-d)',
+            950: 'var(--color-fun-d)'
+        },
+        pink: {
+            400: 'var(--color-fun-d)',
+            500: 'var(--color-fun)',
+            600: 'var(--color-fun-h)',
+            50: 'var(--color-fun-h)',
+            100: 'var(--color-fun-h)',
+            200: 'var(--color-fun-h)',
+            300: 'var(--color-fun-h)',
+            700: 'var(--color-fun-d)',
+            800: 'var(--color-fun-d)',
+            900: 'var(--color-fun-d)',
+            950: 'var(--color-fun-d)'
+        },
+
+        blue: {
+            400: 'var(--color-info-d)',
+            500: 'var(--color-info)',
+            600: 'var(--color-info-h)',
+            50: 'var(--color-info-h)',
+            100: 'var(--color-info-h)',
+            200: 'var(--color-info-h)',
+            300: 'var(--color-info-h)',
+            700: 'var(--color-info-d)',
+            800: 'var(--color-info-d)',
+            900: 'var(--color-info-d)',
+            950: 'var(--color-info-d)'
+        },
+        sky: {
+            400: 'var(--color-info-d)',
+            500: 'var(--color-info)',
+            600: 'var(--color-info-h)',
+            50: 'var(--color-info-h)',
+            100: 'var(--color-info-h)',
+            200: 'var(--color-info-h)',
+            300: 'var(--color-info-h)',
+            700: 'var(--color-info-d)',
+            800: 'var(--color-info-d)',
+            900: 'var(--color-info-d)',
+            950: 'var(--color-info-d)'
+        },
+
+
+        purple: {
+            400: 'var(--color-special-d)',
+            500: 'var(--color-special)',
+            600: 'var(--color-special-h)',
+            50: 'var(--color-special-h)',
+            100: 'var(--color-special-h)',
+            200: 'var(--color-special-h)',
+            300: 'var(--color-special-h)',
+            700: 'var(--color-special-d)',
+            800: 'var(--color-special-d)',
+            900: 'var(--color-special-d)',
+            950: 'var(--color-special-d)'
+        },
+        indigo: {
+            400: 'var(--color-special-d)',
+            500: 'var(--color-special)',
+            600: 'var(--color-special-h)',
+            50: 'var(--color-special-h)',
+            100: 'var(--color-special-h)',
+            200: 'var(--color-special-h)',
+            300: 'var(--color-special-h)',
+            700: 'var(--color-special-d)',
+            800: 'var(--color-special-d)',
+            900: 'var(--color-special-d)',
+            950: 'var(--color-special-d)'
+        },
+        violet: {
+            400: 'var(--color-special-d)',
+            500: 'var(--color-special)',
+            600: 'var(--color-special-h)',
+            50: 'var(--color-special-h)',
+            100: 'var(--color-special-h)',
+            200: 'var(--color-special-h)',
+            300: 'var(--color-special-h)',
+            700: 'var(--color-special-d)',
+            800: 'var(--color-special-d)',
+            900: 'var(--color-special-d)',
+            950: 'var(--color-special-d)'
+        },
+        teal: {
+            400: 'var(--color-app-d)',
+            500: 'var(--color-app)',
+            600: 'var(--color-app-h)',
+            50: 'var(--color-app-h)',
+            100: 'var(--color-app-h)',
+            200: 'var(--color-app-h)',
+            300: 'var(--color-app-h)',
+            700: 'var(--color-app-d)',
+            800: 'var(--color-app-d)',
+            900: 'var(--color-app-d)',
+            950: 'var(--color-app-d)'
+        },
+        cyan: {
+            400: 'var(--color-app-d)',
+            500: 'var(--color-app)',
+            600: 'var(--color-app-h)',
+            50: 'var(--color-app-h)',
+            100: 'var(--color-app-h)',
+            200: 'var(--color-app-h)',
+            300: 'var(--color-app-h)',
+            700: 'var(--color-app-d)',
+            800: 'var(--color-app-d)',
+            900: 'var(--color-app-d)',
+            950: 'var(--color-app-d)'
+        },
+        stone: {
+            400: 'var(--color-base)',
+            500: 'var(--color-base-h)', 
+            300: 'var(--color-base-d)',
+            600: 'var(--color-crust-h)',
+            700: 'var(--color-crust)',
+            800: 'var(--color-crust-d)',
+            50: 'var(--color-text-h)',
+            100: 'var(--color-text)',
+            200: 'var(--color-text-d)',
+            900: 'var(--color-crust-d)',
+            950: 'var(--color-crust-d)'
+        },
+        gray: {
+            400: 'var(--color-h-panel)',
+            500: 'var(--color-h-panel-h)',
+            300: 'var(--color-h-panel-d)',
+            50: 'var(--color-h-text-h)',
+            100: 'var(--color-h-text)',
+            200: 'var(--color-h-text-d)',
+            600: 'var(--color-panel-h)',
+            700: 'var(--color-panel)',
+            800: 'var(--color-panel-d)',
+            900: 'var(--color-crust)',
+            950: 'var(--color-crust-d)'
+        },
+        zinc: {
+            400: 'var(--color-h-panel)',
+            500: 'var(--color-h-panel-h)',
+            300: 'var(--color-h-panel-d)',
+            50: 'var(--color-h-text-h)',
+            100: 'var(--color-h-text)',
+            200: 'var(--color-h-text-d)',
+            600: 'var(--color-panel-h)',
+            700: 'var(--color-panel)',
+            800: 'var(--color-panel-d)',
+            900: 'var(--color-crust)',
+            950: 'var(--color-crust-d)'
+        },
+        neutral: {
+            400: 'var(--color-base)',
+            500: 'var(--color-base-h)', 
+            300: 'var(--color-base-d)',
+            600: 'var(--color-crust-h)',
+            700: 'var(--color-crust)',
+            800: 'var(--color-crust-d)',
+            50: 'var(--color-text-h)',
+            100: 'var(--color-text)',
+            200: 'var(--color-text-d)',
+            900: 'var(--color-crust-d)',
+            950: 'var(--color-crust-d)'
+        },
+        slate: {
+            400: 'var(--color-base)',
+            500: 'var(--color-base-h)', 
+            300: 'var(--color-base-d)',
+            600: 'var(--color-crust-h)',
+            700: 'var(--color-crust)',
+            800: 'var(--color-crust-d)',
+            50: 'var(--color-text-h)',
+            100: 'var(--color-text)',
+            200: 'var(--color-text-d)',
+            900: 'var(--color-crust-d)',
+            950: 'var(--color-crust-d)'
+        }
+    },
+    semantic: {
+        primary:{
+            400: 'var(--color-app-d)',
+            500: 'var(--color-app)',
+            600: 'var(--color-app-h)',
+            50: 'var(--color-app-h)',
+            100: 'var(--color-app-h)',
+            200: 'var(--color-app-h)',
+            300: 'var(--color-app-h)',
+            700: 'var(--color-app-d)',
+            800: 'var(--color-app-d)',
+            900: 'var(--color-app-d)',
+            950: 'var(--color-app-d)'
+        },
+        colorScheme:{
+            light:  {
+                surface: {
+                    400: 'var(--color-h-panel)',
+                    500: 'var(--color-h-panel-h)',
+                    300: 'var(--color-h-panel-d)',
+                    50: 'var(--color-h-text-h)',
+                    0: 'var(--color-h-text-h)',
+                    100: 'var(--color-h-text)',
+                    200: 'var(--color-h-text-d)',
+                    600: 'var(--color-panel-h)',
+                    700: 'var(--color-h-text-h)',
+                    800: 'var(--color-h-text-h)',
+                    900: 'var(--color-crust)',
+                    950: 'var(--color-crust-d)'
+                },
+            },
+            dark:  {
+                surface: {
+                    400: 'var(--color-h-panel-h)',
+                    500: 'var(--color-h-panel-h)',
+                    300: 'var(--color-h-panel-d)',
+                    0: 'var(--color-text)',
+                    50: 'var(--color-h-text-h)',
+                    100: 'var(--color-h-text)',
+                    200: 'var(--color-h-text-d)',
+                    600: 'var(--color-panel-h)',
+                    700: 'var(--color-base-h)',
+                    800: 'var(--color-h-text-h)',
+                    900: 'var(--color-crust)',
+                    950: 'var(--color-crust-d)'
+                },
+                formField: {
+                    borderColor: "var(--color-info)",
+                    hoverBorderColor: "var(--color-app)",
+                    focusBorderColor: "var(--color-app)",
+                }
+            }
+        }
+    }
+});

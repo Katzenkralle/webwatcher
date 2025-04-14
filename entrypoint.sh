@@ -1,16 +1,32 @@
 #!/bin/bash
-nginx -g "daemon off;" &
+
+# handle SIGTERM
+cleanup() {
+    echo "Stopping container..."
+    pkill -TERM -P $$  # Send SIGTERM to all child processes
+    sleep 10   # Wait for all child processes to exit
+    echo "Shutdown complete."
+    exit 0
+}
+
+# Trap SIGTERM signal
+trap cleanup SIGTERM
+
+
 if [ "$DEV" ]; then
     echo "Running in development mode"
     echo "Starting ssh server"
-    /sbin/sshd -f /etc/ssh/sshd_config
+    /sbin/sshd -f /etc/ssh/sshd_config &
 
-    while true; do
-        sleep 10
+    # Keep the script running and listen for signals
+    echo "entering while loop"
+    while true; do 
+        sleep 1
     done
 else
+    nginx -g "daemon off;" &
     echo "Running in production mode"
     echo "Starting webwatcher"
-    cd /webwatcher/webw_serv
-    python3 main.py
+    cd /webwatcher
+    python3 -m webw_serv
 fi

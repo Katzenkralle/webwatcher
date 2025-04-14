@@ -43,7 +43,6 @@ const computedScript = computed((): undefined | ScriptMeta  => {
     } else if (currentScriptName.value === '') {
         return undefined;
     }
-    console.log('computedScript', thisScript);
     fileStatus.value = {severity: 'success',
         summary: 'File present on the Server.',
         availableParameters: thisScript.availableParameters,
@@ -142,24 +141,23 @@ const computedScriptParamTable = computed(() => {
 
                     <div class="input-box"> 
                         <label for="fileSelect">Select a file to upload</label>
-                        <InputGroup>
-                            <InputGroupAddon>
-                                <FileUpload 
-                                    id="fileSelect"
-                                    mode="basic" 
-                                    name="demo[]" 
-                                    customUpload 
-                                    chooseLabel="Select File" 
-                                    @select="onFileSelect" 
-                                />
-                            </InputGroupAddon>
-                                <InlineMessage 
-                                    target="fileSelect"
-                                    :severity="fileStatus.severity"
-                                    >
-                                    {{ fileStatus.summary }}
-                                </InlineMessage>
-                        </InputGroup>
+                        <div class="bg-panel-h rounded-lg">
+                            <FileUpload 
+                                id="fileSelect"
+                                mode="basic" 
+                                class="mr-auto"
+                                name="demo[]" 
+                                customUpload 
+                                chooseLabel="Select File" 
+                                @select="onFileSelect" 
+                            />
+                        </div>
+                        <InlineMessage 
+                            target="fileSelect"
+                            class="ml-auto w-fit"
+                            :severity="fileStatus.severity">
+                            {{ fileStatus.summary }}
+                        </InlineMessage>
                         <small>From this file the data is collected.</small>
                         <div :class="{
                             // We cannot use hidden here, for we need to animate the element

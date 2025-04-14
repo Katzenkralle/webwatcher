@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { getJobMetaData } from "@/composable/api/JobAPI";
-import { useJobDataHandler, useJobUiCreator } from "@/composable/jobs/JobDataHandler";
+import { useJobUiCreator } from "@/composable/jobs/JobDataHandler";
 import { jobUserDisplayConfig } from "@/composable/jobs/UserConfig";
 
 import router from "@/router";
 
 import FilterGroupRenderer from "@/components/filter/FilterGroupRenderer.vue";              
+import NavButtons from "@/components/reusables/NavButtons.vue";
 
 import ConfirmableButton from "@/components/reusables/ConfirmableButton.vue";
 import ColumnSelection from "@/components/jobs/ColumnSelection.vue";
@@ -15,7 +15,8 @@ import JobMetaDisplay from "@/components/jobs/MetaData.vue";
 import SmallSeperator from "@/components/reusables/SmallSeperator.vue";
 import PopupDialog from "@/components/reusables/PopupDialog.vue";
 import FilterSelector from "@/components/filter/FilterSelector.vue";
-
+import GraphInput from "@/components/Graphs/GraphInput.vue";
+import GraphLoader from "@/components/Graphs/GraphLoader.vue";
 
 import Button  from "primevue/button";
 import Accordion from 'primevue/accordion';
@@ -23,29 +24,20 @@ import AccordionPanel from 'primevue/accordionpanel';
 import AccordionHeader from 'primevue/accordionheader';
 import AccordionContent from 'primevue/accordioncontent';
 
-import NavButtons from "@/components/reusables/NavButtons.vue";
-
-import { ProgressSpinner, SplitButton } from "primevue";
+import SplitButton from "primevue/splitbutton";
 
 import { ref, watch, computed } from "vue";
 
 const currentJobId = ref(Number(router.currentRoute.value.params.id));
 const downloadSuccessPopup = ref();
 
-const tableMetadata = ref();
-
-
 const changeJob = (newVal: any) => {
   if (!newVal) return;
     try {
       let newId = Number(newVal);
-      console.log("New Job ID: ", newId, "Current Job ID: ", currentJobId.value);
       if (!currentJobId.value || (currentJobId.value && currentJobId.value !== newId)) {
         currentJobId.value = newId;
         jobHandler = useJobUiCreator(newId);
-        getJobMetaData(newId).then((data) => {
-          tableMetadata.value = data;
-        });
       }
     } catch (e) {
       console.error(e);
@@ -61,14 +53,12 @@ watch(
 // This cannot be compute, if it would be, random recomputations would happen
 // when pressing some buttons - houres wasted: 2
 let jobHandler = useJobUiCreator(currentJobId.value);
-getJobMetaData(currentJobId.value).then((data) => {
-    tableMetadata.value = data;
-  });
 
 const userConfig = computed(() => {
   return jobUserDisplayConfig(currentJobId.value);
 });
 
+const graphCoardinator = ref();
 
 </script>
 
@@ -90,19 +80,32 @@ const userConfig = computed(() => {
             <AccordionHeader>Overview</AccordionHeader>
               <AccordionContent>
                 <JobMetaDisplay 
-                  v-if="tableMetadata"
-                  :metaData="tableMetadata"
-                  class="max-w-256" />
+                  v-if="jobHandler?.metaData.value"
+                  :metaData="jobHandler.metaData.value"
+                  />
               </AccordionContent>
         </AccordionPanel>
 
         <AccordionPanel value="1">
+            <AccordionHeader>Graph Creator</AccordionHeader>
+              <AccordionContent>
+                <div class="content-box flex flex-col">
+                    <GraphInput
+                      ref="graphCoardinator"
+                      :jobData="jobHandler.jobDataHandler"
+                      :user-config="userConfig"
+                    />
+              </div>
+              </AccordionContent>
+        </AccordionPanel>
+
+        <AccordionPanel value="2">
             <AccordionHeader>Logical Filters</AccordionHeader>
               <AccordionContent>
                 <div class="content-box flex flex-col">
                     <FilterSelector
                       :filterContext="jobHandler.filterContext"
-                      :filterConfig="userConfig"
+                      :userConfig="userConfig"
                       />
                     <SmallSeperator 
                       class="my-2 mx-auto" 
@@ -113,7 +116,7 @@ const userConfig = computed(() => {
               </AccordionContent>
         </AccordionPanel>
 
-        <AccordionPanel value="2">
+        <AccordionPanel value="3">
             <AccordionHeader>View Options</AccordionHeader>
               <AccordionContent>
                 <div class="content-box shrinkable">
@@ -141,9 +144,17 @@ const userConfig = computed(() => {
         
       <div class="flex flex-col w-full h-full items-center">
         <SmallSeperator class="my-4" :is-dashed="true"/>
+        <h2 class="mb-2">Tabular</h2>
         <JobDataTable
           :jobHandler="jobHandler"
+          :graph-input-handler="graphCoardinator?.tableInputForGraph"
           />
+        <GraphLoader
+        class="mt-5"
+        :job-id="currentJobId"
+        :user-config="userConfig"
+        :data-handler="jobHandler.jobDataHandler"
+        />
       </div>
 
       <PopupDialog ref="downloadSuccessPopup"
@@ -191,35 +202,6 @@ const userConfig = computed(() => {
 <style lang="css">
 @reference "@/assets/global.css";
 
-
-.p-accordioncontent-content {
-  @apply flex justify-center;
-}
-
-.p-accordionheader{
-  @apply text-xl font-semibold underline underline-offset-3 mb-1 cursor-pointer;
-}
-
-.p-accordionpanel:not(:last-child) {
-  @apply border-b-2 border-h-panel pb-2;
-}
-.p-accordionpanel:not(:first-child) {
-  @apply pt-1;
-}
-
-.content-box {
-  @apply 
-    bg-panel 
-    border-2 
-    border-primary 
-    rounded-lg 
-    p-2 
-    w-full 
-    max-w-256 
-    justify-between 
-    overflow-x-scroll 
-    overflow-y-hidden;
-}
 
 .shrinkable {
   @apply flex 
