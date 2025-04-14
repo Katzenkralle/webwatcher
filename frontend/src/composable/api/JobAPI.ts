@@ -1,5 +1,4 @@
 import { ref, type Ref} from 'vue';
-import { useStatusMessage } from '../core/AppState';
 import { queryGql, reportError, type ErrorTypes } from "@/composable/api/QueryHandler" 
 
 export interface TableMetaData {
@@ -214,7 +213,7 @@ export interface jobEnty {
 }
 
 export interface jobEntryInput extends jobEnty {
-    call_id: number|undefined;
+    callId: number|undefined;
 } 
 
 export const DUMMY_JOB_ENTRY: jobEnty = {
@@ -225,86 +224,85 @@ export const DUMMY_JOB_ENTRY: jobEnty = {
     context: {}
 }
 
+
+
 export const useJobData = (jobId: number) => {
     const FETCH_AT_ONCE = 10; 
     
+
+    const pfraseeJobEntry = (entry: Record<any, any>): Record<number, jobEnty> => {
+        const callId: number = entry.callId!;
+        delete entry.callId;
+        try {
+            entry.context = JSON.parse(entry.context);
+        } catch (e) {
+            entry.context = {}
+        }
+        return {[callId]: entry as jobEnty}
+        }
+    
     const fetchData = async (range: [Number, Number]|undefined = undefined, specificRows: number[]|undefined = undefined, lastN: number|undefined=undefined): Promise<Record<number, jobEnty>> => {
-        return new Promise(async (resolve, reject) => {
+        
             const query = `
-                query {
-                    jobsEntryResult(
-                        id: ${jobId},
-                        ${range ? `NthElement: { max: ${FETCH_AT_ONCE}, startElement: ${range[0]} }` : ``}
+                query JobEntryLookup($jobId: Int!, $lastN: Int, $range: PaginationInput, $specificRows: [Int!]) {
+                    getJobEntries(
+                        jobId: $jobId,
+                        newestN: $lastN,
+                        range: $range,
+                        specificRows: $specificRows
                     ) {
-                    __typename
-                    ... on jobsEntryList {
+                        ... on JobEntryList {
+                        __typename
                         jobs {
-                            id
-                            timestamp
-                            runtime
-                            result
-                            scriptFailure
+                            callId
                             context
+                            result
+                            runtime
+                            scriptFailure
+                            timestamp
                         }
-                    }
-                    ... on Message {
+                        }
+                        ... on Message {
+                        __typename
                         message
                         status
+                        }
                     }
                 }
-            }
             `;
-            queryGql(query).then((response) => {
+            return queryGql(query, {
+                jobId: jobId,
+                lastN: lastN,
+                range: range ? {
+                    max: range[1], 
+                    startElement: range[0]} : undefined,
+                specificRows: specificRows
+            }).then((response) => {
                 const key = response.providedTypes[0].type;
                 switch (key) {
-                    case "jobEntry":
-                        return resolve(response.data[key] as Record<number, jobEnty>)
+                    case "JobEntryList":
+                        const entries: Record<number, jobEnty> = response.data.getJobEntries.jobs
+                            .reduce((acc: Record<number, jobEnty>, entry: jobEntryInput) => {
+                                const phrased = pfraseeJobEntry(entry);
+                                return {...acc, ...phrased}
+                            }, {});
+                        return entries
                     default:
                         throw response
                 }
             }).catch((error) => {
-                const generateRandomJobEntry = (): jobEnty => {
-                    return {
-                        timestamp: Date.now() - Math.floor(Math.random() * 1000000),
-                        runtime: Math.floor(Math.random() * 500),
-                        result: Math.random() > 0.5 ? "SUCCESS" : "FAILURE",
-                        scriptFailure: Math.random() > 0.5,
-                        context: {
-                            "aNumber": Math.floor(Math.random() * 100)
-                        }
-                    };
-                };
-
-                const data = Array.from({ length: 37 }, (_, index) => ({
-                    [index]: generateRandomJobEntry()
-                })).reduce((acc, entry) => {
-                    return { ...acc, ...entry };
-                }, {} as Record<number, jobEnty>);
-                data[15] = {
-                    timestamp: 0,
-                    runtime: 0,
-                    result: "CATS_AND_DOGS",
-                    scriptFailure: false,
-                    context: {
-                        "aNumber": 1
-                    }
-                }
-                return resolve(Object.keys(data).filter((key) =>{
-                    const index = parseInt(key)
-                    return (range ? index >= Number(range[0]) && index < Number(range[1]) : true)
-                }).map((key) => parseInt(key))
-                .reduce((acc, key) => {
-                    acc[key] = data[key]
-                    return acc
-                }, {} as Record<number, jobEnty>)                       
-                )
                 reportError(error)
-                return reject(error)
+                throw error
             })
-        });
     }
 
-    const addOrUpdateJobEntry = async (entry: jobEntryInput): Promise<Record<number, jobEnty>> => {
+    const addOrUpdateJobEntry = async (entry: jobEntryInput & {id: number|undefined}): Promise<Record<number, jobEnty>> => {
+        // This is a workaround for we use mix naming for the callId and id
+        if (!entry.callId && entry.id) {
+            entry.callId = entry.id;
+            delete entry.id;
+        }
+
         const query = `
             mutation AddOrUpdateJobEntry($jobId: Int!, $entry: JobEntyInput!) {
                 addOrEditEntryInJob(
@@ -334,14 +332,7 @@ export const useJobData = (jobId: number) => {
             console.log(response)
             switch (key) {
                 case "JobEntry":
-                    const call_id: number = response.data.addOrEditEntryInJob.callId
-                    delete response.data.addOrEditEntryInJob.callId
-                    try {
-                        response.data.addOrEditEntryInJob.context = JSON.parse(response.data.addOrEditEntryInJob.context)
-                    } catch (e) {
-                        response.data.addOrEditEntryInJob.context = {}
-                    }
-                    return {[call_id]: response.data.addOrEditEntryInJob}
+                    return pfraseeJobEntry(response.data.addOrEditEntryInJob)
                 default:
                     throw response
             }}).catch((error) => {

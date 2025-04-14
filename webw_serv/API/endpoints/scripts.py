@@ -6,7 +6,7 @@ from typing_extensions import Optional
 from ..gql_base_types import PaginationInput, ResultType, JsonStr
 from ..endpoints.auth import admin_guard, user_guard
 from ..gql_base_types import ScriptValidationResult, Parameter, Message, MessageType
-from ..gql_types import script_content_result, jobs_metadata_result, jobs_settings_result, jobs_entry_result, \
+from ..gql_types import script_content_result, jobs_metadata_result, jobs_settings_result, job_entrys_result, \
     user_job_config_result, job_metadata_result, job_full_info_result, job_entry_result
 from webw_serv.configurator.config import Config
 
@@ -80,7 +80,7 @@ class Query:
                    result: Optional[ResultType] = strawberry.UNSET,
                    runtime: Optional[int] = strawberry.UNSET,
                    script_failure: Optional[bool] = strawberry.UNSET,
-                   id_: int = strawberry.argument(name="id")) -> jobs_entry_result:
+                   id_: int = strawberry.argument(name="id")) -> job_entrys_result:
         pass
 
     @strawberry.field

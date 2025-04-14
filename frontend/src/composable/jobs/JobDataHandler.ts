@@ -71,16 +71,19 @@ export const useJobDataHandler = (
         useLoadingAnimation().setState(true);
         startAt = startAt || Object.keys(localJobData.value).length;
         if (Object.keys(localJobData.value).length < startAt + fetchAmount.value && !allFetched.value) {
+            console.log("Lazy fetching data from " + startAt + " to " + (startAt + fetchAmount.value));
             localJobData.value = {
                 ...localJobData.value,
                 ...await apiHandler.fetchData(!all ? [startAt, startAt + fetchAmount.value] : undefined)
                     .then((data) => {
+                        console.log(data)
                         if (Object.keys(data).length < fetchAmount.value) {
                             allFetched.value = true;
                         }
                         return data;
                     })
                     .catch((e) => {
+                        console.log(e);
                         reportError(e);
                         return {}
                     })
