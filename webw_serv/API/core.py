@@ -16,7 +16,7 @@ async def get_context(request:Request,
 
 def get_routes():
     # Registering the endpoints
-    gql_querys = merge_types("ComboQuery", (test.Query, users.Query, scripts.Query))
+    gql_querys = merge_types("ComboQuery", (test.Query, users.Query, scripts.Query, jobs.Query))
     gql_mutations = merge_types("ComboMutation", (users.Mutation, scripts.Mutation, jobs.Mutation))
     gql_schema = Schema(query=gql_querys, mutation=gql_mutations)
     

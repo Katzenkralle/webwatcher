@@ -1,5 +1,5 @@
 import {ref, computed, type Ref, type ComputedRef} from 'vue';
-import { useJobData, type jobEnty, type TableLayout, DUMMY_JOB_ENTRY, type  TableMetaData, getJobMetaData } from '../api/JobAPI';
+import { useJobData, type jobEnty, type TableLayout,  type jobEntryInput, DUMMY_JOB_ENTRY, type TableMetaData, getJobMetaData } from '../api/JobAPI';
 import { reportError } from '@/composable/api/QueryHandler';
 import type { IterationContext } from './FilterGroups';
 import { useLoadingAnimation, useStatusMessage } from '../core/AppState';
@@ -71,16 +71,19 @@ export const useJobDataHandler = (
         useLoadingAnimation().setState(true);
         startAt = startAt || Object.keys(localJobData.value).length;
         if (Object.keys(localJobData.value).length < startAt + fetchAmount.value && !allFetched.value) {
+            console.log("Lazy fetching data from " + startAt + " to " + (startAt + fetchAmount.value));
             localJobData.value = {
                 ...localJobData.value,
                 ...await apiHandler.fetchData(!all ? [startAt, startAt + fetchAmount.value] : undefined)
                     .then((data) => {
+                        console.log(data)
                         if (Object.keys(data).length < fetchAmount.value) {
                             allFetched.value = true;
                         }
                         return data;
                     })
                     .catch((e) => {
+                        console.log(e);
                         reportError(e);
                         return {}
                     })
@@ -154,6 +157,17 @@ export const useJobDataHandler = (
         );
     }   
 
+    const addOrEditEntry = async(entry: jobEntryInput) => {
+        apiHandler.addOrUpdateJobEntry(entry).then((data) => {
+            console.log(data)
+         
+            localJobData.value = {
+                ...localJobData.value,
+                ...data
+            };
+            
+        })
+    }
 
     const getColumnsByType = (type: string|undefined, includeHiddenColumns: boolean = true): string[] => {
         /*
@@ -341,6 +355,7 @@ export const useJobDataHandler = (
         localJobData,
         filters,
         saveToFile,
+        addOrEditEntry,
         lazyFetch,
         retriveRowsById,
         getColumnsByType

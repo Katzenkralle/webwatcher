@@ -9,14 +9,13 @@ from webw_serv import CONFIG
 from ..gql_base_types import PaginationInput, ResultType, JsonStr
 from ..endpoints.auth import admin_guard, user_guard
 from ..gql_base_types import ScriptValidationResult, Parameter, Message, MessageType, B64Str
-from ..gql_types import script_content_result, jobs_metadata_result, jobs_settings_result, jobs_entry_result, \
+from ..gql_types import script_content_result, jobs_metadata_result, jobs_settings_result, job_entrys_result, \
     user_job_config_result, job_metadata_result, job_full_info_result, job_entry_result
 from webw_serv.configurator.config import Config
 
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    @admin_guard()
     @admin_guard(use_http_exception=True)
     async def preupload_script(self, info: strawberry.Info, file: B64Str, name: Optional[str]) -> ScriptValidationResult:
         if Config().app.disable_script_upload:
@@ -54,7 +53,7 @@ class Mutation:
 
     @strawberry.mutation
     @admin_guard()
-    async def upload_script_data(self, name: str, description: Optional[str]) -> job_metadata_result:
+    async def upload_script_data(self, name: str, create_new: bool, description: Optional[str]) -> job_metadata_result:
         pass
 
     @strawberry.mutation
@@ -107,7 +106,7 @@ class Query:
                    result: Optional[ResultType] = strawberry.UNSET,
                    runtime: Optional[int] = strawberry.UNSET,
                    script_failure: Optional[bool] = strawberry.UNSET,
-                   id_: int = strawberry.argument(name="id")) -> jobs_entry_result:
+                   id_: int = strawberry.argument(name="id")) -> job_entrys_result:
         pass
 
     @strawberry.field

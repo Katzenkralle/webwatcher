@@ -11,7 +11,21 @@ export type ErrorTypes = "SUCCESS" |
     "NOT_OK" |
     "UNHEALTHY" |
     "TIMEOUT" |
-    "CATS_AND_DOGS";
+    "CATS_AND_DOGS"; 
+
+export const ALL_ERROR_DUMMY: ErrorTypes[] = [
+    "SUCCESS",
+    "AUTH_ERROR",
+    "PREMISSION_ERROR",
+    "FAILURE",
+    "NETWORK_ERROR",
+    "WARNING",
+    "OK",
+    "NOT_OK",
+    "UNHEALTHY",
+    "TIMEOUT",
+    "CATS_AND_DOGS"
+]
 
 export interface GQLResponse {
     data: { [key: string]: any };

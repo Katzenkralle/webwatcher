@@ -20,10 +20,10 @@ job_metadata_result = JobMetaData | Message
 jobs_settings_result = JobSettings | Message
 
 @strawberry.type
-class JobsEntryList:
+class JobEntryList:
     jobs: list[JobEntry]
 
-jobs_entry_result = JobsEntryList | Message
+job_entrys_result = JobEntryList | Message
 job_entry_result = JobEntry | Message
 job_full_info_result = Annotated[Union[JobFullInfo, Message], strawberry.union("JobFullResult")]
 user_job_config_result = UserDisplayConfig | Message

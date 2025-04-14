@@ -15,6 +15,7 @@ import type { MenuItem } from "primevue/menuitem";
 
 import EditEntryPopup from "./EditEntryPopup.vue";
 import  {type GraphInput} from "@/composable/jobs/GraphDataHandler";
+import type { jobEntryInput } from "@/composable/api/JobAPI";
 
 
 
@@ -311,7 +312,7 @@ watch(
                     .map((col) => ({[col.key]: col.type})))"
                   :readonly="openEditor.readonly"
                   :entry-values="slotProps.data"
-                  @update="(obj) => {console.debug(obj, 'ToDo: send me to the webw_serv'); openEditor.id = undefined}"
+                  @update="(obj: jobEntryInput) => {jobHandler.jobDataHandler.addOrEditEntry(obj); openEditor.id = undefined}"
                   @close="() =>  openEditor.id = undefined"
                   />
 
@@ -355,7 +356,7 @@ watch(
                   :readonly="openEditor.readonly"
                   :entry-values="{}"
                   :new-entry="true"
-                  @update="(obj) => {console.debug(obj, 'ToDo: send me to the webw_serv'); openEditor.id = undefined}"
+                  @update="(obj: jobEntryInput) => {jobHandler.jobDataHandler.addOrEditEntry(obj); openEditor.id = undefined}"
                   @close="() =>  openEditor.id = undefined"
                   />
           <Button 
