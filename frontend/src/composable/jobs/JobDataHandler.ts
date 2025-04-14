@@ -158,14 +158,18 @@ export const useJobDataHandler = (
     }   
 
     const addOrEditEntry = async(entry: jobEntryInput) => {
-        apiHandler.addOrUpdateJobEntry(entry).then((data) => {
-            console.log(data)
-         
+        apiHandler.addOrUpdateJobEntry(entry).then((data) => {         
             localJobData.value = {
                 ...localJobData.value,
                 ...data
             };
-            
+        })
+    }
+    const deleteEntry = async(id: number[]) => {
+        apiHandler.deleteJobEntry(id).then((data: number[]) => {
+            data.forEach((id) => {
+                delete localJobData.value[id];
+            });
         })
     }
 
@@ -356,6 +360,7 @@ export const useJobDataHandler = (
         filters,
         saveToFile,
         addOrEditEntry,
+        deleteEntry,
         lazyFetch,
         retriveRowsById,
         getColumnsByType

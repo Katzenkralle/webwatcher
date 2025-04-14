@@ -81,13 +81,26 @@ const entryEditMenu = (forId: number | number[]): MenuItem[] => {
     {
       label: 'Delete',
       command: () => {
-        useStatusMessage().newStatusMessage(`Delete: ${forId}`, "info")
+        if (typeof forId === 'number'){
+          forId = [forId];
+        }
+        props.jobHandler.jobDataHandler.deleteEntry(forId as number[]);
       }
     },
     {
       label: 'Clone',
       command: () => {
-        useStatusMessage().newStatusMessage(`Clone: ${forId}`, "info")
+        if (typeof forId === 'number'){
+          forId = [forId];
+        }
+        forId.forEach((id: number) => {
+          const entry = props.jobHandler.jobDataHandler.localJobData.value[id];
+          if (entry){
+            props.jobHandler.jobDataHandler.addOrEditEntry(
+              entry
+            );
+          }
+        })
       }
     }
   ]
@@ -259,9 +272,9 @@ watch(
                 header="Edit"
                 :reorderableColumn="false"
                 :sortable="false"
-              :pt="{
-                'columnTitle': 'mx-auto'
-              }"
+                :pt="{
+                  'columnTitle': 'mx-auto'
+                }"
               />
               <Column>
                 <template #header>

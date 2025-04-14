@@ -1,4 +1,4 @@
-import { ref, type Ref} from 'vue';
+import { KeepAlive, ref, type Ref} from 'vue';
 import { queryGql, reportError, type ErrorTypes } from "@/composable/api/QueryHandler" 
 
 export interface TableMetaData {
@@ -213,7 +213,7 @@ export interface jobEnty {
 }
 
 export interface jobEntryInput extends jobEnty {
-    callId: number|undefined;
+    callId?: number|undefined;
 } 
 
 export const DUMMY_JOB_ENTRY: jobEnty = {
@@ -296,7 +296,7 @@ export const useJobData = (jobId: number) => {
             })
     }
 
-    const addOrUpdateJobEntry = async (entry: jobEntryInput & {id: number|undefined}): Promise<Record<number, jobEnty>> => {
+    const addOrUpdateJobEntry = async (entry: jobEntryInput & {id?: number|undefined}): Promise<Record<number, jobEnty>> => {
         // This is a workaround for we use mix naming for the callId and id
         if (!entry.callId && entry.id) {
             entry.callId = entry.id;
@@ -340,7 +340,34 @@ export const useJobData = (jobId: number) => {
                 return Promise.reject(error)
             })
         }   
-            
-        return { fetchData, addOrUpdateJobEntry }
+           
+        const deleteJobEntry = async (ids: number[]): Promise<number[]> => {
+            const query = `
+                mutation deleteEntryInJob($entryIds: [Int!]!, $jobId: Int!) {
+                deleteEntryInJob(
+                    entryIds: $entryIds,
+                    jobId: $jobId
+                    ) {
+                    __typename
+                    message
+                    status
+                    }
+            }`
+            return queryGql(query, {
+                jobId: jobId,
+                entryIds: ids
+            }).then((response) => {
+                const key = response.providedTypes[0].type;
+                if (key === "Message" && response.data.deleteEntryInJob.status === "SUCCESS") {
+                    return ids
+                }
+                throw response
+            }).catch((error) => {
+                reportError(error)
+                return Promise.reject(error)
+            })
+        }
+
+        return { fetchData, addOrUpdateJobEntry, deleteJobEntry }
 }
 
