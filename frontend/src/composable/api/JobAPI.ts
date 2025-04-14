@@ -205,12 +205,17 @@ export const updateOrCreateJob = async(entry: TableMetaData): Promise<void> => {
 }
    
 
-export interface jobEnty {	timestamp: number
+export interface jobEnty {	
+    timestamp: number
 	runtime: number
 	result: ErrorTypes
 	scriptFailure: Boolean
 	context: Record<string, any>
 }
+
+export interface jobEntryInput extends jobEnty {
+    call_id: number|undefined;
+} 
 
 export const DUMMY_JOB_ENTRY: jobEnty = {
     timestamp: 0,
@@ -298,6 +303,53 @@ export const useJobData = (jobId: number) => {
             })
         });
     }
-    return { fetchData }
+
+    const addOrUpdateJobEntry = async (entry: jobEntryInput): Promise<Record<number, jobEnty>> => {
+        const query = `
+            mutation AddOrUpdateJobEntry($jobId: Int!, $entry: JobEntyInput!) {
+                addOrEditEntryInJob(
+                  jobId: $jobId,
+                  data: $entry
+                ){
+                    ... on JobEntry {
+                        __typename
+                        context
+                        callId
+                        result
+                        runtime
+                        scriptFailure
+                        timestamp
+                        }
+                        ... on Message {
+                        __typename
+                        message
+                        status
+                        }
+                    }         
+                }`
+        return queryGql(query, {
+            jobId: jobId,
+            entry: entry}).then((response) => {
+            const key = response.providedTypes[0].type;
+            console.log(response)
+            switch (key) {
+                case "JobEntry":
+                    const call_id: number = response.data.addOrEditEntryInJob.callId
+                    delete response.data.addOrEditEntryInJob.callId
+                    try {
+                        response.data.addOrEditEntryInJob.context = JSON.parse(response.data.addOrEditEntryInJob.context)
+                    } catch (e) {
+                        response.data.addOrEditEntryInJob.context = {}
+                    }
+                    return {[call_id]: response.data.addOrEditEntryInJob}
+                default:
+                    throw response
+            }}).catch((error) => {
+                reportError(error)
+                return Promise.reject(error)
+            })
+        }   
+            
+        return { fetchData, addOrUpdateJobEntry }
 }
 

@@ -1,5 +1,5 @@
 import {ref, computed, type Ref, type ComputedRef} from 'vue';
-import { useJobData, type jobEnty, type TableLayout, DUMMY_JOB_ENTRY, type  TableMetaData, getJobMetaData } from '../api/JobAPI';
+import { useJobData, type jobEnty, type TableLayout,  type jobEntryInput, DUMMY_JOB_ENTRY, type TableMetaData, getJobMetaData } from '../api/JobAPI';
 import { reportError } from '@/composable/api/QueryHandler';
 import type { IterationContext } from './FilterGroups';
 import { useLoadingAnimation, useStatusMessage } from '../core/AppState';
@@ -154,6 +154,17 @@ export const useJobDataHandler = (
         );
     }   
 
+    const addOrEditEntry = async(entry: jobEntryInput) => {
+        apiHandler.addOrUpdateJobEntry(entry).then((data) => {
+            console.log(data)
+         
+            localJobData.value = {
+                ...localJobData.value,
+                ...data
+            };
+            
+        })
+    }
 
     const getColumnsByType = (type: string|undefined, includeHiddenColumns: boolean = true): string[] => {
         /*
@@ -341,6 +352,7 @@ export const useJobDataHandler = (
         localJobData,
         filters,
         saveToFile,
+        addOrEditEntry,
         lazyFetch,
         retriveRowsById,
         getColumnsByType
