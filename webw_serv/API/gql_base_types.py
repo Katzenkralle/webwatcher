@@ -94,6 +94,7 @@ class ScriptValidationResult:
     available_parameters: list[Parameter]
     supports_static_schema: bool
     validation_msg: str
+    id: str
 
 
 @strawberry.type

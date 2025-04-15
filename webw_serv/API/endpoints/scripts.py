@@ -1,17 +1,19 @@
 import strawberry
 
 from typing_extensions import Optional
+from uuid import uuid4
 
 from webw_serv.watcher.script_checker import script_checker
-from webw_serv.utility.file_to_b64 import file_to_b64, b64_to_file
+from webw_serv.utility.file_to_b64 import b64_to_file
 from webw_serv import CONFIG
 
 from ..gql_base_types import PaginationInput, ResultType, JsonStr
 from ..endpoints.auth import admin_guard, user_guard
-from ..gql_base_types import ScriptValidationResult, Parameter, Message, MessageType, B64Str
+from ..gql_base_types import ScriptValidationResult, Parameter, B64Str
 from ..gql_types import script_content_result, jobs_metadata_result, jobs_settings_result, job_entrys_result, \
     user_job_config_result, job_metadata_result, job_full_info_result, job_entry_result
 from webw_serv.configurator.config import Config
+
 
 @strawberry.type
 class Mutation:
@@ -19,8 +21,9 @@ class Mutation:
     @admin_guard(use_http_exception=True)
     async def preupload_script(self, info: strawberry.Info, file: B64Str, name: Optional[str]) -> ScriptValidationResult:
         if Config().app.disable_script_upload:
-            return Message(message="Script upload is disabled", status=MessageType.WARN)
-        path = CONFIG.SCRIPTS_TEMP_PATH + info.context["user"].username + CONFIG.SCRIPTS_TEMP_SUFFIX
+            return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False, validation_msg="Script upload is disabled")
+        uuid = uuid4().hex
+        path = CONFIG.SCRIPTS_TEMP_PATH + info.context["user"].username + CONFIG.SCRIPTS_TEMP_SUFFIX + uuid
         b64_to_file(file, path)
         module_path = CONFIG.MODULE_TEMP_PREFIX + info.context["user"].username + CONFIG.MODULE_TEMP_SUFFIX
         script_check_result = script_checker(module_path)
@@ -30,9 +33,7 @@ class Mutation:
             if old_script_config_data is not None and new_script_config_data is not None:
                 if old_script_config_data != new_script_config_data:
                     return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False,
-                                                  validation_msg=str("The script doesn't match the scheme"))
-
-            # TODO: Add the script to the database
+                                                  validation_msg="The script doesn't match the scheme", id="")
 
         if isinstance(script_check_result, tuple):
             script_msg = str(script_check_result[0])
@@ -43,17 +44,19 @@ class Mutation:
             else:
                 parameters_list = []
                 static_supported = False
+            info.context["request"].state.maria.add_script(path, uuid, None, script_check_result[2], True)
         else:
             script_msg = str(script_check_result)
             was_valid = False
             parameters_list = []
             static_supported = False
 
-        return ScriptValidationResult(valid=was_valid,  available_parameters=parameters_list, supports_static_schema=static_supported, validation_msg=script_msg)
+        return ScriptValidationResult(valid=was_valid,  available_parameters=parameters_list, supports_static_schema=static_supported, validation_msg=script_msg, id=uuid)
 
     @strawberry.mutation
     @admin_guard()
-    async def upload_script_data(self, name: str, create_new: bool, description: Optional[str]) -> job_metadata_result:
+    async def upload_script_data(self, name: str, description: Optional[str], id_: str = strawberry.argument(name="id")) -> job_metadata_result:
+
         pass
 
     @strawberry.mutation

@@ -145,8 +145,23 @@ class MariaDbHandler:
             input_schema=input_schema
         )
 
-    def add_script(self):
-        ...  # ToDo: Implement this method
+    async def add_script(self, fs_path: str, name: str, description: str | None,
+                         excpected_return_schema: dict, temporary: bool) -> bool:
+        excpected = "{"
+        for key, value in excpected_return_schema.items():
+            if value == str:
+                value = "str"
+            elif value == int:
+                value = "int"
+            elif value == bool:
+                value = "bool"
+            excpected += f'"{key}": "{value}", '
+        excpected += "}"
+
+        self.__cursor.execute("""INSERT INTO script_list (fs_path, name, description, excpected_return_schema, temporary) 
+        VALUES (?, ?, ?, ?, ?)""",
+                              (fs_path, name, description, excpected, temporary))
+        return True
 
     async def register_session(self, username: str, name: str|None = None) -> DbSession:
         new_id = None

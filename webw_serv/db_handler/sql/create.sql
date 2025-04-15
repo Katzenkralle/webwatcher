@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS script_list
     name                   VARCHAR(255) NOT NULL UNIQUE,
     description            TEXT,
     expected_return_schema JSON,
+    temporary              BOOLEAN DEFAULT TRUE,
     PRIMARY KEY (fs_path)
 );
 CREATE TABLE IF NOT EXISTS script_input_info
