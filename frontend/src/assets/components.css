@@ -94,6 +94,10 @@ main, header, footer {
     @apply transition-colors duration-300;
 }
 
+.p-floatlabel-in .p-multiselect-label-container  {
+    @apply content-end
+}
+
 button:disabled {
     @apply !cursor-not-allowed;
   }

@@ -62,7 +62,6 @@ class Mutation:
         
 @strawberry.type
 class Query:
-
     @strawberry.field
     @user_guard()
     async def getJobEntries(

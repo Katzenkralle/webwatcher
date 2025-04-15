@@ -182,7 +182,7 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof  useJobDat
     watch(() => [graphInput.cols.selected, graphInput.rows.selected], ([newCols, newRows]) => {
         if(newCols) {
             graphInput.cols.invalid = checkInvalid('cols')
-            setAllowedTypes()
+            graphInput.cols.allowedTypes = setAllowedTypes()
         }
         if(newRows) {
             graphInput.rows.invalid = checkInvalid('rows')

@@ -47,6 +47,13 @@ const getRowRange = async(baseRange: number[]):  Promise<number[]> => {
     return data
 }
 
+const adjustForReturnType =  (data: number|string|boolean) => {
+    if  (typeof data === 'string') {
+        return data.length;
+    }
+    return data;
+}
+
 const getDataRowBased = async(lable: string[], dataLocation: number[]): Promise<ChartData> => {
     let usedDataLocations:number[] = [];
     return {
@@ -60,7 +67,7 @@ const getDataRowBased = async(lable: string[], dataLocation: number[]): Promise<
                     if (!usedDataLocations.includes(row.id)) {
                         usedDataLocations.push(row.id);
                     }
-                    dataPoints.push(row[lable]);
+                    dataPoints.push(adjustForReturnType(row[lable]));
                 }
             }
             
@@ -87,7 +94,7 @@ const getDataColBased = async (lable: string[], dataLocation: number[]): Promise
             return {
                 label: String(rowId),
                 data: lable.map((lable) => {
-                    return props.computedDisplayData.value[rowId][lable]
+                    return adjustForReturnType(props.computedDisplayData.value[rowId][lable])
                 })
             }
         }),
@@ -97,6 +104,9 @@ const getDataColBased = async (lable: string[], dataLocation: number[]): Promise
 
 
 const computedGraphInputData = computed(async(): Promise<ChartData> => {
+    // Force dependency tracking for props.computedDisplayData
+    const _ = props.computedDisplayData.value;
+    
     if (props.graphData.data.source  ===  props.graphData.label.source){
         useStatusMessage().newStatusMessage(
             'Graph data source and label source are the same. Please check your graph input.',

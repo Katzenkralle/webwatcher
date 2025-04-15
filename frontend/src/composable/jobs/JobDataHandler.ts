@@ -370,7 +370,7 @@ export const useJobDataHandler = (
 export const useJobUiCreator = (jobId: number) => {
     const intenalColums = [...Object.keys(DUMMY_JOB_ENTRY).filter((col) => col != 'context'), 'id'];
 
-    const hiddenColumns = ref<string[]>([]);
+    const hiddenColumns = ref<string[]>(intenalColums);
     const fetchAmount = ref(30);
     const page = ref(0);
     const sortByString = ref<sortByString>({ key: "", ignoreColumns: [], caseInsensitive: true });
