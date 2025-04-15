@@ -116,7 +116,7 @@ class MongoDbHandler:
 
         if entry_id is None:
             # Generate a new entryId
-            entry_id = self.__db.job_data.count_documents({"job_id": job_id}) + 1
+            entry_id = self.__db.job_data.find({"job_id": job_id}).sort({"call_id": -1}).limit(1)[0]["call_id"] + 1
         elif not entry:
             raise ValueError(f"Tried to update inexistent entry {entry_id} in job {job_id}")
 

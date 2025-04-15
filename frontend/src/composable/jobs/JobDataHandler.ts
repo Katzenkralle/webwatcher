@@ -83,8 +83,9 @@ export const useJobDataHandler = (
                         return data;
                     })
                     .catch((e) => {
-                        console.log(e);
+                        console.error(e);
                         reportError(e);
+                        allFetched.value = true;
                         return {}
                     })
                 };
@@ -228,7 +229,6 @@ export const useJobDataHandler = (
     });
 
     const computedFilterdJobData = computed(() => {
-        console.debug("Recomputed Display Data");
         let flattendJobEntys: flattendJobEnty[] = Object.keys(localJobData.value).map((key: string) => {
             const index = parseInt(key);
             const row = localJobData.value[index];
@@ -370,7 +370,7 @@ export const useJobDataHandler = (
 export const useJobUiCreator = (jobId: number) => {
     const intenalColums = [...Object.keys(DUMMY_JOB_ENTRY).filter((col) => col != 'context'), 'id'];
 
-    const hiddenColumns = ref<string[]>(intenalColums);
+    const hiddenColumns = ref<string[]>(intenalColums.filter((col) => col != 'id'));
     const fetchAmount = ref(30);
     const page = ref(0);
     const sortByString = ref<sortByString>({ key: "", ignoreColumns: [], caseInsensitive: true });
