@@ -23,9 +23,9 @@ class Mutation:
         if Config().app.disable_script_upload:
             return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False, validation_msg="Script upload is disabled")
         uuid = uuid4().hex
-        path = CONFIG.SCRIPTS_TEMP_PATH + info.context["user"].username + CONFIG.SCRIPTS_TEMP_SUFFIX + uuid
+        path = CONFIG.SCRIPTS_TEMP_PATH + info.context["user"].username + uuid + CONFIG.SCRIPTS_TEMP_SUFFIX
         b64_to_file(file, path)
-        module_path = CONFIG.MODULE_TEMP_PREFIX + info.context["user"].username + CONFIG.MODULE_TEMP_SUFFIX
+        module_path = CONFIG.MODULE_TEMP_PREFIX + info.context["user"].username + uuid + CONFIG.MODULE_TEMP_SUFFIX
         script_check_result = script_checker(module_path)
         if isinstance(script_check_result, tuple) and name is not None:
             old_script_config_data = await info.context["request"].state.maria.get_script_info(name)

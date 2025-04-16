@@ -19,11 +19,15 @@ def script_checker(module_name: str)  -> tuple[str, dict[str, Type[str | int | b
 
         try:
             config_schema = instance.get_config_schema()
+            if any(key in CONFIG.ILLEGAL_KEYS for key in config_schema.keys()):
+                return ScriptFormatException(f"Config schema contains illegal keys: {CONFIG.ILLEGAL_KEYS}")
         except Exception as e:
             return ScriptException(f"Exception while getting config schema: {e}")
 
         try:
             return_schema = instance.get_return_schema()
+            if any(key in CONFIG.ILLEGAL_KEYS for key in return_schema.keys()):
+                return ScriptFormatException(f"Return schema contains illegal keys: {CONFIG.ILLEGAL_KEYS}")
         except Exception as e:
             return ScriptException(f"Exception while getting return schema: {e}")
 
