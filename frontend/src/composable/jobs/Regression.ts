@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue';
+// @ts-ignore
 import regression from 'regression';
 import { useJobDataHandler } from './JobDataHandler';
 import { parse } from 'mathjs';

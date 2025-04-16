@@ -27,7 +27,7 @@ class MongoConnection:
 @dataclass
 class Crypto:
     secret_key: str = None
-    algorithm: str = None
+    algorithm: str = 'HS256'
 
 class Config:
     _instance = None

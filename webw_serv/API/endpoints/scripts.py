@@ -138,10 +138,4 @@ class Query:
                    id_: int = strawberry.argument(name="id")) -> job_entrys_result:
         pass
 
-    @strawberry.field
-    @user_guard()
-    async def user_job_config(self, info: strawberry.Info, id_: int = strawberry.argument(name="id")) -> user_job_config_result:
-        pass
-
-
     

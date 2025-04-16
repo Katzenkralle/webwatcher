@@ -30,12 +30,16 @@ services:
       target: production
     image: katzenkralle/webwatcher:latest 
     profiles: ["production"]
+    environment:
+      - APP_DEFAULT_ADMIN_USERNAME=admin
+      - APP_DEFAULT_ADMIN_PASSWORD=$2b$12$SNsRVcWKAEB/h5x0tUXqQeoBwc8MY3seQFD3mPmu9Z4I6NUvQgHQS
+      - CRYPTO_SECRET_KEY=51bc0c1562e265a67af236137d6b17f14e5e1c5c580c066dff775b2d53f05d04
     networks:
       - internal
       - global
       - reverse-proxy
     ports:
-      - "8080:8080"
+      - "80:8080"
   webwatcher-dev:
     build:
       context: .
