@@ -145,8 +145,7 @@ class MariaDbHandler:
             input_schema=input_schema
         )
 
-    async def add_script(self, fs_path: str, name: str, description: str | None,
-                         excpected_return_schema: dict, temporary: bool) -> bool:
+    async def add_temp_script(self, fs_path: str, name: str, excpected_return_schema: dict) -> bool:
         excpected = "{"
         for key, value in excpected_return_schema.items():
             if value == str:
@@ -160,7 +159,42 @@ class MariaDbHandler:
 
         self.__cursor.execute("""INSERT INTO script_list (fs_path, name, description, excpected_return_schema, temporary) 
         VALUES (?, ?, ?, ?, ?)""",
-                              (fs_path, name, description, excpected, temporary))
+                              (fs_path, name, None, excpected, True))
+        self.__conn.commit()
+        return True
+
+    async def clear_temp_scripts(self) -> bool:
+        self.__cursor.execute("""DELETE FROM script_list WHERE temporary = 1""")
+        self.__conn.commit()
+        return True
+
+    async def delete_script(self, name: str) -> bool:
+        self.__cursor.execute("""DELETE FROM script_list WHERE name = ?""", (name,))
+        self.__conn.commit()
+        return True
+
+    async def transfer_script(self, id_: str, name: str, description: Optional[str] = None) -> bool:
+        self.__cursor.execute("SELECT * FROM script_list WHERE name = ?", (id_,))
+        script = self.__cursor.fetchone()
+        if not script:
+            raise ValueError("Script not found")
+        if description is None:
+            description = script[2]
+        self.__cursor.execute("""UPDATE script_list SET name = ?, description = ?, temporary = 0 WHERE name = ?""",
+                              (name, description, id_))
+        self.__conn.commit()
+        return True
+
+    async def edit_script_description(self, name: str, description: Optional[str] = None) -> bool:
+        self.__cursor.execute("SELECT * FROM script_list WHERE name = ?", (name,))
+        script = self.__cursor.fetchone()
+        if not script:
+            raise ValueError("Script not found")
+        if description is None:
+            description = script[2]
+        self.__cursor.execute("""UPDATE script_list SET description = ? WHERE name = ?""",
+                              (description, name))
+        self.__conn.commit()
         return True
 
     async def register_session(self, username: str, name: str|None = None) -> DbSession:
