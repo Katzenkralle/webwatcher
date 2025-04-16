@@ -126,7 +126,7 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
       </div>
       <div :class="{'bottom-0': true,
                     'transform scale-80 !border-info': getDraggingInfo().value?.type === 'group',
-                    'collapse': getDraggingInfo().value?.type !== 'group'}">
+                    'collapse h-0': getDraggingInfo().value?.type !== 'group'}">
         <div class="w-full h-2 bg-panel"/>
           <p :class="{'text-center w-min': true, 'dragging-placeholder !border-info p-1 mt-1': getDraggingInfo().value}"
           @dragover="(e) => e.preventDefault()"
@@ -204,12 +204,12 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
         </div>
       </template>
 
-      <div class="relative w-[inherit] flex mt-auto h-8 w-full transition-all duration-300 overflow-x-hidden"
+      <div class="relative w-[inherit] flex mt-auto h-9.5 w-full transition-all duration-300 overflow-x-hidden"
            @mouseover="hoverAdditionArea = true"
            @mouseleave="hoverAdditionArea = false">
           
           <Transition name="addition-area">
-            <div class="flex flex-row max-w-128 w-fit justify-around items-center"
+            <div class="flex flex-row max-w-128 w-fit space-x-2 justify-around items-center"
               v-if="hoverAdditionArea">
               <template
               v-for="element in groupIterator.evaluatables">
@@ -225,7 +225,7 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
               <i class="pi pi-plus p-1 invisible"/>
             </div>
           </Transition>
-          <i :class="{'absolute pi pi-plus p-1 bg-(--p-primary-700) text-h-text rounded-full cursor-pointer': true,
+          <i :class="{'absolute pi pi-plus p-1.5 bg-(--p-primary-700) text-h-text rounded-full cursor-pointer': true,
           ' transition-all ease-in-out duration-900 transform top-[50%] -translate-y-1/2': true,
           'right-[50%] translate-x-1/2': !hoverAdditionArea,
           'right-[0]': hoverAdditionArea }" 

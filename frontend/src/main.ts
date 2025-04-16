@@ -27,7 +27,8 @@ app.use(PrimeVue, {
             cssLayer: {
                 name: 'primevue',
                 order: 'base, primevue, theme, components, utilities'
-            }
+            },
+            darkModeSelector: '.dark'
         }
     }
  });

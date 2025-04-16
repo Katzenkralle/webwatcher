@@ -13,7 +13,9 @@ from ..gql_types import user_display_config_result
 class Mutation:
     @strawberry.mutation
     @admin_guard()
-    async def create_user(self, info: strawberry.Info, username: str, password: str, is_admin: bool = False) -> UserResult:
+    async def create_user(self, info: strawberry.Info, username: str, password: str, current_user_password: str, is_admin: bool = False) -> UserResult:
+        if not hash_context.verify(current_user_password, info.context["user"].password):
+            return Message(message="Your Password is incorrect!", status=MessageType.DANGER)
         try:
             return  StrawberryUser(**asdict(
                 await info.context["request"].state.maria.create_user(username, get_hashed(password), is_admin)

@@ -12,9 +12,10 @@ import FloatLabel  from 'primevue/floatlabel';
 const userList = ref<User[]>([]);
 const thisUser = ref<User>();
 
-const newUser = ref<User & {password: string}>({
+const newUser = ref<User & {password: string, currentPassword: string}>({
     username: '',
     password: '',
+    currentPassword: '',
     isAdmin: false,
 });
 
@@ -29,6 +30,10 @@ onMounted (async() => {
     <div  class="flex flex-col">
         <div class="input-box">
             <label>Create User</label>
+            <FloatLabel variant="in">
+                <InputText  id="username" v-model="newUser.currentPassword" />
+                <label for="username">Your Password</label>
+            </FloatLabel>
             <FloatLabel variant="in">
                 <InputText  id="username" v-model="newUser.username" />
                 <label for="username">Username</label>

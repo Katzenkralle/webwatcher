@@ -6,7 +6,7 @@ import Password from "primevue/password";
 import Button from "primevue/button";
 import InlineMessage from 'primevue/inlinemessage';
 
-import { useLoadingAnimation, useQueryRouting } from '@/composable/core/AppState';
+import { useLoadingAnimation, useQueryRouting, useStatusMessage } from '@/composable/core/AppState';
 import { getUser } from '@/composable/api/User';
 import { useRoute } from 'vue-router';
 
@@ -21,7 +21,7 @@ const submit = () => {
     useLoadingAnimation().setState(true);
     requestToken(username.value, password.value)
         .then(async(response: AuthResponse) => {
-            writeAuthCookie(response.token_type, response.access_token);
+            writeAuthCookie(response.token_type, response.access_token, location.protocol === 'http:');
             await getUser(true)
             useQueryRouting().routeToQuery();
         })
@@ -35,7 +35,7 @@ const submit = () => {
 
 onMounted(() => {
     if (route.query.token !== undefined && route.query.type !== undefined){
-        writeAuthCookie(route.query.type as string, route.query.token as string);
+        writeAuthCookie(route.query.type as string, route.query.token as string, location.protocol === 'http:');
         useQueryRouting().routeToQuery();
     } else {
         route.query.token = "";

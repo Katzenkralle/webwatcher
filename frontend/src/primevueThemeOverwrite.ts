@@ -312,15 +312,15 @@ export const MainTheme = definePreset(Lara, {
         colorScheme:{
             light:  {
                 surface: {
-                    400: 'var(--color-h-panel)',
+                    400: 'var(--color-h-panel-h)',
                     500: 'var(--color-h-panel-h)',
                     300: 'var(--color-h-panel-d)',
+                    0: 'var(--color-text)',
                     50: 'var(--color-h-text-h)',
-                    0: 'var(--color-h-text-h)',
                     100: 'var(--color-h-text)',
                     200: 'var(--color-h-text-d)',
                     600: 'var(--color-panel-h)',
-                    700: 'var(--color-h-text-h)',
+                    700: 'var(--color-base-h)',
                     800: 'var(--color-h-text-h)',
                     900: 'var(--color-crust)',
                     950: 'var(--color-crust-d)'

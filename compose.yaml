@@ -40,6 +40,8 @@ services:
       - reverse-proxy
     ports:
       - "80:8080"
+    volumes:
+      - webwatcher_data:/webw_serv_scripts_store
   webwatcher-dev:
     build:
       context: .
@@ -61,6 +63,7 @@ services:
     volumes:
       - maria_data:/mounted_maria
       - mongo_data:/mounted_mongo
+      - webwatcher_data:/mounted_webwatcher
 
 networks:
   internal:
@@ -76,4 +79,6 @@ volumes:
   mongo_data:
     driver: local
   maria_data:
+    driver: local
+  webwatcher_data:
     driver: local

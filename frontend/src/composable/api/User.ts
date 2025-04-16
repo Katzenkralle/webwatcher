@@ -78,11 +78,16 @@ export const allUsers = async (): Promise<User[]> => {
     });
 }
 
-export const createUser  = async (newUser: User & { password:  string }): Promise<User> => {
+export const createUser  = async (newUser: User & { password:  string, currentPassword: string }): Promise<User> => {
     useLoadingAnimation().setState(true);
     const mutation = `
-    mutation {
-        createUser(password: "${newUser.password}", username: "${newUser.username}", isAdmin: ${newUser.isAdmin}) {
+    mutation createNewUser ($password: String!, $username: String!, $currentPassword: String!, $isAdmin: Boolean) {
+        createUser(
+            password: $password,
+            username: $username,
+            currentUserPassword: $currentPassword,
+            isAdmin: $isAdmin
+        ) {
             __typename
             ... on User {
             isAdmin
@@ -95,7 +100,7 @@ export const createUser  = async (newUser: User & { password:  string }): Promis
         }
     }`;
 
-    return queryGql(mutation).then((response: GQLResponse) => {
+    return queryGql(mutation, newUser).then((response: GQLResponse) => {
         switch (response.providedTypes[0].type) {
             case "User":
                 useStatusMessage().newStatusMessage("User created", "success");

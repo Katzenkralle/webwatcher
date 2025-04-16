@@ -75,7 +75,7 @@ main, header, footer {
     w-full 
     max-w-256 
     justify-between 
-    overflow-x-scroll 
+    overflow-x-auto 
     overflow-y-hidden;
 }
 

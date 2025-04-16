@@ -39,9 +39,12 @@ export const getSessionFromJWT = () => {
     }
 }
 
-export function writeAuthCookie (type: string, token: string) {
+export function writeAuthCookie (type: string, token: string, allowInsecure: boolean = false) {
     document.cookie = 
-        `oauth2=${type} ${token};secure;paath=/;samesite=strict`;
+        `oauth2=${type} ${token};${allowInsecure ? ''  : 'secure;'}path=/;samesite=strict`;
+    if (allowInsecure) {
+        useStatusMessage().newStatusMessage('You are using a insecure connection. Please use HTTPS.', 'warn')
+        }
     }
 
 

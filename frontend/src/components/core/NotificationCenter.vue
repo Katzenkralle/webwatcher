@@ -118,15 +118,19 @@ watch(
                 'left-1/2 transform -translate-x-1/2': props.yExpand == 'center',
                 'top-1/2 transform -translate-y-1/2': props.xExpand == 'center',
         }">
-            <div class="absolute top-0 right-0 mt-2 mr-2" v-if="isOpendInteractive == 'interactivly'">
-                <Button @click="() => {
+
+
+            <div class="flex flex-col h-full w-full p-3 overflow-y-auto overflow-x-hidden">
+                <div  class="flex flex-row justify-center items-center space-between">
+                    <p></p>
+                    <h3 class="mx-auto mb-4 mt-2">{{ notificationHeader }}</h3>
+                    <Button @click="() => {
                     isOpendInteractive = null;
-                }" severity="danger" class="ml-auto" icon="pi pi-times"></Button>
-            </div>
-
-
-            <div class="flex flex-col h-full w-full p-3 overflow-y-scroll overflow-x-hidden">
-                <h3 class="mx-auto mb-4 mt-2">{{ notificationHeader }}</h3>
+                    }" 
+                    severity="danger" 
+                    class="ml-auto" 
+                    icon="pi pi-times"/>
+                </div>
                 <div class="grid grid-cols-3 gap-y-4 justify-items-stretch">
                     <template v-if="Object.keys(displayedMessages).length" v-for="([index, msg]) in Object.entries(displayedMessages).reverse()" >
                             <span class="grid_element col-span-2">
