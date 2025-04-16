@@ -9,4 +9,4 @@ def b64_to_file(b64_str, file_path):
         f.write(b64decode(b64_str))
 
 if __name__ == "__main__":
-    print(file_to_b64("/webwatcher/webw_serv/scripts/http_return.py"))
+    print(file_to_b64("/webw_serv_scripts_store/scripts/http_return.py"))
