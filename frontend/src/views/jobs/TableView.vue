@@ -17,6 +17,7 @@ import PopupDialog from "@/components/reusables/PopupDialog.vue";
 import FilterSelector from "@/components/filter/FilterSelector.vue";
 import GraphInput from "@/components/Graphs/GraphInput.vue";
 import GraphLoader from "@/components/Graphs/GraphLoader.vue";
+import Regression from "@/components/jobs/Regression.vue";
 
 import Button  from "primevue/button";
 import Accordion from 'primevue/accordion';
@@ -100,6 +101,17 @@ const graphCoardinator = ref();
         </AccordionPanel>
 
         <AccordionPanel value="2">
+            <AccordionHeader>Regression</AccordionHeader>
+              <AccordionContent>
+                <div class="content-box flex flex-col">
+                  <Regression
+                    :data-handler="jobHandler.jobDataHandler"
+                    />
+              </div>
+              </AccordionContent>
+        </AccordionPanel>
+
+        <AccordionPanel value="3">
             <AccordionHeader>Logical Filters</AccordionHeader>
               <AccordionContent>
                 <div class="content-box flex flex-col">
@@ -116,7 +128,7 @@ const graphCoardinator = ref();
               </AccordionContent>
         </AccordionPanel>
 
-        <AccordionPanel value="3">
+        <AccordionPanel value="4">
             <AccordionHeader>View Options</AccordionHeader>
               <AccordionContent>
                 <div class="content-box shrinkable">
