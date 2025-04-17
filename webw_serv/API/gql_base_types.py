@@ -17,17 +17,6 @@ class MessageType(Enum):
     AUTH_ERROR = "auth_error"
 
 
-@extend_enum(MessageType)
-class BaseResultType(Enum):
-    PERMISSION_ERROR = "permission_error"
-    FAILURE = "failure"
-    NETWORK_ERROR = "network_error"
-    OK = "ok"
-    NOT_OK = "not_ok"
-    UNHEALTHY = "unhealthy"
-    TIMEOUT = "timeout"
-    CATS_AND_DOGS = "cats_and_dogs"
-
 @strawberry.scalar
 class JsonStr(str):
     pass
@@ -47,10 +36,6 @@ class Parameter:
     key: str
     value: str
 
-@extend_enum(BaseResultType)
-@strawberry.enum
-class ResultType(Enum):
-    pass
 
 # Base types
 @strawberry.type()
@@ -123,7 +108,7 @@ class JobEntry:
     call_id: int
     timestamp: int
     runtime: int
-    result: ResultType
+    error_msg: str
     script_failure: bool
     context: Optional[JsonStr] = None
 

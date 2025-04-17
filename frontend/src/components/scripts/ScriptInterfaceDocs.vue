@@ -11,7 +11,7 @@ import hljs from 'highlight.js/lib/core' // for syntax highliting
 import python from 'highlight.js/lib/languages/python';
 import '@catppuccin/highlightjs/css/catppuccin-frappe.css'; // for syntax highliting   
 import WatcherInterfacePy from  '@/assets/static/watcher_interface.py?raw';
-import HttpReturnPy from '@/assets/static/http-return-example.py?raw';
+import HttpReturnPy from '@/assets/static/http_return_example.py?raw';
 
 const props = defineProps<{
   class: string,
@@ -48,33 +48,12 @@ ${WatcherInterfacePy}
 > \`\`\`
 
 ### Return of run()
-When called it must return a dictionary with the following keys:
+When called it must return a dictionary of the following format:
 \`\`\`py
-class JobEntry:
-    call_id: int
-    timestamp: int
-    runtime: int
-    result: ResultType
-    script_failure: bool
-    context: Optional[JsonStr] = None
-
-class ResultType(Enum):
-    PERMISSION_ERROR = "permission_error"
-    FAILURE = "failure"
-    NETWORK_ERROR = "network_error"
-    OK = "ok"
-    NOT_OK = "not_ok"
-    UNHEALTHY = "unhealthy"
-    TIMEOUT = "timeout"
-    CATS_AND_DOGS = "cats_and_dogs"
-    SECONDARY = "secondary"
-    SUCCESS = "success"
-    INFO = "info"
-    WARN = "warn"
-    HELP = "help"
-    DANGER = "danger" 
-    CONTRAST = "contrast"
-    AUTH_ERROR = "auth_error"
+return {
+    "<key>": <value>,  # where value is of type str, int, float, or bool
+    ...
+  }
 \`\`\`
 
 > **Note:** The \`context\` may never include thes keys: \`call_id\`, \`id\` \`timestamp\`, \`runtime\`, \`result\` and \`script_failure\`.  

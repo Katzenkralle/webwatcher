@@ -2,7 +2,6 @@
 import PopupDialog from '../reusables/PopupDialog.vue';
 import { onMounted, ref, defineComponent, h, computed, watchEffect} from 'vue';
 import type { jobEntryInput } from '@/composable/api/JobAPI';
-import {ALL_ERROR_DUMMY} from '@/composable/api/QueryHandler';
 import SmallSeperator from '../reusables/SmallSeperator.vue';
 
 import Textarea from 'primevue/textarea';
@@ -37,7 +36,7 @@ const writableEntryValues = ref(Object.keys(layout.value).reduce((acc, key: stri
     const get_default_val = () => {
       switch (layout.value[key]) {
         case 'string':
-          return key === 'result' ? ALL_ERROR_DUMMY[0] : '';
+          return '';
         case 'number':
           return 0;
         default:
@@ -83,34 +82,19 @@ const getElementForColumn = defineComponent({
         const computeInputElement = computed(() => {
             switch (selectedType.value) {
                 case 'string':
-                    const stringOrEnum  =  ()  => {
-                        //This is a bodge to avoid invalide enum assignments
-                        if(subprops.column === "result"){
-                            return h(Select, {
-                                options: ALL_ERROR_DUMMY,
-                                class: "w-full",
-                                readonly: props.readonly,
-                                modelValue: moduleValue.value as string,
-                                'onUpdate:modelValue': (val: string) => moduleValue.value = val 
-                            });
-                        } else {
-                            return h(Textarea, {
-                                class: "w-full",
-                                inputId: `${subprops.column}-string`,
-                                readonly: props.readonly,
-                                modelValue: moduleValue.value as string,
-                                "onUpdate:modelValue": (e: string) => moduleValue.value = e
-                            })
-                        }
-                    }
-
                     return h(FloatLabel, { variant: "in", class: 'w-full'  }, {
                         default: () => [
                             h('label', { for: `${subprops.column}-string`, class: 'z-10' }, [
                                 props.readonly ? h('span', {class: 'text-warning mr-2 '}, 'Readonly') : '', 
                                 "String"
                             ]),
-                            stringOrEnum()
+                            h(Textarea, {
+                                class: "w-full",
+                                inputId: `${subprops.column}-string`,
+                                readonly: props.readonly,
+                                modelValue: moduleValue.value as string,
+                                "onUpdate:modelValue": (e: string) => moduleValue.value = e
+                            })
                         ]
                     });
 

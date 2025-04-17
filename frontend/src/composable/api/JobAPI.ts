@@ -1,5 +1,5 @@
 import { KeepAlive, ref, type Ref} from 'vue';
-import { queryGql, reportError, type ErrorTypes } from "@/composable/api/QueryHandler" 
+import { queryGql, reportError } from "@/composable/api/QueryHandler" 
 
 export interface TableMetaData {
     id: number;
@@ -207,7 +207,7 @@ export const updateOrCreateJob = async(entry: TableMetaData): Promise<void> => {
 export interface jobEnty {	
     timestamp: number
 	runtime: number
-	result: ErrorTypes
+	errorMsg: string
 	scriptFailure: Boolean
 	context: Record<string, any>
 }
@@ -219,7 +219,7 @@ export interface jobEntryInput extends jobEnty {
 export const DUMMY_JOB_ENTRY: jobEnty = {
     timestamp: 0,
     runtime: 0,
-    result: "CATS_AND_DOGS",
+    errorMsg: "CATS_AND_DOGS",
     scriptFailure: false,
     context: {}
 }
@@ -256,7 +256,7 @@ export const useJobData = (jobId: number) => {
                         jobs {
                             callId
                             context
-                            result
+                            errorMsg
                             runtime
                             scriptFailure
                             timestamp
@@ -313,7 +313,7 @@ export const useJobData = (jobId: number) => {
                         __typename
                         context
                         callId
-                        result
+                        errorMsg
                         runtime
                         scriptFailure
                         timestamp

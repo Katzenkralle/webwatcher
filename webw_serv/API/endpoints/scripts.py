@@ -3,12 +3,12 @@ import strawberry
 from typing_extensions import Optional
 from uuid import uuid4
 
-from db_handler import MariaDbHandler
+from webw_serv.db_handler import MariaDbHandler
 from webw_serv.watcher.script_checker import script_checker
 from webw_serv.utility.file_to_b64 import b64_to_file
 from webw_serv import CONFIG
 
-from ..gql_base_types import PaginationInput, ResultType, JsonStr, MessageType, Message
+from ..gql_base_types import PaginationInput, JsonStr, MessageType, Message
 from ..endpoints.auth import admin_guard, user_guard
 from ..gql_base_types import ScriptValidationResult, Parameter, B64Str
 from ..gql_types import script_content_result, jobs_metadata_result, jobs_settings_result, job_entrys_result, \
@@ -127,15 +127,3 @@ class Query:
     @user_guard()
     async def job_settings(self, info: strawberry.Info, id_: int = strawberry.argument(name="id")) -> jobs_settings_result:
         pass
-
-    @strawberry.field
-    @user_guard()
-    async def jobs_entry(self, info: strawberry.Info, nth_element: PaginationInput,
-                   time_filter: Optional[list[int]] = strawberry.UNSET,
-                   result: Optional[ResultType] = strawberry.UNSET,
-                   runtime: Optional[int] = strawberry.UNSET,
-                   script_failure: Optional[bool] = strawberry.UNSET,
-                   id_: int = strawberry.argument(name="id")) -> job_entrys_result:
-        pass
-
-    

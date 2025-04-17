@@ -6,4 +6,4 @@ MODULE_TEMP_PREFIX: str = "scripts_temp."
 SCRIPTS_TEMP_PATH: str = "./webw_serv_scripts_store/temp_scripts/"
 MODULE_TEMP_SUFFIX: str = "_temp"
 SCRIPTS_TEMP_SUFFIX: str = "_temp.py"
-ILLEGAL_KEYS: list[str] = ["id", "timestamp", "runtime", "result", "scriptFailure"]
+ILLEGAL_KEYS: list[str] = ["id",  "call_id", "timestamp", "runtime", "error_msg", "scriptFailure"]
