@@ -65,7 +65,7 @@ class Mutation:
 
     @strawberry.mutation
     @admin_guard()
-    async def upload_script_data(self, info: strawberry.Info, name: str, description: Optional[str], temporary: bool, id_: Optional[str] = strawberry.argument(name="id")) -> job_metadata_result:
+    async def upload_script_data(self, info: strawberry.Info, name: str, description: Optional[str], temporary: bool, id_: Optional[str] = strawberry.argument(name="id")) -> script_content_result:
         maria: MariaDbHandler = info.context["request"].state.maria
         if temporary:
             try:
@@ -82,7 +82,7 @@ class Mutation:
 
     @strawberry.mutation
     @admin_guard()
-    async def delete_script(self, info: strawberry.Info, name: str) -> job_metadata_result:
+    async def delete_script(self, info: strawberry.Info, name: str) -> Message:
         maria: MariaDbHandler = info.context["request"].state.maria
         try:
             await maria.delete_script(name)

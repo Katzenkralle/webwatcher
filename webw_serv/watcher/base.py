@@ -2,8 +2,6 @@ from abc import ABC, abstractmethod
 
 from typing_extensions import Any, Type
 
-from webw_serv.API.gql_base_types import JobEntry
-
 
 class Watcher(ABC):
     """
@@ -19,19 +17,19 @@ class Watcher(ABC):
         :raises ValueError: If the configuration is invalid.
 
         :param config: The configuration for the watcher.
-        :type config: dict[str, any]
+        :type config: dict[str, Any]
 
         :return: None
         """
         pass
 
     @abstractmethod
-    def run(self) -> JobEntry:
+    def run(self) -> dict[str, Any]:
         """
         Executes the watcher and returns the context of the entries that have been changed.
         
         :return: A list of entries that have been changed.
-        :rtype: list[dict[str, any]]
+        :rtype: dict[str, Any]
         """
         pass
 
