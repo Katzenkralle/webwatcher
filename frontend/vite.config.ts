@@ -41,5 +41,6 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(version),
     __APP_LICENSE__: JSON.stringify(license),
     __APP_REPOSETORY__: JSON.stringify(repository),
-  }
+  },
+  assetsInclude: ['**/*.py'],
 })

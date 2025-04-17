@@ -1,0 +1,49 @@
+@plugin "@tailwindcss/typography";
+
+@layer theme {
+    .prose {
+        /*  Light theme not implemented 
+        --tw-prose-body: var(--color-text);
+        --tw-prose-headings: var(--color-text-h);
+        --tw-prose-lead: var(--color-text-h);
+        --tw-prose-links: var(--color-info);
+        --tw-prose-bold: var(--color-text-h);
+        --tw-prose-counters: var(--color-text-d);
+        --tw-prose-bullets: var(--color-text-d);
+        --tw-prose-hr: var(--color-base-h);
+        --tw-prose-quotes: var(--color-text-h);
+        --tw-prose-quote-borders: var(--color-base-h);
+        --tw-prose-captions: var(--color-text-d);
+        --tw-prose-code: var(--color-special);
+        --tw-prose-pre-code: var(--color-text-h);
+        --tw-prose-pre-bg: var(--color-crust);
+        --tw-prose-th-borders: var(--color-base-h);
+        --tw-prose-td-borders: var(--color-base-h);
+        --tw-prose-invert-kbd: var(--color-text-h) !important;
+        --tw-prose-invert-kbd-shadows: var(--color-base) !important;
+        */
+
+        --tw-prose-invert-body: var(--color-text) !important;
+        --tw-prose-invert-headings: var(--color-text) !important;
+        --tw-prose-invert-lead: var(--color-text-h) !important;
+        --tw-prose-invert-links: var(--color-info-h) !important;
+        --tw-prose-invert-bold: var(--color-text-h) !important;
+        --tw-prose-invert-counters: var(--color-text-d) !important;
+        --tw-prose-invert-bullets: var(--color-text-d) !important;
+        --tw-prose-invert-hr: var(--color-panel-h) !important;
+        --tw-prose-invert-quotes: var(--color-text-h) !important;
+        --tw-prose-invert-quote-borders: var(--color-panel-h) !important;
+        --tw-prose-invert-captions: var(--color-text-d) !important;
+        --tw-prose-invert-code: var(--color-special-h) !important;
+        --tw-prose-invert-pre-code: var(--color-text) !important;
+        --tw-prose-invert-pre-bg: var(--color-crust-d) !important;
+        --tw-prose-invert-th-borders: var(--color-panel-h) !important;
+        --tw-prose-invert-td-borders: var(--color-panel) !important;
+        --tw-prose-invert-kbd: var(--color-text-h) !important;
+        --tw-prose-invert-kbd-shadows: var(--color-base) !important;
+    }
+    .prose blockquote p::before,
+    .prose blockquote p::after {
+        content: none !important;
+    }
+}

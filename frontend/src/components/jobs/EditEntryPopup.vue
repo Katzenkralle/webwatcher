@@ -209,6 +209,7 @@ const waitEmitClose = () => {
         :title="props.readonly ?  'Entry Details' : 'Edit Details'"
         passthrou-classes="w-full h-full md:w-3/4 md:max-h-[95%] overflow-scroll"
         :hide-seperator="true"
+        :close-only="props.readonly"
         @cancel="waitEmitClose"
         @submit="(submited) => {submited ? submitChanges() : ''; waitEmitClose()}"
     >
@@ -279,17 +280,6 @@ const waitEmitClose = () => {
                     </InputGroup>
                     </div>
             </div>
-        </template>
-
-        <template v-if="props.readonly" #footer>
-            <dev class="w-full justify-end flex flex-row mt-auto">
-                <Button 
-                    label="Cancel" 
-                    @click="waitEmitClose" 
-                    icon="pi pi-times" 
-                    size="small" 
-                    class="mr-2 max-h-12" />
-            </dev>
         </template>
     </PopupDialog>
 </template>

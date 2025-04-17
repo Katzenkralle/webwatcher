@@ -1,7 +1,7 @@
 @import url("./fonts.css");
 @import "tailwindcss";
 @import './components.css';
-
+@import './tailwind-typography.css';
 @layer base, primevue, utilities, theme;
 
 

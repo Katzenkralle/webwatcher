@@ -5,6 +5,7 @@ import { getAllScripts, globalScriptData, deleteScript } from '@/composable/api/
 import { ref, computed, onMounted } from 'vue';
 
 import InputText from 'primevue/inputtext';
+import ScriptInterfaceDocs from '@/components/scripts/ScriptInterfaceDocs.vue';
 
 import SmallSeperator from '@/components/reusables/SmallSeperator.vue';
 import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue';
@@ -38,11 +39,15 @@ const formattedGlobalScriptData = computed(() =>
     <main class="flex justify-center">
         <div class="main_content">
             <h1>Script Overview</h1>
-            <p class="subsection"> Here, you can upload new Watcher-Scripts, which can then be converted into Jobs.
+            <div class="subsection flex flex-col">
+                <p> Here, you can upload new Watcher-Scripts, which can then be converted into Jobs.
                 Additionally, the description and script of already uploaded ones may be edited.
-                <br>
-                <a class="font-bold">Note:</a> The available parameters that the script receives, as well as its name, must not be changed!
-            </p>
+                    <br>
+                    <a class="font-bold">Note:</a> The available parameters that the script receives, as well as its name, must not be changed!
+                </p>
+                <ScriptInterfaceDocs
+                    class="mx-auto mt-4"/>
+            </div>
             <SmallSeperator :isDashed="true" class="mb-10"/>
             
             <div class="w-full flex flex-wrap justify-between items-end">
