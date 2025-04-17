@@ -24,7 +24,7 @@ class Watcher(ABC):
         pass
 
     @abstractmethod
-    def run(self) -> dict[str, Any]:
+    def run(self) -> dict[str, Type[str | int | bool | float]]:
         """
         Executes the watcher and returns the context of the entries that have been changed.
         
@@ -35,7 +35,7 @@ class Watcher(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_return_schema() -> dict[str, Type[str | int | bool]] | None:
+    def get_return_schema() -> dict[str, Type[str | int | bool | float]] | None:
         """
         Returns the schema that the watcher will return the 'context' of a entry in.
         If none, the watcher may use a dynamic schema.
@@ -47,7 +47,7 @@ class Watcher(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_config_schema() -> dict[str, Type[str | int | bool]] | None:
+    def get_config_schema() -> dict[str, Type[str | int | bool | float]] | None:
         """
         Returns the schema that the watcher will use for the configuration.
 

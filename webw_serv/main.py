@@ -4,8 +4,8 @@ import shutil
 from apscheduler.schedulers.background import BackgroundScheduler
 from contextlib import asynccontextmanager
 
-import CONFIG
-from utility.oven_cleaner import cleanup_folder
+from webw_serv import CONFIG
+from webw_serv.utility.oven_cleaner import cleanup_folder
 from webw_serv.API.core import get_routes
 from webw_serv.configurator import Config
 
