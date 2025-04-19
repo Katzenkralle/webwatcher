@@ -95,8 +95,8 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
 </script>
 
 <template>
-    <main class="flex w-full justify-center">
-        <div class="card flex flex-col">
+    <main>
+        <div>
             <div class="grid grid-cols-3 items-center">
                 <NavButtons />
                 <h1 v-if="!isEdit">Create Job</h1>

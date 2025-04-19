@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect, watch, onMounted, h, type PropType, type VNode, defineComponent, Transition } from "vue";
+import { ref, computed, watchEffect, watch, onMounted, h, type PropType, type VNode, defineComponent, Transition, onUnmounted } from "vue";
 import { useLoadingAnimation, useStatusMessage } from "@/composable/core/AppState";
 import { getAllJobMetaData, globalTableMetaData, type TableMetaData } from "@/composable/api/JobAPI";
 import router from "@/router";import Button from 'primevue/button';
@@ -15,6 +15,7 @@ interface BarItem {
     icon?: string;
     route?: string;
     items?: BarItem[];
+    placeItems?: 'below' | 'side';
     badge?: number;
     image?: string;
     style?: "highlighted";
@@ -26,21 +27,37 @@ interface BarItem {
     passThroughComponent?: () =>  VNode; 
 }
 
+// Check if screen width is smaller than --breakpoint-sm
+const isMobile = ref(false);
+const breakpointSm = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--breakpoint-sm').replace('px', ''));
+
+const updateMobileState = () => {
+    isMobile.value = window.innerWidth < breakpointSm;
+};
+
+onMounted(() => {
+    updateMobileState();
+    
+    window.addEventListener('resize', updateMobileState);
+});
+
+onUnmounted(() => {
+    // Clean up resize listener
+    window.removeEventListener('resize', updateMobileState);
+});
+
 const tableMetaData = ref<TableMetaData[]>([]);
 
-const computeOptions = computed((): BarItem[] => {
+const extendedOptions = computed((): BarItem[] => {
     const isSlimMode = router.currentRoute.value.path === '/login';
-    return [
-        {
-            image: new URL('@/assets/img/placeholder.png', import.meta.url).href,
-            route: "/",
-        },
-        ...(isSlimMode ? [] : [
+    
+    return isSlimMode ? [] : [
             {
                 label: "Jobs",
                 icon: "",
                 route: "/jobs",
                 badge: tableMetaData.value.length,
+                placeItems: isMobile.value ? "side" : "below",
                 items: [{label: "Overview", route:"/jobs", style: 'highlighted' as "highlighted"}, // wtf is this syntax?
                     ...tableMetaData.value.map((element) => {
                         return {
@@ -56,7 +73,17 @@ const computeOptions = computed((): BarItem[] => {
                 label: "Settings",
                 route: "/settings",
             }
-        ]),
+        ]
+    });
+
+const computeOptions = computed((): BarItem[] => {
+    return [
+        {
+            image: new URL('@/assets/img/placeholder.png', import.meta.url).href,
+            route: "/",
+            items:  [...(isMobile.value ? extendedOptions.value : []),]
+        },
+        ...(!isMobile.value ? extendedOptions.value : []),
         {
             aligned: "end",
             passThroughComponent: () => h(NotificationCenter, { 
@@ -98,7 +125,9 @@ const ItemRenderer = defineComponent({
         }
     },
     setup(props) {
-        const  itemsHover = ref(false);
+        const itemsHover = ref(false);
+        const hasItems = computed(() => props.item.items && props.item.items.length > 0); 
+
         const isCurrentRoute = computed(() => {
             if (!props.item.route) return false;
             if (props.item.route === "/") return router.currentRoute.value.path === props.item.route 
@@ -115,17 +144,16 @@ const ItemRenderer = defineComponent({
                         props.item.icon && h("span", { class: props.item.icon }),
                         props.item.label && h("span", {}, props.item.label),
                         props.item.badge && h(Badge, { size: "small", value: props.item.badge, class:  "ml-2" }),
-                        props.item.items && h("span", { class: "pi pi-fw pi-angle-down" })
+                        hasItems.value && h("span", { class: "pi pi-fw pi-angle-down" })
                 ]
             }
         const populationContainerClass = 'h-full flex flex-row items-center justify-center space-x-1'
-
         return (): any => h("div", { 
-            class: "h-full",
+            class: "h-full relative",
             onMouseenter: () => { itemsHover.value = true; },
             onMouseleave: () => { itemsHover.value = false; }
         }, [
-            h("div", { class: `${props.item.items ? 'min-w-25' : ''}  min-h-10 h-full py-1 px-2 rounded-lg gap-2 text-lg \
+            h("div", { class: `${hasItems.value ? 'min-w-25' : ''} min-h-10 h-full py-1 px-2 rounded-lg gap-2 text-lg \
                 ${isCurrentRoute.value ? 'bg-info/20' : ''} hover:bg-panel-h \
                 ${props.item.style ===  'highlighted' ? 'font-bold' : ''}`  }, [
                 props.item.route 
@@ -140,7 +168,7 @@ const ItemRenderer = defineComponent({
                         default: () => getPopulation(),
                     })
             ]),
-            props.item.items && h(Transition, { 
+            hasItems.value && h(Transition, { 
                 name: 'dropdown',
                 enterActiveClass: 'transition ease-out duration-200',
                 enterFromClass: 'transform opacity-0 scale-y-0 origin-top',
@@ -151,7 +179,10 @@ const ItemRenderer = defineComponent({
             }, {
                 default: () => itemsHover.value 
                     ? h(ItemContainerVertical, 
-                        { items: props.item.items as BarItem[], slave: !props.slave})
+                        { items: props.item.items as BarItem[], slave: !props.slave, place: props.item.placeItems,
+                            class: props.item.placeItems === "side" ? "top-0 right-0 translate-x-full" 
+                            : "" }, 
+                        )
                     : null
             }),
         ]);
@@ -174,10 +205,7 @@ const ItemContainerHorizontal = defineComponent({
         const getItemLayout = (item: BarItem) => {
             if (item.passThroughComponent) {
             return item.passThroughComponent()
-        }
-
-            
-
+            }   
             return h(ItemRenderer, { item, slave: props.slave })
         }
 

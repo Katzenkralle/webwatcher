@@ -45,7 +45,7 @@ onMounted(() => {
 
 </script>
 <template>
-    <main class="flex flex-col items-center justify-center">
+    <main class="justify-center">
             <h1>Login</h1>
             <form @submit.prevent="submit" class="flex flex-col w-1/4 mt-8 min-w-74 max-w-256">
                 <div class="input-box">

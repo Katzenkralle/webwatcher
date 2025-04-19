@@ -73,8 +73,8 @@ const computedInfoCards = computed((): InfoCard[] => {
 </script>
 
 <template>
-  <main class="flex flex-col items-center">
-    <div class="main_content">
+  <main>
+    <div>
     <h1>Home</h1>
     <SmallSeperator :is-dashed="true" class="my-4"/>
     <h3 class="mr-auto">Interesting Places:</h3>

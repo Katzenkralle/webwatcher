@@ -51,12 +51,13 @@ const curentAccordion = ref<string[]>(['0']);
 </script>
 
 <template>
-    <main class="flex flex-col items-center">
+    <main>
+        <div>
         <h1>General Settings</h1>
 
         <SmallSeperator :is-dashed="true" class="my-4"/>
         <Accordion 
-            class="w-full max-w-256 mb-2"
+            class="mb-2"
             :value="curentAccordion"
             @update:value="(value) => {
                 curentAccordion = typeof value === 'string' 
@@ -72,7 +73,7 @@ const curentAccordion = ref<string[]>(['0']);
                 <AccordionHeader>{{ component.name  }}</AccordionHeader>
                 <AccordionContent>
                     <!-- Using th v-if the component is only loaded when opening, 
-                     potentialy saving API requests; transition needet to allow animation to finish  -->
+                    potentialy saving API requests; transition needet to allow animation to finish  -->
                     <Transition name="fade" :duration="1000">
                         <component  
                             v-if="curentAccordion.includes(component.value)" 
@@ -82,5 +83,6 @@ const curentAccordion = ref<string[]>(['0']);
             </AccordionPanel>
 
         </Accordion>
-        </main>
+        </div>
+    </main>
 </template>

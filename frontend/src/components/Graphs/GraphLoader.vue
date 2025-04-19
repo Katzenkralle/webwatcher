@@ -37,10 +37,8 @@ watch(()  => props.userConfig.graph.value, async(newVal) => {
                     <FloatLabel variant="in">
                         <InputText
                             size="small"
-                            :model-value="changedGraphNames[index] ?? graph.name"
                             @update:model-value="(e) => changedGraphNames[index] = e  ?? ''"
-                            placeholder="Graph Title"
-                        />
+                            :model-value="changedGraphNames[index] ?? graph.name"/>
                         <label>Graph Name</label>
                     </FloatLabel>
                     <template v-if="changedGraphNames[index] && changedGraphNames[index] !== graph.name">

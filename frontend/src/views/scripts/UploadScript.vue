@@ -109,83 +109,83 @@ const computedScriptParamTable = computed(() => {
 </script>
 
 <template>
-    <main class="flex flex-col items-center w-screen">
-            <div class="card flex flex-col">
-                <div class="grid grid-cols-3 items-center">
-                    <NavButtons />
-                    <h1>{{currentScriptName ? "Edit Script" : "Upload Script"}}</h1>
-                </div>
+    <main>
+        <div>
+            <div class="grid grid-cols-3 items-center">
+                <NavButtons />
+                <h1>{{currentScriptName ? "Edit Script" : "Upload Script"}}</h1>
+            </div>
 
-                    <div class="input-box">
-                        <label for="scriptName">Script Name</label>
-                        <InputText 
-                            id="scriptName" 
-                            :disabled="currentScriptName !== ''"
-                            aria-describedby="scriptNameHelp"
-                            :default-value="currentScriptName" 
-                            v-model="nameStatus.field" />
-                        <small id="scriptNameHelp">Choose a name for the script</small>
-                        <InlineMessage target="scriptName" :severity="nameStatus.severity">{{nameStatus.summary}}</InlineMessage>
-                    </div>
-                    <div class="input-box">
-                        <label for="scriptDiscription">Add a discription</label>
-                        <Textarea 
-                            id="scriptDiscription" 
-                            v-model="discription" 
-                            :default-value="computedScript?.description || ''"
-                            autoResize 
-                            rows="5"
-                            cols="30" />
-                    </div>
-
-
-                    <div class="input-box"> 
-                        <label for="fileSelect">Select a file to upload</label>
-                        <div class="bg-panel-h rounded-lg">
-                            <FileUpload 
-                                id="fileSelect"
-                                mode="basic" 
-                                class="mr-auto"
-                                name="demo[]" 
-                                customUpload 
-                                chooseLabel="Select File" 
-                                @select="onFileSelect" 
-                            />
-                        </div>
-                        <InlineMessage 
-                            target="fileSelect"
-                            class="ml-auto w-fit"
-                            :severity="fileStatus.severity">
-                            {{ fileStatus.summary }}
-                        </InlineMessage>
-                        <small>From this file the data is collected.</small>
-                        <div :class="{
-                            // We cannot use hidden here, for we need to animate the element
-                            'opacity-0 w-0 h-0': fileStatus.severity !== 'success',
-                            'visible opacity-100 w-auto h-auto': fileStatus.severity === 'success',
-                            'transition-all duration-1000 ease-in-out overflow-hidden': true
-                        }"> 
-                        <DataTable :value="computedScriptParamTable" class="mt-4">
-                            <template #header>
-                                <h4>Script Parameters</h4>
-                            </template>
-                            <Column field="0" header="Parameter"></Column>
-                            <Column field="1" header="Type"></Column>
-                            <template #footer>
-                                <p class="italic">The available parameters</p>
-                            </template>
-                        </DataTable>
-                        <a v-if="fileStatus.supportsStaticSchema" class="text-success">Can be used with static schema</a>
-                        <a v-else class="text-warning">Cannot be used with static schema</a>
-                    </div>
+                <div class="input-box">
+                    <label for="scriptName">Script Name</label>
+                    <InputText 
+                        id="scriptName" 
+                        :disabled="currentScriptName !== ''"
+                        aria-describedby="scriptNameHelp"
+                        :default-value="currentScriptName" 
+                        v-model="nameStatus.field" />
+                    <small id="scriptNameHelp">Choose a name for the script</small>
+                    <InlineMessage target="scriptName" :severity="nameStatus.severity">{{nameStatus.summary}}</InlineMessage>
                 </div>
                 <div class="input-box">
-                    <Button
-                        label="Submit"
-                        :disabled="!noErrors"
-                        @click="() => onSubmit()"
-                    />
+                    <label for="scriptDiscription">Add a discription</label>
+                    <Textarea 
+                        id="scriptDiscription" 
+                        v-model="discription" 
+                        :default-value="computedScript?.description || ''"
+                        autoResize 
+                        rows="5"
+                        cols="30" />
+                </div>
+
+
+                <div class="input-box"> 
+                    <label for="fileSelect">Select a file to upload</label>
+                    <div class="bg-panel-h rounded-lg">
+                        <FileUpload 
+                            id="fileSelect"
+                            mode="basic" 
+                            class="mr-auto"
+                            name="demo[]" 
+                            customUpload 
+                            chooseLabel="Select File" 
+                            @select="onFileSelect" 
+                        />
+                    </div>
+                    <InlineMessage 
+                        target="fileSelect"
+                        class="ml-auto w-fit"
+                        :severity="fileStatus.severity">
+                        {{ fileStatus.summary }}
+                    </InlineMessage>
+                    <small>From this file the data is collected.</small>
+                    <div :class="{
+                        // We cannot use hidden here, for we need to animate the element
+                        'opacity-0 w-0 h-0': fileStatus.severity !== 'success',
+                        'visible opacity-100 w-auto h-auto': fileStatus.severity === 'success',
+                        'transition-all duration-1000 ease-in-out overflow-hidden': true
+                    }"> 
+                    <DataTable :value="computedScriptParamTable" class="mt-4">
+                        <template #header>
+                            <h4>Script Parameters</h4>
+                        </template>
+                        <Column field="0" header="Parameter"></Column>
+                        <Column field="1" header="Type"></Column>
+                        <template #footer>
+                            <p class="italic">The available parameters</p>
+                        </template>
+                    </DataTable>
+                    <a v-if="fileStatus.supportsStaticSchema" class="text-success">Can be used with static schema</a>
+                    <a v-else class="text-warning">Cannot be used with static schema</a>
                 </div>
             </div>
+            <div class="input-box">
+                <Button
+                    label="Submit"
+                    :disabled="!noErrors"
+                    @click="() => onSubmit()"
+                />
+            </div>
+        </div>
     </main>
 </template>

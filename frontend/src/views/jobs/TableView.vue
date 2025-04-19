@@ -65,8 +65,8 @@ const graphCoardinator = ref();
 
 <template>
   <main>
-    <dev class="flex flex-col w-full h-full items-center" :key="currentJobId">
-      <div class="flex flex-row justify-between mb-2 mt-5 w-256">
+    <div :key="currentJobId">
+      <div class="flex flex-wrap justify-between mb-2 mt-5">
         <NavButtons />
         <h1 class="self-center">Job Data & Managment</h1>
         <p></p>
@@ -207,7 +207,7 @@ const graphCoardinator = ref();
 
       </div>
 
-    </dev>
+    </div>
   </main>
 </template>
 

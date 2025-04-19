@@ -46,8 +46,8 @@ const elementColor = computed((): string[] => {
 </script>
 
 <template>
-  <main class="w-full h-full flex justify-center">
-    <div class="main_content">
+  <main>
+    <div>
       <h1>Job Overview</h1>
       <p class="subsection">
         Here, you can see all the jobs that have been created. And create new once! 

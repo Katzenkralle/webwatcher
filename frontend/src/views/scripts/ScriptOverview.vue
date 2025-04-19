@@ -36,8 +36,8 @@ const formattedGlobalScriptData = computed(() =>
 </script>
 
 <template>
-    <main class="flex justify-center">
-        <div class="main_content">
+    <main>
+        <div>
             <h1>Script Overview</h1>
             <div class="subsection flex flex-col">
                 <p> Here, you can upload new Watcher-Scripts, which can then be converted into Jobs.
