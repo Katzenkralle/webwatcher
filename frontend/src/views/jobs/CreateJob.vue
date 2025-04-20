@@ -17,6 +17,7 @@ import InputSwitch from 'primevue/inputswitch';
 import FloatLabel from 'primevue/floatlabel';
 
 import NavButtons from '@/components/reusables/NavButtons.vue';
+import EditEntryPopup from '@/components/jobs/EditEntryPopup.vue';
 
 const isEdit = ref<boolean>(false);
 const jobMetaData = ref<Omit<TableMetaData, 'parameters'> & {parameters: Record<string, [string, any]>}>(
@@ -59,7 +60,7 @@ const getAvailableStrings = (async () => {
     
     jobMetaData.value.parameters = await newParameterKvLayout(jobMetaData.value.script);
     availableScriptsOptions.value = Object.keys(allScripts)
-                        .map((entry) => {return {name: entry}});
+                        .map((entry) => {return {name: entry, description: allScripts[entry].description};});
 }); 
 
 
@@ -143,7 +144,11 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
                     }"
                     placeholder="Where do I run?"
                     option-label="name"
-                    option-value="name"/>              
+                    option-value="name"/>
+                    <div v-if="globalScriptData[jobMetaData.script]?.description">
+                        <a  class="text-lg">Discription:</a>
+                        <p class="bg-crust-d rounded-lg p-3">{{ globalScriptData[jobMetaData.script].description }}</p>
+                    </div>
             </div>
 
             <div class="input-box"

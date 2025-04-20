@@ -40,3 +40,4 @@ uvicorn==0.34.0
 wheel==0.45.1
 aiohttp==3.11.16
 PySensors==0.0.4
+requests==2.32.3
