@@ -137,7 +137,7 @@ class MariaDbHandler:
         except Exception as e:
             return None
     
-    async def get_script_info(self, name: str | None = None) -> list[DbScriptInfo]:
+    async def get_script_info(self, name: Optional[str] = None) -> list[DbScriptInfo]:
         registered_scripts = []
         if name == None:
             self.__cursor.execute("SELECT * FROM script_list")
@@ -337,6 +337,24 @@ class MariaDbHandler:
                               (script_name, job_name, description, dynamic_schema))
         self.__conn.commit()
         return self.__cursor.lastrowid
+
+    async def modify_job_list(self, script_name: str, job_name: str, description: str, dynamic_schema: bool, job_id: int) -> bool:
+        if not dynamic_schema:
+            self.__cursor.execute("SELECT script_name FROM job_list WHERE id = ?", (job_id,))
+            old_script_name = self.__cursor.fetchone()
+            self.__cursor.execute("SELECT expected_return_schema FROM script_list WHERE name = ?", (old_script_name[0],))
+            old_return_schema = self.__cursor.fetchone()
+
+            self.__cursor.execute("SELECT expected_return_schema FROM script_list WHERE name = ?", (script_name,))
+            return_schema = self.__cursor.fetchone()
+
+            if not old_return_schema == return_schema:
+                raise ValueError("The expected return schema of the new and old script do not match")
+
+        self.__cursor.execute("UPDATE job_list SET script_name = ?, job_name = ?, description = ?, dynamic_schema = ? WHERE id = ?",
+                              (script_name, job_name, description, dynamic_schema, job_id))
+        self.__conn.commit()
+        return True
 
     async def delete_job_list(self, job_id: int) -> bool:
         self.__cursor.execute("DELETE FROM job_list WHERE id = ?", (job_id,))
