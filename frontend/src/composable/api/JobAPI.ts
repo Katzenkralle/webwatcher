@@ -20,7 +20,7 @@ export type TableLayout = {
 };
 
 export let globalTableMetaData: Ref<TableMetaData[]> = ref([]);
-
+let fetchedTableMetaData = false;
 
 
 const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
@@ -73,8 +73,9 @@ const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
 }
 
 export const getAllJobMetaData = async(forceRefetch: boolean = false): Promise<TableMetaData[]> => {
-    if(forceRefetch || !globalTableMetaData.value.length){
+    if(forceRefetch || (!globalTableMetaData.value.length && !fetchedTableMetaData)) {
         const jobDate = await fetchAllJobMetaData()
+        fetchedTableMetaData = true;
         globalTableMetaData.value = jobDate
     }
     return globalTableMetaData.value
@@ -96,36 +97,21 @@ export const getJobMetaData = async  (id: number|undefined): Promise<TableMetaDa
 
 export const deleteJob = async(id: number) => {
     const query = `
-        mutation {
-            deleteJob(id: ${id}) {
-                __typename
-                ... on Message {
-                    message
-                    status
-                }
-                ... on jobsMetaDataResult {
-                    jobs {
-                    id
-                    name
-                    script
-                    description
-                    enabled
-                    executeTimer
-                    executedLast
-                    forbidDynamicSchema
-                    expectedReturnSchema
-                    }
-                }
-            }`;
-    queryGql(query).then((response) => {
-        const key = response.providedTypes[0].type;
-        switch (key) {
-            case "jobsMetaDataList":
-                globalTableMetaData.value = response.data[key]
-                break;
-            default:
-                reportError(response)
+        mutation removeJob($jobId: Int!) {
+            deleteJob(jobId: $jobId) {
+                message
+                status
+            }
+        }`;
+    queryGql(query, {jobId: id}).then((response) => {
+        if (response.data.deleteJob && response.data.deleteJob.status === "SUCCESS") {
+            globalTableMetaData.value = globalTableMetaData.value.filter((table) => table.id !== id);
+            return
         }
+        throw response;
+    }).catch((error) => {
+        reportError(error);
+        return Promise.reject(error);
     });
 }
 

@@ -1,6 +1,5 @@
 import uvicorn  # Unicorn
-import os
-import shutil
+import asyncio
 from apscheduler.schedulers.background import BackgroundScheduler
 from contextlib import asynccontextmanager
 
@@ -20,10 +19,19 @@ from starlette.middleware.cors import CORSMiddleware
 
 
 def establish_db_connections():
-    # ToDo: Think about using connection pools
     # Setup everything
-    return [MongoDbHandler(Config().mongo),
-            MariaDbHandler(Config().maria, Config().app)]
+    mongo = MongoDbHandler(Config().mongo)
+    maria = MariaDbHandler(Config().maria, Config().app)
+    
+    async def registerSession():
+        jobs = await maria.get_job_metadata()
+        await mongo.register_all_sql_jobs([job.id for job in jobs])
+    try:
+        asyncio.run(registerSession())
+    except Exception as e:
+        DEFAULT_LOGGER.error(f"Failed to register SQL jobs: {e}")
+        
+    return [mongo, maria]
 
 def generate_scheduler():
     scheduler = BackgroundScheduler(

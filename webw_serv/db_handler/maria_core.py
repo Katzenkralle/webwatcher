@@ -3,6 +3,7 @@ import asyncio
 
 import random
 import string
+import os
 import time
 import json
 from typing import Optional
@@ -184,7 +185,19 @@ class MariaDbHandler:
         return True
 
     async def delete_script(self, name: str) -> bool:
+        self.__cursor.execute("SELECT fs_path FROM script_list WHERE name = ?", (name,))
+        path = self.__cursor.fetchone()
+        try:
+            os.remove(path[0])
+        except Exception as e:
+            logger.warning(f"MARIA: Failed to delete script file {path[0]}: {e}")
+        
         self.__cursor.execute("""DELETE FROM script_list WHERE name = ?""", (name,))
+        self.__conn.commit()
+        return True
+
+    async def delete_job(self, job_id: int) -> bool:
+        self.__cursor.execute("DELETE FROM job_list WHERE job_id = ?", (job_id,))
         self.__conn.commit()
         return True
 

@@ -43,28 +43,17 @@ const setScriptMetaData = (data: Record<string, any>[]) => {
 export async function deleteScript(name: string) {
     useLoadingAnimation().setState(true);
     const mutation = `
-    mutation {
-        deleteScript(
-            name: ${name}
-        ) {
-            __typename
-            ... on jobsMetaData {
-                fsPath
-                description
-                staticSchema
-                availableParameters
-            }
-            ... on Message {
-                message
-                status
-            }
-          }
-    }`;   
-    queryGql(mutation).then((response) => {
-        if (response.providedTypes[0].type === "jobsMetaData") {
-            setScriptMetaData(response.data as (ScriptMeta & { name: string})[]);
-            useStatusMessage().newStatusMessage("Script deleted", "success");
-            return;
+    mutation removeScript ($name: String!) {
+        deleteScript(name: $name) {
+            message
+            status
+        }
+        }`;   
+    queryGql(mutation, {name: name}).then((response) => {
+        console.log(response);
+        if (response.data.deleteScript.status === "SUCCESS") {
+            delete globalScriptData.value[name]
+            return
         }
         if(response.errors) {
             console.error(response.errors);
