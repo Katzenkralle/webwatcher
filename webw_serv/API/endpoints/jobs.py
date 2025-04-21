@@ -64,7 +64,7 @@ class Mutation:
     @admin_guard()
     async def create_or_modify_job(self, info: strawberry.Info, 
                              name: str,
-                             script: Optional[str],
+                             script: str,
                              execute_timer: Optional[str], # CRON
                              paramerter_kv: Optional[JsonStr],
                              forbid_dynamic_schema: bool = False,
@@ -72,8 +72,7 @@ class Mutation:
                              id_: Optional[int] = strawberry.argument(name="id")) -> job_full_info_result:
         """
         When editing, we only want to allow changing the script if the expected schema of the new and old script match
-        or when allowing dynamic schema  
-        If no script is provided, we assume dynamic schema is allowed and don't register crons
+        or when allowing dynamic schema
         """
         pass
 
