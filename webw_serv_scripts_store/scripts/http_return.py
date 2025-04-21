@@ -23,8 +23,7 @@ class ScriptMain(Watcher):
     def get_config_schema() -> dict[str, Type[str | int | bool]] | None:
         return {"url": str}
 
-    @staticmethod
-    def get_return_schema() -> dict[str, Type[str | int | bool]] | None:
+    def get_return_schema(self) -> dict[str, Type[str | int | bool]] | None:
         return {
             "url": str,
             "status_code": int,

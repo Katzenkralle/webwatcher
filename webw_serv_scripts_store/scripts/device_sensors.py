@@ -30,6 +30,5 @@ class ScriptMain(Watcher):
             "ignore_sensors": "str"
             }}
 
-    @staticmethod
-    def get_return_schema() -> dict[str, str] | None:
+    def get_return_schema(self) -> dict[str, str] | None:
         return None
