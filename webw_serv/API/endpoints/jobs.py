@@ -61,6 +61,26 @@ class Mutation:
             )
         
     @strawberry.mutation
+    @user_guard()
+    async def deleteJob(self, info: strawberry.Info, jobId: int) -> Message:
+        try:
+            await info.context["request"].state.maria.delete_job(jobId)
+        except Exception as e:
+            return Message(
+                message=f"Failed to delete job: {str(e)}",
+                status=MessageType.DANGER,
+            )
+        try:
+            await info.context["request"].state.mongo.delete_job(jobId)
+        except Exception as e:
+            pass
+        return Message(
+            message=f"Job deleted successfully",
+            status=MessageType.SUCCESS,
+        )
+  
+
+    @strawberry.mutation
     @admin_guard()
     async def create_or_modify_job(self, info: strawberry.Info, 
                              name: str,
