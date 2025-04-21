@@ -68,7 +68,7 @@ class Mutation:
                              execute_timer: Optional[str], # CRON
                              paramerter_kv: Optional[JsonStr],
                              forbid_dynamic_schema: bool = False,
-                             description: str = "",
+                             description: str = "Here could be your job description",
                              id_: Optional[int] = strawberry.argument(name="id")) -> job_full_info_result:
         """
         When editing, we only want to allow changing the script if the expected schema of the new and old script match
