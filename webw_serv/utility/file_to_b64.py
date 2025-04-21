@@ -5,6 +5,7 @@ def file_to_b64(file_path):
         return b64encode(f.read()).decode()
 
 def b64_to_file(b64_str, file_path):
+    b64_str = b64_str.split(",")[-1]
     with open(file_path, "wb") as f:
         f.write(b64decode(b64_str))
 

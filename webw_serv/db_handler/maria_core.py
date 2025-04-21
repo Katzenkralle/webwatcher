@@ -4,6 +4,7 @@ import asyncio
 import random
 import string
 import time
+import json
 from typing import Optional
 
 from webw_serv.db_handler.misc import libroot, read_sql_blocks
@@ -154,7 +155,7 @@ class MariaDbHandler:
         )
 
     async def add_temp_script(self, fs_path: str, name: str, excpected_return_schema: dict) -> bool:
-        excpected = "{"
+        expected = {}
         for key, value in excpected_return_schema.items():
             if value == str:
                 value = "str"
@@ -162,12 +163,11 @@ class MariaDbHandler:
                 value = "int"
             elif value == bool:
                 value = "bool"
-            excpected += f'"{key}": "{value}", '
-        excpected += "}"
-
-        self.__cursor.execute("""INSERT INTO script_list (fs_path, name, description, excpected_return_schema, temporary) 
+            expected[key] = value
+    
+        self.__cursor.execute("""INSERT INTO script_list (fs_path, name, description, expected_return_schema, temporary) 
         VALUES (?, ?, ?, ?, ?)""",
-                              (fs_path, name, None, excpected, True))
+                              (fs_path, name, None, json.dumps(expected), True))
         self.__conn.commit()
         return True
 

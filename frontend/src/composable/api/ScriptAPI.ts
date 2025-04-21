@@ -1,4 +1,4 @@
-import { queryGql, reportError } from "./QueryHandler";
+import { queryGql, reportError, recordListToRecord } from "./QueryHandler";
 import { useLoadingAnimation, useStatusMessage } from "../core/AppState";
 import { ref } from "vue";
 
@@ -15,9 +15,11 @@ export interface ScriptMeta {
 }
 
 export interface ScriptValidationResult {
+    id?: string
     valid: boolean;
     availableParameters: Record<string, string>;
     supportsStaticSchema: boolean;
+    validationMsg: string;
 }
 
 const toBase64 = (file: File) => new Promise((resolve, reject) => {
@@ -129,32 +131,43 @@ export async function validateFile(file: File, associatedScript?: String): Promi
     // we trasfer the files in the gql request with base64 encoding for
     // they will be small an this is a simple way to do it
     const mutation = `
-        mutation(
-            file: ${toBase64(file)},
-            ${associatedScript ? "associatedScript: " + associatedScript : ""}
+        mutation ValidateFile($file: B64Str!, $name: String) {
+        preuploadScript(
+            file: $file,
+            name: $name
         ) {
             valid
-            availableParameters
-            supportsStaticSchema
+            id
+            availableParameters {
+                key
+                value
             }
-        )`;
+            supportsStaticSchema
+            validationMsg
+            }
+        }`;
     
-    return queryGql(mutation).then((response) => {
-        if(response.errors) {
-            throw response;
-        }
-        return response.data as ScriptValidationResult;
+    return queryGql(mutation, {
+            file: await toBase64(file),
+            name: associatedScript
+        }).then((response) => {
+            if(response.errors) {
+                throw response;
+            }
+            response.data.preuploadScript.availableParameters = recordListToRecord(response.data.preuploadScript.availableParameters)
+            return response.data.preuploadScript as ScriptValidationResult;
     }).catch((e) => {
         reportError(e);
-        return { valid: false, availableParameters: {}, supportsStaticSchema: false} as ScriptValidationResult;
+        return { id:'-1', valid: false, availableParameters: {}, supportsStaticSchema: false} as ScriptValidationResult;
     });
 }
-export async function submitScript(name: String, discription: String): Promise<void> {
+export async function submitScript(name: String, discription: String, id: String): Promise<void> {
     useLoadingAnimation().setState(true);
-    const mutation = `mutation {
-        submitScript(
-            name: ${name},
-            description: ${discription}
+    const mutation = `mutation submitScript($name: String!, $discription: String!, $id: String) {
+        uploadScriptData(
+            id_: $id,
+            name: $name,
+            description: $discription
         ) {
             __typename
             ... on jobsMetaData {
@@ -168,9 +181,14 @@ export async function submitScript(name: String, discription: String): Promise<v
                 status
             }
         }
-            `
+        }`;
     return new Promise((resolve, reject) => {
-        return queryGql(mutation).then((response) => {
+        return queryGql(mutation, {
+            id: id,
+            name: name,
+            discription: discription,
+        }).then((response) => {
+            console.log(response);
             if (response.providedTypes[0].type === "jobsMetaData") {
                 setScriptMetaData(response.data as (ScriptMeta & { name: string})[]);
                 resolve();

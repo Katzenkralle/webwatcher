@@ -25,9 +25,9 @@ import NavButtons from '@/components/reusables/NavButtons.vue';
 const nameStatus = reactive<{field: string, severity: string, summary: string, blacklist: string[]}>
     ({field: '', severity: 'warn', summary: 'Should be provided.', blacklist: []});
 const discription = ref('');
-const fileStatus = ref<ScriptValidationResult & {severity: string, summary: string} >
+const fileStatus = ref<ScriptValidationResult & {severity: string, validationMsg: string} >
     ({severity: 'warn',
-        summary: 'A file must be provided.',
+        validationMsg: 'A file must be provided.',
         availableParameters: {},
         valid: false,
         supportsStaticSchema: false}        
@@ -44,7 +44,7 @@ const computedScript = computed((): undefined | ScriptMeta  => {
         return undefined;
     }
     fileStatus.value = {severity: 'success',
-        summary: 'File present on the Server.',
+        validationMsg: 'File present on the Server.',
         availableParameters: thisScript.availableParameters,
         valid: false,
         supportsStaticSchema: thisScript.staticSchema !== undefined && Object.keys(thisScript.staticSchema).length > 0};
@@ -58,23 +58,26 @@ const computedScript = computed((): undefined | ScriptMeta  => {
 const onFileSelect = (file_event: FileUploadSelectEvent) => {
     useLoadingAnimation().setState(true);
     fileStatus.value.severity = 'warn';
-    fileStatus.value.summary = 'Validating File...';
+    fileStatus.value.validationMsg = 'Validating File...';
     fileStatus.value.availableParameters = {};
     validateFile(file_event.files[0], currentScriptName.value)
         .then((response: ScriptValidationResult) => {
             if (response.valid) {
                 fileStatus.value = {severity: 'success',
-                    summary: 'File is valid.',
                     ...response};
             } else {
-                fileStatus.value = {severity: 'error', summary: 'File is invalid.',  ...response};
+                fileStatus.value = {severity: 'error',  ...response};
             }
         useLoadingAnimation().setState(false);
     });
 }
 
 const onSubmit = () => {
-    submitScript(nameStatus.field, discription.value).then(() => {
+    if (!fileStatus.value.id) {
+        useStatusMessage().newStatusMessage('File not valid.', 'danger');
+        return;
+    }
+    submitScript(nameStatus.field, discription.value, fileStatus.value.id).then(() => {
         useStatusMessage().newStatusMessage('Script submitted.', 'success');
         router.push('/scripts');
     }).catch((error) => {
@@ -156,7 +159,7 @@ const computedScriptParamTable = computed(() => {
                         target="fileSelect"
                         class="ml-auto w-fit"
                         :severity="fileStatus.severity">
-                        {{ fileStatus.summary }}
+                        {{ fileStatus.validationMsg }}
                     </InlineMessage>
                     <small>From this file the data is collected.</small>
                     <div :class="{
