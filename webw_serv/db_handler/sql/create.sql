@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS script_list
     fs_path                VARCHAR(255),
     name                   VARCHAR(255) NOT NULL UNIQUE,
     description            TEXT,
-    expected_return_schema JSON,
-    last_edited           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_edited            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    supports_static_schema BOOLEAN DEFAULT FALSE,
     temporary              BOOLEAN DEFAULT TRUE,
     PRIMARY KEY (fs_path)
 );
@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS job_list
     job_name       VARCHAR(255) NOT NULL,
     description    TEXT,
     dynamic_schema BOOLEAN DEFAULT TRUE,
+    expected_return_schema JSON,
     FOREIGN KEY (script_name) REFERENCES script_list (name) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (job_id)
 );

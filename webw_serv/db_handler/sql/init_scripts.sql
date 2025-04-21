@@ -1,11 +1,11 @@
 
-INSERT INTO script_list (fs_path, name, description, expected_return_schema, temporary)
+INSERT INTO script_list (fs_path, name, description, temporary, supports_static_schema)
 VALUES (
     'http_return.py',
     'HTTP-Status Watcher',
     'This watcher checks the HTTP status of a given URL and returns the status code.\nArguments:\n- url: The URL to check (string).',
-    '{"url": "string", "status_code": "integer", "description": "string"}',
-    FALSE
+    FALSE,
+    TRUE
 );
 
 

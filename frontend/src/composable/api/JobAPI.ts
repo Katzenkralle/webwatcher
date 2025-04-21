@@ -1,5 +1,5 @@
 import { KeepAlive, ref, type Ref} from 'vue';
-import { queryGql, reportError } from "@/composable/api/QueryHandler" 
+import { queryGql, reportError, recordListToRecord } from "@/composable/api/QueryHandler" 
 
 export interface TableMetaData {
     id: number;
@@ -26,69 +26,46 @@ export let globalTableMetaData: Ref<TableMetaData[]> = ref([]);
 const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
     return new Promise(async (resolve, reject) => {
         const query = `
-        query {
-            jobsMetaDataResult {
-                __typename
-                ... on jobsMetaDataList {
-                    jobs {
-                    id
-                    name
-                    script
-                    description
-                    enabled
-                    executeTimer
-                    executedLast
-                    forbidDynamicSchema
-                    expectedReturnSchema
-                    }
+        query fetchJobMetadata {
+        jobsMetadata {
+            ... on JobsMetaDataList {
+            __typename
+            jobs {
+                description
+                enabled
+                executeTimer
+                forbidDynamicSchema
+                id
+                name
+                executedLast
+                expectedReturnSchema {
+                key
+                value
                 }
-                ... on Message {
-                    message
-                    status
-                }
+                script
             }
+            }
+            ... on Message {
+            __typename
+            message
+            status
+            }
+        }
         }
         `;
         queryGql(query).then((response) => {
             const key = response.providedTypes[0].type;
             switch (key) {
-                case "jobsMetaDataList":
-                    return resolve(response.data[key])
+                case "JobsMetaDataList":
+                    const relevantData = response.data.jobsMetadata.jobs
+                    if (relevantData.expectedReturnSchema) {
+                        relevantData.expectedReturnSchema = recordListToRecord(relevantData.expectedReturnSchema);
+                    }
+                    return resolve(relevantData)
                 default:
                     throw response
             }
         }).catch((error) => {
-            return resolve([
-                {
-                    id: 0,
-                    name: "Tabke",
-                    script: "script1",
-                    description: "Hello World",
-                    enabled: false,
-                    executeTimer: "0",
-                    executedLast: 0,
-                    forbidDynamicSchema: false,
-                    expectedReturnSchema: {},
-                    parameters: {}
-                },
-                {
-                    id: 1,
-                    name: "Entry",
-                    script: "script2",
-                    description: "Hello World2",
-                    enabled: false,
-                    executeTimer: "0",
-                    executedLast: 0,
-                    forbidDynamicSchema: true,
-                    expectedReturnSchema: {
-                        "some": "string|number",
-                        "aNumber": "number"
-                    },
-                    parameters: {
-                        "test": "value",
-                    }
-                }
-            ])
             reportError(error)
             return reject(error)
         })

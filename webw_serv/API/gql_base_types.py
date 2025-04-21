@@ -2,7 +2,7 @@ import strawberry
 from enum import Enum
 from typing import Annotated, Union, Optional
 
-from webw_serv.db_handler.maria_schemas import DbUser, DbSession, DbUserDisplayConfig, DbScriptInfo, DbParameter
+from webw_serv.db_handler.maria_schemas import DbUser, DbSession, DbUserDisplayConfig, DbJobMetaData, DbScriptInfo, DbParameter
 
 from webw_serv.utility.toolbox import extend_enum
 
@@ -67,7 +67,6 @@ class Message:
 @strawberry.type
 class ScriptContent(DbScriptInfo):
     input_schema: list[Parameter]
-    expected_return_schema: list[Parameter]
 
 @strawberry.type
 class ScriptValidationResult:
@@ -79,15 +78,8 @@ class ScriptValidationResult:
 
 
 @strawberry.type
-class JobMetaData:
-    id: int
-    name: str
-    description: str
-    enabled: bool
-    execute_timer: int
-    executed_last: int
-    forbid_dynamic_schema: bool
-    expected_return_schema: Optional[JsonStr]
+class JobMetaData(DbJobMetaData):
+    expected_return_schema: Optional[list[Parameter]]
 
 @strawberry.type
 class JobSettings:

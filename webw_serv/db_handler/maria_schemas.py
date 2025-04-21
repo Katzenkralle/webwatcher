@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 import strawberry
 
 @dataclass
@@ -28,10 +29,22 @@ class DbParameter:
     value: str
 
 @dataclass
+class DbJobMetaData:
+    id: int
+    name: str
+    script: str
+    description: str
+    enabled: bool
+    execute_timer: str
+    executed_last: Optional[str]
+    forbid_dynamic_schema: bool
+    expected_return_schema: Optional[list[DbParameter]]
+
+@dataclass
 class DbScriptInfo:
     fs_path: str
     name: str
     description: str
     last_modified: str
-    expected_return_schema: DbParameter
     input_schema: DbParameter
+    supports_static_schema: bool

@@ -74,10 +74,6 @@ const refreshJobMetaData = (id: string|string[]|undefined) => {
             jobMetaData.value = {...data, 
                 parameters: await newParameterKvLayout(data.script)
             };
-            
-            Object.entries(data.parameters).forEach(([key, value]) => {
-                jobMetaData.value.parameters[key][1] = value;
-            });
             isEdit.value = true;
         }).catch((error) => {
             useStatusMessage().newStatusMessage('Job not found.', 'danger');
@@ -152,8 +148,7 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
             </div>
 
             <div class="input-box"
-                v-if="globalScriptData[jobMetaData.script]?.expectedReturnSchema 
-                    && Object.keys(globalScriptData[jobMetaData.script].expectedReturnSchema).length > 0">
+                v-if="globalScriptData[jobMetaData.script]?.supportsStaticSchema">
                 <label for="forbidDynamicSchema">Forbid Dynamic Schema</label>
                 <div class="flex flex-row items-center">
                     <InputSwitch id="forbidDynamicSchema" v-model="jobMetaData.forbidDynamicSchema" />
