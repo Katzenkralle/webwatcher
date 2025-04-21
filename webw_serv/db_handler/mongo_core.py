@@ -58,6 +58,18 @@ class MongoDbHandler:
             self.__db.create_collection(collection_name)
         return
     
+    async def register_all_sql_jobs(self, jobs: list[int]):
+        """
+        Register all SQL jobs in the database
+        """
+        for job in jobs:
+            try:
+                await self.register_job(job)
+            except ValueError as e:
+                logger.info(f"MONGO: Job {job} already registered, skipping")
+                continue
+        return
+    
     async def check_if_job_exists(self, job_id: int) -> bool:
         """
         Check if a job exists in the database

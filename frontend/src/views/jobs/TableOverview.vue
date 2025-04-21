@@ -114,7 +114,9 @@ const elementColor = computed((): string[] => {
                   button-class="p-button-danger"
                   confirm-message="Are you sure you want to delete this job?"
                   confirm-icon="pi pi-exclamation-triangle"
-                  @confirm="() => deleteJob(element.id)"
+                  @confirm="() => deleteJob(element.id).then(async() => {
+                    suggestedItems = suggestedItems.filter((entry) => entry.id !== element.id);
+                  })"
 
                 />
                 <router-link :to="`/jobs/create/${element.id}`">
@@ -136,7 +138,7 @@ const elementColor = computed((): string[] => {
       </div>
 
       <div class="w-full">
-        <a v-if="suggestedItems !== globalTableMetaData"
+        <a v-if="suggestedItems.length !== globalTableMetaData.length"
           class="text-warning">
           Some tables where filtered out...
         </a>
