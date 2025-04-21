@@ -11,8 +11,8 @@ import InputGroup from 'primevue/inputgroup';
 import InputGroupAddon from 'primevue/inputgroupaddon';
 
 
-import {ref, watch, reactive, computed} from 'vue';
-import { globalScriptData } from '@/composable/api/ScriptAPI';
+import {ref, watch, reactive, computed, onMounted} from 'vue';
+import { getAllScripts } from '@/composable/api/ScriptAPI';
 import router from '@/router';
 
 import { useLoadingAnimation, useStatusMessage} from "@/composable/core/AppState";
@@ -34,14 +34,30 @@ const fileStatus = ref<ScriptValidationResult & {severity: string, validationMsg
    );
 
 // unknown if creating a new script
+const knownScripts = ref<Record<string, ScriptMeta>|undefined>(undefined);
+
+onMounted(() => {
+    getAllScripts().then((response) => {
+        knownScripts.value = response;
+        nameStatus.blacklist = Object.keys(response);
+    }).catch((error) => {
+        useStatusMessage().newStatusMessage('Could not load scripts.', 'danger');
+    });
+});
+
 const currentScriptName = ref(String(router.currentRoute.value.params.name) || '');
 const computedScript = computed((): undefined | ScriptMeta  => {
-    const thisScript = globalScriptData.value[currentScriptName.value];
+    if (!knownScripts.value || currentScriptName.value === '') {
+        return undefined;
+    }
+    const thisScript = knownScripts.value[currentScriptName.value];
+    if (!knownScripts.value || currentScriptName.value === '') {
+        return undefined;
+    }
     if(!thisScript && currentScriptName.value !== '') {
         useStatusMessage().newStatusMessage('Script not found.', 'danger');
         router.push('/scripts');
-    } else if (currentScriptName.value === '') {
-        return undefined;
+        return undefined
     }
     fileStatus.value = {severity: 'success',
         validationMsg: 'File present on the Server.',
@@ -73,10 +89,6 @@ const onFileSelect = (file_event: FileUploadSelectEvent) => {
 }
 
 const onSubmit = () => {
-    if (!fileStatus.value.id) {
-        useStatusMessage().newStatusMessage('File not valid.', 'danger');
-        return;
-    }
     submitScript(nameStatus.field, discription.value, fileStatus.value.id).then(() => {
         useStatusMessage().newStatusMessage('Script submitted.', 'success');
         router.push('/scripts');

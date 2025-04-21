@@ -62,7 +62,7 @@ const router = createRouter({
       }
     },
     {
-      path: '/script/upload/:name(\\w+)?',
+      path: '/script/upload/:name([^/]+)?',
       name: 'scriptUpload',
       component: ScriptUpload,
       meta: {

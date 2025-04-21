@@ -79,45 +79,42 @@ export async function deleteScript(name: string) {
 
 export async function fetchScripts() {
     return queryGql(`
-        query {
+        query fetchScripts{
+            scriptsMetadata {
+            ... on ScriptContentList {
             __typename
-            ... on jobsMetaData {
+            scripts {
+                description
                 fsPath
                 name
-                description
-                expectedSchema
+                inputSchema {
+                key
+                value
+                }
+                expectedReturnSchema {
+                key
+                value
+                }
+            }
             }
             ... on Message {
-                message
-                status
+            __typename
+            message
+            status
             }
+        }
         }`
     ).then((response) => {
         const key = response.providedTypes[0].type;
         switch (key) {
-            case "scripts":
-                setScriptMetaData(response.data as (ScriptMeta & { name: string})[]);
+            case "ScriptContentList":
+                console.log(response.data.scriptsMetadata.scripts)
+                setScriptMetaData(response.data.scriptsMetadata.scripts);
                 return;
             default:
                 throw new Error("Error fetching scripts");
         }
     }).catch((e) => {
-        globalScriptData.value = {
-            script1: {
-                fsPath: '/path/to/script1',
-                modifyedAt: '1742369540',
-                description: 'Description of script1',
-                expectedReturnSchema: {},
-                inputSchema: {}
-            },
-            script2:{
-                fsPath: '/path/to/script2',
-                modifyedAt: '1742369540',
-                description: 'Description of script2',
-                expectedReturnSchema: {"test": "string", "data": "int"},
-                inputSchema: { "test": "string", "data": "int"}
-            }
-        };
         reportError(e);
     });
 }
@@ -164,7 +161,7 @@ export async function validateFile(file: File, associatedScript?: String): Promi
         return { id:'-1', valid: false, availableParameters: {}, supportsStaticSchema: false} as ScriptValidationResult;
     });
 }
-export async function submitScript(name: String, discription: String, id: String): Promise<void> {
+export async function submitScript(name: String, discription: String, id: String|undefined): Promise<void> {
     useLoadingAnimation().setState(true);
     const mutation = `mutation submitScript($name: String!, $discription: String!, $id: String) {
         uploadScriptData(

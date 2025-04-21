@@ -87,7 +87,7 @@ const formattedGlobalScriptData = computed(() =>
                 <Column header="Edit/Delete">
                     <template #body="slotProps">
                         <div class="space-x-2">
-                        <router-link :to="`/script/upload/${slotProps.data.name}`">
+                        <router-link :to="`/script/upload/${encodeURIComponent(slotProps.data.name)}`">
                             <Button 
                             icon="pi pi-pencil"
                             />

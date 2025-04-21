@@ -147,7 +147,7 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
                     option-value="name"/>
                     <div v-if="globalScriptData[jobMetaData.script]?.description">
                         <a  class="text-lg">Discription:</a>
-                        <p class="bg-crust-d rounded-lg p-3">{{ globalScriptData[jobMetaData.script].description }}</p>
+                        <p class="bg-crust-d rounded-lg p-3 whitespace-pre">{{ globalScriptData[jobMetaData.script].description }}</p>
                     </div>
             </div>
 
