@@ -10,11 +10,10 @@ from webw_serv import CONFIG
 
 from ..gql_base_types import PaginationInput, JsonStr, MessageType, Message
 from ..endpoints.auth import admin_guard, user_guard
-from ..gql_base_types import ScriptValidationResult, Parameter, B64Str
+from ..gql_base_types import ScriptValidationResult, Parameter, B64Str, ScriptContent
 from ..gql_types import script_content_result, jobs_metadata_result, jobs_settings_result, job_entrys_result, \
-    user_job_config_result, job_metadata_result, job_full_info_result, job_entry_result
+    user_job_config_result, job_metadata_result, job_full_info_result, job_entry_result, ScriptContentList
 from webw_serv.configurator.config import Config
-
 
 @strawberry.type
 class Mutation:
@@ -41,12 +40,14 @@ class Mutation:
                     return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False,
                                                   validation_msg="The script doesn't match the scheme", id="")
 
+        jsonize_type_list = lambda x: [Parameter(key=k, value=script_check_result[2][k].__name__) for k in x]
+
         if isinstance(script_check_result, tuple):
             script_msg = str(script_check_result[0])
             was_valid = True
             if script_check_result[2] is not None:
                 static_supported = True
-                parameters_list = [Parameter(key=k, value=script_check_result[2][k].__name__) for k in script_check_result[2].keys()]
+                parameters_list = jsonize_type_list(script_check_result[2].keys())
             else:
                 parameters_list = []
                 static_supported = False
@@ -55,30 +56,35 @@ class Mutation:
             except Exception as e:
                 return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False,
                                               validation_msg=f"Failed to upload script; {e}", id="")
+            
+            input_parameters = []
+            if script_check_result[1] is not None:
+                input_parameters =  jsonize_type_list(script_check_result[1].keys())
+
         else:
             script_msg = str(script_check_result)
             was_valid = False
-            parameters_list = []
+            input_parameters = []
             static_supported = False
 
-        return ScriptValidationResult(valid=was_valid,  available_parameters=parameters_list, supports_static_schema=static_supported, validation_msg=script_msg, id=uuid)
+        return ScriptValidationResult(valid=was_valid,  available_parameters=input_parameters, supports_static_schema=static_supported, validation_msg=script_msg, id=uuid)
 
     @strawberry.mutation
     @admin_guard()
-    async def upload_script_data(self, info: strawberry.Info, name: str, description: Optional[str], temporary: bool, id_: Optional[str] = strawberry.argument(name="id")) -> script_content_result:
+    async def upload_script_data(self, info: strawberry.Info, name: str, description: Optional[str], id_: Optional[str] = strawberry.argument(name="id")) -> script_content_result:
         maria: MariaDbHandler = info.context["request"].state.maria
-        if temporary:
+        if id_:
             try:
                 await maria.transfer_script(id_=id_, name=name, description=description)
             except Exception as e:
                 return Message(message=f"Failed to upload script; {e}", status=MessageType.DANGER)
-            return Message(message="Script uploaded successfully", status=MessageType.SUCCESS)
         else:
             try:
                 await maria.edit_script_description(name=name, description=description)
             except Exception as e:
                 return Message(message=f"Failed to update script description; {e}", status=MessageType.DANGER)
-            return Message(message="Script description updated successfully", status=MessageType.SUCCESS)
+        return Message(message="Script uploaded successfully", status=MessageType.SUCCESS)
+        # ToDo: return script metadata instead of message
 
     @strawberry.mutation
     @admin_guard()

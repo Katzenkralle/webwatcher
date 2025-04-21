@@ -46,6 +46,19 @@ export function queryGql(query: string, variables:  Record<string, any>|undefine
     });
 }
 
+export function recordListToRecord<T extends Record<string | number, any>>(
+    list: T[],
+    key: string | number = 'key',
+    value: string | number = 'value'
+): Record<any, any> {
+    let result: Record<any, any> = {};
+    list.forEach((item) => {
+        if (typeof item === 'object' && key in item && value in item) {
+            result[item[key]] = item[value];
+        }
+    });
+    return result;
+}
 
 export function reportError(gql: GQLResponse|Error, includeDataErrors: boolean = true) {
     const statusMessage = useStatusMessage(true);
