@@ -40,7 +40,7 @@ const lastSavedTitle = ref<string | undefined>(undefined);
 <template>
     <div class="flex flex-col">
         <div class="options-grid">
-            <div  class="flex flex-row items-center">
+            <div class="flex flex-row items-center">
                 <ToggleSwitch
                     id="multiRowViewGraphCreator"
                     v-model="graphConstructor.rowBasedView.value"
@@ -67,8 +67,9 @@ const lastSavedTitle = ref<string | undefined>(undefined);
                 @click="graphConstructor.reset()"
                 severity="danger"
                 />
-        
-            <InputGroup  class="flex flex-row items-center mt-4">
+        </div>
+        <div class="options-grid mt-4">
+            <div class="flex flex-row items-center">
                 <ToggleSwitch
                     id="multiRowViewGraphCreator"
                     v-model="graphConstructor.pullFutureRows.value"
@@ -78,7 +79,7 @@ const lastSavedTitle = ref<string | undefined>(undefined);
                     class="ml-2">
                     Dynamic Row Selection
                 </label>
-            </InputGroup>
+            </div>
 
             <template v-if="graphConstructor.pullFutureRows.value">
                 <FloatLabel variant="in" >
@@ -176,7 +177,7 @@ const lastSavedTitle = ref<string | undefined>(undefined);
 @reference "@/assets/global.css";
 
 .options-grid {
-    @apply grid grid-cols-3 gap-2;
+    @apply flex flex-wrap justify-between space-y-2 md:grid md:grid-cols-3 md:gap-2 ;
 }
 
 .options-grid > * {

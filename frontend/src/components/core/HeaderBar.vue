@@ -19,7 +19,7 @@ interface BarItem {
     badge?: number;
     image?: string;
     style?: "highlighted";
-    aligned?: string;
+    fixed?: 'start' | 'end' | '';
     passThroughClass?: string;
     comand?: () => void;
     // vue dose not like to dirtectly pass vnodes around,
@@ -57,7 +57,7 @@ const extendedOptions = computed((): BarItem[] => {
                 icon: "",
                 route: "/jobs",
                 badge: tableMetaData.value.length,
-                placeItems: isMobile.value ? "side" : "below",
+                placeItems: "below",
                 items: [{label: "Overview", route:"/jobs", style: 'highlighted' as "highlighted"}, // wtf is this syntax?
                     ...tableMetaData.value.map((element) => {
                         return {
@@ -81,11 +81,11 @@ const computeOptions = computed((): BarItem[] => {
         {
             image: new URL('@/assets/img/placeholder.png', import.meta.url).href,
             route: "/",
-            items:  [...(isMobile.value ? extendedOptions.value : []),]
+            fixed: "start",
         },
-        ...(!isMobile.value ? extendedOptions.value : []),
+        ...extendedOptions.value,
         {
-            aligned: "end",
+            fixed: "end",
             passThroughComponent: () => h(NotificationCenter, { 
                 class: "mr-2 h-full aspect-square", 
                 yExpand: "bottom",
@@ -140,11 +140,11 @@ const ItemRenderer = defineComponent({
 
         const getPopulation = () => {
                 return [
-                        props.item.image && h("img", { src: props.item.image, class: "h-11 p-1" }),
+                        props.item.image && h("img", { src: props.item.image, class: "h-11 min-w-max p-1" }),
                         props.item.icon && h("span", { class: props.item.icon }),
                         props.item.label && h("span", {}, props.item.label),
                         props.item.badge && h(Badge, { size: "small", value: props.item.badge, class:  "ml-2" }),
-                        hasItems.value && h("span", { class: "pi pi-fw pi-angle-down" })
+                        hasItems.value && h("span", { class: "pi pi-fw pi-angle-down !hidden sm:!inline" })
                 ]
             }
         const populationContainerClass = 'h-full flex flex-row items-center justify-center space-x-1'
@@ -210,11 +210,15 @@ const ItemContainerHorizontal = defineComponent({
         }
 
         return () => h("div", {  class: "flex flex-row h-13 p-1 gap-2" }, [
-            props.items.filter(item =>  item.aligned != "end").map((item) => 
+            props.items.filter(item => item.fixed === "start").map((item) => 
                 getItemLayout(item) 
             ),
+            h('div', {  class: "flex flex-row overflow-x-auto overflow-y-hidden sm:overflow-y-visible sm:overflow-x-visible" }, [
+            props.items.filter(item =>  !item.fixed).map((item) => 
+                getItemLayout(item) 
+            )]),
             h('span', { class: "flex-grow" }),
-            props.items.filter(item =>  item.aligned == "end").map((item) => 
+            props.items.filter(item =>  item.fixed  === "end").map((item) => 
                 getItemLayout(item)
             )
             ]   
@@ -245,11 +249,11 @@ const ItemContainerVertical = defineComponent({
                 : h(ItemRenderer, { item, slave: props.slave })
         }
         return () => h("div", {  class: "flex flex-col absolute bg-panel p-0 w-auto rounded-lg border-2 border-info space-y-1 z-10" }, [
-            props.items.filter(item =>  item.aligned != "end").map((item) => 
+            props.items.filter(item =>  item.fixed != "end").map((item) => 
                 getItemLayout(item) 
             ),
             h('span', { class: "flex-grow" }),
-            props.items.filter(item =>  item.aligned == "end").map((item) => 
+            props.items.filter(item =>  item.fixed == "end").map((item) => 
                 getItemLayout(item)
             )
             ]   
