@@ -12,6 +12,7 @@ from .maria_schemas import DbUser, DbSession, DbUserDisplayConfig, DbScriptInfo,
 
 from webw_serv.utility import DEFAULT_LOGGER as logger
 from webw_serv.configurator import Config
+from webw_serv.watcher.mover import move_script_file
 from datetime import datetime
 
 
@@ -192,10 +193,14 @@ class MariaDbHandler:
         script = self.__cursor.fetchone()
         if not script:
             raise ValueError("Script not found")
+        fs_path = script[0]
+        mv_result = move_script_file(fs_path)
+        if not mv_result[0]:
+            raise ValueError("Failed to move script file")
         if description is None:
             description = script[2]
-        self.__cursor.execute("""UPDATE script_list SET name = ?, description = ?, last_edited = ?, temporary = 0 WHERE name = ?""",
-                      (name, description, unix_to_mariadb_timestamp(), id_))
+        self.__cursor.execute("""UPDATE script_list SET fs_path = ?, name = ?, description = ?, last_edited = ?, temporary = 0 WHERE name = ?""",
+                      (mv_result[1], name, description, unix_to_mariadb_timestamp(), id_))
         self.__conn.commit()
         return True
 
