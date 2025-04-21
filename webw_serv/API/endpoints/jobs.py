@@ -33,7 +33,7 @@ class Mutation:
                 message=f"Failed to add/edit entry: {str(e)}",
                 status=MessageType.DANGER,
             )
-        
+
     @strawberry.mutation
     @user_guard()
     async def delete_entry_in_job(
@@ -73,7 +73,7 @@ class Mutation:
         """
         When edeting, we only want to allow changing the sctipt if the expected schema of the new and old script match
         or when allowing dynamic schema  
-        If no script is provided, we assume dynamic schema is allowed and dont register crons
+        If no script is provided, we assume dynamic schema is allowed and don't register crons
         """
         pass
 
