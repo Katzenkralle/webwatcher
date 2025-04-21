@@ -71,7 +71,7 @@ class Mutation:
                              description: str = "",
                              id_: Optional[int] = strawberry.argument(name="id")) -> job_full_info_result:
         """
-        When edeting, we only want to allow changing the sctipt if the expected schema of the new and old script match
+        When editing, we only want to allow changing the script if the expected schema of the new and old script match
         or when allowing dynamic schema  
         If no script is provided, we assume dynamic schema is allowed and don't register crons
         """
