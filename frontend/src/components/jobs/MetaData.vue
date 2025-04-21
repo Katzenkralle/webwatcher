@@ -21,14 +21,14 @@ const aData = defineComponent({
 <template>
     <div class="subsection">
         <div class="flex flex-col justify-center">
-            <span class="grid grid-cols-5 items-end">
-                <h5 class="italic text-info">Id: {{ metaData.id }}</h5>
-                <h2 class="col-start-3 justify-self-center">{{ metaData.name }}</h2>
+            <span class="flex flex-wrap justify-between">
+                <h5 class="italic text-info mt-auto">Id: {{ metaData.id }}</h5>
+                <h2>{{ metaData.name }}</h2>
                 <template v-if="metaData.enabled">
-                    <span class="col-start-5 justify-self-end text-success">Enabled</span>
+                    <span class="text-success mt-auto">Enabled</span>
                 </template>
                 <template v-else>
-                    <span class="col-start-5 justify-self-end text-error">Disabled</span>
+                    <span class="text-error mt-auto">Disabled</span>
                 </template>
             </span>
             <SmallSeperator class="mx-auto" />
