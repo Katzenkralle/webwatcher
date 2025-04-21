@@ -74,7 +74,7 @@ class Mutation:
 
     @strawberry.mutation
     @admin_guard()
-    async def upload_script_data(self, info: strawberry.Info, name: str, description: Optional[str], id_: Optional[str] = strawberry.argument(name="id")) -> script_content_result:
+    async def upload_script_data(self, info: strawberry.Info, name: str, description: Optional[str], id_: str | None = None) -> script_content_result:
         maria: MariaDbHandler = info.context["request"].state.maria
         if id_:
             try:
@@ -124,8 +124,10 @@ class Mutation:
 class Query:
     @strawberry.field
     @user_guard()
-    async def scripts_metadata(self, info: strawberry.Info, supports_static_schema: Optional[bool] = strawberry.UNSET) -> script_content_result:
-        pass
+    async def scripts_metadata(self, info: strawberry.Info, name: str|None = None) -> script_content_result:
+        maria: MariaDbHandler = info.context["request"].state.maria
+        scripts_info = await maria.get_script_info(name)
+        return ScriptContentList(scripts=scripts_info)
 
     @strawberry.field
     @user_guard()
