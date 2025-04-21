@@ -79,6 +79,14 @@ class MariaDbHandler:
         logger.warning(f"MARIA: Missing tables: {missing_tables}, creating them")
         for block in read_sql_blocks(f"{self.SQL_DIR}/create.sql"):
                 self.__cursor.execute(block)
+        if "script_list" not in existing_tables or "script_input_info" not in existing_tables:
+            logger.warning("MARIA: Registering default script list")
+            for block in read_sql_blocks(f"{self.SQL_DIR}/init_scripts.sql"):
+                self.__cursor.execute(block)
+        if "job_list" not in existing_tables:
+            logger.warning("MARIA: Registering default job list")
+            for block in read_sql_blocks(f"{self.SQL_DIR}/init_jobs.sql"):
+                self.__cursor.execute(block)    
         self.__conn.commit()
     
     async def create_user(self, username: str, password: str, is_admin: bool):
