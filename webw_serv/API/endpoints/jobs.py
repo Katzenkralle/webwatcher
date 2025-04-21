@@ -13,18 +13,18 @@ from webw_serv.db_handler.mongo_core import JobEntrySearchModeOptionsNewest, Job
 class Mutation:
     @strawberry.mutation
     @user_guard()
-    async def addOrEditEntryInJob(
+    async def add_or_edit_entry_in_job(
         self,
         info: strawberry.Info,
         data: JobEntyInput,
-        jobId: int,
+        job_id: int = strawberry.argument(name="jobId"),
     ) -> job_entry_result:
         
         mongo_data = asdict(data)
         entry_id = mongo_data.pop('call_id', None)
 
         try: 
-            result = await info.context["request"].state.mongo.create_or_modify_job_entry(jobId,entry_id, mongo_data)
+            result = await info.context["request"].state.mongo.create_or_modify_job_entry(job_id,entry_id, mongo_data)
             return JobEntry(
                 **result,
             )
@@ -36,22 +36,22 @@ class Mutation:
         
     @strawberry.mutation
     @user_guard()
-    async def deleteEntryInJob(
+    async def delete_entry_in_job(
         self,
         info: strawberry.Info,
-        jobId: int,
-        entryIds: list[int],
+        job_id: int = strawberry.argument(name="jobId"),
+        entry_ids: list[int] = strawberry.argument(name="entryIds"),
     ) -> Message:
         try:
-            anount_deleted = await info.context["request"].state.mongo.delete_job_entry(jobId, entryIds)
-            if anount_deleted == len(entryIds):
+            amount_deleted = await info.context["request"].state.mongo.delete_job_entry(job_id, entry_ids)
+            if amount_deleted == len(entry_ids):
                 return Message(
                     message=f"Entrys deleted successfully",
                     status=MessageType.SUCCESS,
                 )
             else:
                 return Message(
-                    message=f"Could not delete {len(entryIds) - anount_deleted} of the reequested {len(entryIds)} entries", 
+                    message=f"Could not delete {len(entry_ids) - amount_deleted} of the reequested {len(entry_ids)} entries",
                     status=MessageType.WARN,
                 )
         except Exception as e:
