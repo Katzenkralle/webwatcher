@@ -2,7 +2,7 @@ import strawberry
 from enum import Enum
 from typing import Annotated, Union, Optional
 
-from webw_serv.db_handler.maria_schemas import DbUser, DbSession, DbUserDisplayConfig
+from webw_serv.db_handler.maria_schemas import DbUser, DbSession, DbUserDisplayConfig, DbScriptInfo, DbParameter
 
 from webw_serv.utility.toolbox import extend_enum
 
@@ -32,9 +32,8 @@ class PaginationInput:
     start_element: int
 
 @strawberry.type
-class Parameter:
-    key: str
-    value: str
+class Parameter(DbParameter):
+    pass
 
 
 # Base types
@@ -66,12 +65,9 @@ class Message:
     status: MessageType
 
 @strawberry.type
-class ScriptContent:
-    name: str
-    description: str
-    modify_at: int
-    available_parameters: list[Parameter]
-    static_schema: list[Parameter]
+class ScriptContent(DbScriptInfo):
+    input_schema: list[Parameter]
+    expected_return_schema: list[Parameter]
 
 @strawberry.type
 class ScriptValidationResult:

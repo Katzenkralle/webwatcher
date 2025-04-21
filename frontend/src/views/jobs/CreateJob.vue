@@ -47,9 +47,9 @@ const availableScriptsOptions = ref<Record<string, string>[]>([]);
 const newParameterKvLayout = async (scriptName: string): Promise<Record<string, [string, any]>> => {
     const allScripts = await getAllScripts();
     return allScripts[scriptName] 
-        ? Object.keys(allScripts[scriptName].availableParameters)
+        ? Object.keys(allScripts[scriptName].inputSchema)
             .reduce((acc, key) => {
-                acc[key] = [allScripts[scriptName].availableParameters[key], null];
+                acc[key] = [allScripts[scriptName].inputSchema[key], null];
                 return acc;
             }, {} as Record<string, [string, any]>)
         : {}
@@ -152,8 +152,8 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
             </div>
 
             <div class="input-box"
-                v-if="globalScriptData[jobMetaData.script]?.staticSchema 
-                    && Object.keys(globalScriptData[jobMetaData.script].staticSchema).length > 0">
+                v-if="globalScriptData[jobMetaData.script]?.expectedReturnSchema 
+                    && Object.keys(globalScriptData[jobMetaData.script].expectedReturnSchema).length > 0">
                 <label for="forbidDynamicSchema">Forbid Dynamic Schema</label>
                 <div class="flex flex-row items-center">
                     <InputSwitch id="forbidDynamicSchema" v-model="jobMetaData.forbidDynamicSchema" />

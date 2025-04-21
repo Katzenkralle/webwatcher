@@ -21,10 +21,17 @@ class DbUserDisplayConfig:
     filter_config: str
     graph_config: str
 
+
+@dataclass
+class DbParameter:
+    key: str
+    value: str
+
 @dataclass
 class DbScriptInfo:
     fs_path: str
     name: str
     description: str
-    excpected_return_schema: dict[str, str]
-    input_schema: dict[str, str]
+    last_modified: str
+    expected_return_schema: DbParameter
+    input_schema: DbParameter
