@@ -62,12 +62,19 @@ class Mutation:
         
     @strawberry.mutation
     @admin_guard()
-    async def create_or_modify_job(self, info: strawberry.Info, script: Optional[str],
+    async def create_or_modify_job(self, info: strawberry.Info, 
+                             name: str,
+                             script: Optional[str],
                              execute_timer: Optional[str], # CRON
                              paramerter_kv: Optional[JsonStr],
                              forbid_dynamic_schema: bool = False,
                              description: str = "",
-                             id_: int = strawberry.argument(name="id")) -> job_full_info_result:
+                             id_: Optional[int] = strawberry.argument(name="id")) -> job_full_info_result:
+        """
+        When edeting, we only want to allow changing the sctipt if the expected schema of the new and old script match
+        or when allowing dynamic schema  
+        If no script is provided, we assume dynamic schema is allowed and dont register crons
+        """
         pass
 
 @strawberry.type
