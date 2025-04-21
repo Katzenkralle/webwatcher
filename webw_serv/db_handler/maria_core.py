@@ -332,6 +332,17 @@ class MariaDbHandler:
                                   (username, job, filter_config, graph_config))
         self.__conn.commit()
 
+    async def add_job_list(self, script_name: str, job_name: str, description: str, dynamic_schema: bool) -> int:
+        self.__cursor.execute("INSERT INTO job_list (script_name, job_name, description, dynamic_schema) VALUES (?, ?, ?, ?)",
+                              (script_name, job_name, description, dynamic_schema))
+        self.__conn.commit()
+        return self.__cursor.lastrowid
+
+    async def delete_job_list(self, job_id: int) -> bool:
+        self.__cursor.execute("DELETE FROM job_list WHERE id = ?", (job_id,))
+        self.__conn.commit()
+        return True
+
     def close(self):
         self.__cursor.close()
         self.__conn.close()
