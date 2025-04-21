@@ -107,8 +107,7 @@ class ScriptMain(Watcher):
         "past_range": "int"
     }
 
-    @staticmethod
-    def get_return_schema() -> dict[str, str] | None:
+    def get_return_schema(self) -> dict[str, str] | None:
         return None
 
 

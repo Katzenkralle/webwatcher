@@ -33,9 +33,8 @@ class Watcher(ABC):
         """
         pass
 
-    @staticmethod
     @abstractmethod
-    def get_return_schema() -> dict[str, Type[str | int | bool | float]] | None:
+    def get_return_schema(self) -> dict[str, Type[str | int | bool | float]] | None:
         """
         Returns the schema that the watcher will return the 'context' of a entry in.
         If none, the watcher may use a dynamic schema.
