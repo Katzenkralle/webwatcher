@@ -4,8 +4,8 @@ from typing import Optional
 from dataclasses import asdict
 
 from ..endpoints.auth import admin_guard, user_guard
-from ..gql_base_types import JobEntyInput, Message, MessageType, JobEntry, PaginationInput
-from ..gql_types import job_entry_result, job_entrys_result, JobEntryList
+from ..gql_base_types import JobEntyInput, Message, MessageType, JobEntry, PaginationInput, JsonStr
+from ..gql_types import job_entry_result, job_entrys_result, JobEntryList, JobsMetaDataList, job_full_info_result, jobs_metadata_result
 
 from webw_serv.db_handler.mongo_core import JobEntrySearchModeOptionsNewest, JobEntrySearchModeOptionsRange, JobEntrySearchModeOptionsSpecific
 
@@ -60,8 +60,30 @@ class Mutation:
                 status=MessageType.DANGER,
             )
         
+    @strawberry.mutation
+    @admin_guard()
+    async def create_or_modify_job(self, info: strawberry.Info, script: Optional[str],
+                             execute_timer: Optional[str], # CRON
+                             paramerter_kv: Optional[JsonStr],
+                             forbid_dynamic_schema: bool = False,
+                             description: str = "",
+                             id_: int = strawberry.argument(name="id")) -> job_full_info_result:
+        pass
+
 @strawberry.type
 class Query:
+    @strawberry.field
+    @user_guard()
+    async def jobs_metadata(self, info: strawberry.Info, name_filter: str | None = None) -> jobs_metadata_result:
+        try:
+            data = await info.context["request"].state.maria.get_job_metadata(name_filter)
+            return JobsMetaDataList(jobs=data)
+        except Exception as e:
+            return Message(
+                message=f"Failed to get job metadata: {str(e)}",
+                status=MessageType.DANGER,
+            )
+
     @strawberry.field
     @user_guard()
     async def getJobEntries(

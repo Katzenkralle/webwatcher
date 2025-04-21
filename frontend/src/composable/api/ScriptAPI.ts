@@ -9,8 +9,8 @@ export interface ScriptMeta {
     // name: string; is returned by the query, we put it as key in the dict
     fsPath: string;
     description: string;
-    modifyedAt: string;
-    expectedReturnSchema: Record<string, any>; // expected return schema of the script
+    lastModified: string;
+    supportsStaticSchema: boolean;
     inputSchema: Record<string, string>; //  input parameters for the script
 }
 
@@ -32,8 +32,9 @@ const toBase64 = (file: File) => new Promise((resolve, reject) => {
 const setScriptMetaData = (data: Record<string, any>[]) => {
     data.forEach((element) => {
         const { name, ...rest } = element;
-        rest.inputSchema = recordListToRecord(rest.inputSchema);
-        rest.expectedReturnSchema = recordListToRecord(rest.expectedReturnSchema);
+        if (rest.inputSchema) {
+            rest.inputSchema = recordListToRecord(rest.inputSchema);
+        }
         // we use the name as key in the dict        
         globalScriptData.value[name] = rest as ScriptMeta;
     });
@@ -86,15 +87,13 @@ export async function fetchScripts() {
             scripts {
                 description
                 fsPath
+                lastModified
                 name
                 inputSchema {
                 key
                 value
                 }
-                expectedReturnSchema {
-                key
-                value
-                }
+                supportsStaticSchema
             }
             }
             ... on Message {
@@ -173,16 +172,14 @@ export async function submitScript(name: String, discription: String, id: String
                 __typename
                 scripts {
                     description
-                    expectedReturnSchema {
-                    key
-                    value
-                    }
                     fsPath
                     inputSchema {
                     key
                     value
                     }
                     name
+                    supportsStaticSchema
+                    lastModified
                 }
                 }
                 ... on Message {

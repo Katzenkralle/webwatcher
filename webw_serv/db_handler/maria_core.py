@@ -8,14 +8,17 @@ import json
 from typing import Optional
 
 from webw_serv.db_handler.misc import libroot, read_sql_blocks
-from .maria_schemas import DbUser, DbSession, DbUserDisplayConfig, DbScriptInfo, DbParameter
+from .maria_schemas import DbUser, DbSession, DbUserDisplayConfig, DbScriptInfo, DbParameter, DbJobMetaData
 
 from webw_serv.utility import DEFAULT_LOGGER as logger
 from webw_serv.configurator import Config
 from datetime import datetime
 
 
-
+def unix_to_mariadb_timestamp(unix_time: float|None =None) -> str:
+    if unix_time is None:
+        unix_time = time.time()
+    return datetime.fromtimestamp(unix_time).strftime('%Y-%m-%d %H:%M:%S') 
 
 class MariaDbHandler:
     SQL_DIR = f"{libroot}/sql/"
@@ -150,33 +153,15 @@ class MariaDbHandler:
             input_schema = []
             for entry in db_schema:
                 input_schema.append(DbParameter(*entry))
-            expected_return_schema = []
-            if script[3]:
-                try:
-                    for key, value in json.loads(script[3]).items():
-                        expected_return_schema.append(DbParameter(key,value))
-                except Exception as e:
-                    logger.warning(f"MARIA: Failed to parse script schema for {script[1]}: {e}")
-            
             found_scripts.append(
-                DbScriptInfo(script[0], script[1], script[2], script[4], expected_return_schema, input_schema))
+                DbScriptInfo(script[0], script[1], script[2], script[3], input_schema, script[4]))
         return found_scripts
           
 
-    async def add_temp_script(self, fs_path: str, name: str, excpected_return_schema: dict, expected_input: dict) -> bool:
-        expected = {}
-        for key, value in excpected_return_schema.items():
-            if value == str:
-                value = "str"
-            elif value == int:
-                value = "int"
-            elif value == bool:
-                value = "bool"
-            expected[key] = value
-    
-        self.__cursor.execute("""INSERT INTO script_list (fs_path, name, description, expected_return_schema, temporary) 
+    async def add_temp_script(self, fs_path: str, name: str, expected_input: dict, supports_static_schema: bool) -> bool:
+        self.__cursor.execute("""INSERT INTO script_list (fs_path, name, description, supports_static_schema, temporary) 
         VALUES (?, ?, ?, ?, ?)""",
-                              (fs_path, name, None, json.dumps(expected), True))
+                              (fs_path, name, None, supports_static_schema, True))
         
         for key, value in expected_input.items():
             if value == str:
@@ -209,8 +194,8 @@ class MariaDbHandler:
             raise ValueError("Script not found")
         if description is None:
             description = script[2]
-        self.__cursor.execute("""UPDATE script_list SET name = ?, description = ?, temporary = 0 WHERE name = ?""",
-                              (name, description, id_))
+        self.__cursor.execute("""UPDATE script_list SET name = ?, description = ?, last_edited = ?, temporary = 0 WHERE name = ?""",
+                      (name, description, unix_to_mariadb_timestamp(), id_))
         self.__conn.commit()
         return True
 
@@ -221,8 +206,8 @@ class MariaDbHandler:
             raise ValueError("Script not found")
         if description is None:
             description = script[2]
-        self.__cursor.execute("""UPDATE script_list SET description = ? WHERE name = ?""",
-                              (description, name))
+        self.__cursor.execute("""UPDATE script_list SET description = ?, last_edited = ? WHERE name = ?""",
+                              (description, unix_to_mariadb_timestamp(), name))
         self.__conn.commit()
         return True
 
@@ -244,14 +229,54 @@ class MariaDbHandler:
             if self.__cursor.fetchone() is not None:
                 raise ValueError("Session name already in use")
 
-        # Get current time in MariaDB TIMESTAMP format
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        new_session = DbSession(username, new_id, name, current_time)
+        new_session = DbSession(username, new_id, name, unix_to_mariadb_timestamp())
 
         self.__cursor.execute("INSERT INTO web_user_sessions (session_id, username, name, created) VALUES (?, ?, ?, ?)",
                                 (new_session.session_id, new_session.username, new_session.name, new_session.created))
         self.__conn.commit()
         return new_session
+
+    async def get_job_metadata(self, job_id: int|None = None) -> list[DbJobMetaData]:
+        jobs = []
+        if job_id is None:
+            self.__cursor.execute("SELECT * FROM job_list")
+            jobs = self.__cursor.fetchall()
+        else:
+            self.__cursor.execute("SELECT * FROM job_list WHERE id = ?", (job_id,))
+            job = self.__cursor.fetchone()
+            if job:
+                jobs.append(job)
+        
+        composed_jobs = []
+        for job in jobs:
+            self.__cursor.execute("SELECT cron_time,executed_last,enabled FROM cron_list WHERE job_id = ?", (job[1],))    
+            db_corn  = self.__cursor.fetchone()
+
+            expected_return_schema = None
+            if job[5]:
+                try:
+                    loaded_schema = json.loads(job[5])
+                    expected_return_schema: list[DbParameter] = []
+                    for key, val in loaded_schema.items():
+                        expected_return_schema.append(DbParameter(key, val))
+                except Exception as e:
+                    logger.warning(f"MARIA: Failed to parse job schema for {job[2]}: {e}")
+
+            composed_jobs.append(
+                DbJobMetaData(
+                        id= job[1],
+                        name= job[2],
+                        script= job[0],
+                        description= job[3],
+                        enabled= db_corn[2],
+                        execute_timer= db_corn[0],
+                        executed_last= db_corn[1],
+                        forbid_dynamic_schema= not job[4],
+                        expected_return_schema= expected_return_schema,
+                    ))
+        return composed_jobs
+
+
 
     async def get_sessions_for_user(self, username: str) -> list[DbSession]:
         self.__cursor.execute("SELECT * FROM web_user_sessions WHERE username = ?", (username,))

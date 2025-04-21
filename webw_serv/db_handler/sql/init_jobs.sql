@@ -29,12 +29,13 @@ VALUES (
     TRUE
 );
 
-INSERT INTO job_list (script_name, job_name, description, dynamic_schema)
+INSERT INTO job_list (script_name, job_name, description, dynamic_schema, expected_return_schema)
 VALUES (
     'HTTP-Status Watcher',
     'GitHub Status',
     'Retrives the current Status of https://github.com/',
-    TRUE
+    FALSE,
+    '{"url": "string", "status_code": "integer", "description": "string"}'
 );
 INSERT INTO cron_list (job_id, cron_time, executed_last, enabled)
 VALUES (

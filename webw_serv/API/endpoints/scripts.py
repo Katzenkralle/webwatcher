@@ -50,12 +50,10 @@ class Mutation:
             was_valid = True
             if script_check_result[2] is not None:
                 static_supported = True
-                parameters_list = jsonize_type_list(script_check_result[2].keys())
             else:
-                parameters_list = []
                 static_supported = False
             try:
-                await maria.add_temp_script(fs_path=path, name=uuid, excpected_return_schema=script_check_result[2], expected_input=script_check_result[1])
+                await maria.add_temp_script(fs_path=path, name=uuid, expected_input=script_check_result[1], supports_static_schema=static_supported)
             except Exception as e:
                 return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False,
                                               validation_msg=f"Failed to upload script; {e}", id="")
@@ -99,25 +97,6 @@ class Mutation:
         except Exception as e:
             return Message(message=f"Failed to delete script; {e}", status=MessageType.DANGER)
 
-    @strawberry.mutation
-    @admin_guard()
-    async def create_or_modify_job(self, info: strawberry.Info, script: Optional[str],
-                             execute_timer: Optional[str], # CRON
-                             paramerter_kv: Optional[JsonStr],
-                             forbid_dynamic_schema: bool = False,
-                             description: str = "",
-                             id_: int = strawberry.argument(name="id")) -> job_full_info_result:
-        pass
-
-    @strawberry.mutation
-    @admin_guard()
-    async def add_or_edit_entry_in_job(self, info: strawberry.Info, data: Optional[JsonStr], id_: int = strawberry.argument(name="id")) -> job_entry_result:
-        pass
-
-    @strawberry.mutation
-    @admin_guard()
-    async def delete_entry_in_job(self, info: strawberry.Info, id_: int = strawberry.argument(name="id")) -> job_entry_result:
-        pass
 
 
 @strawberry.type
@@ -128,13 +107,3 @@ class Query:
         maria: MariaDbHandler = info.context["request"].state.maria
         scripts_info = await maria.get_script_info(name)
         return ScriptContentList(scripts=scripts_info)
-
-    @strawberry.field
-    @user_guard()
-    async def jobs_metadata(self, info: strawberry.Info, name_filter: Optional[str] = strawberry.UNSET) -> jobs_metadata_result:
-        pass
-
-    @strawberry.field
-    @user_guard()
-    async def job_settings(self, info: strawberry.Info, id_: int = strawberry.argument(name="id")) -> jobs_settings_result:
-        pass

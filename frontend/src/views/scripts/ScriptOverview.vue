@@ -30,7 +30,6 @@ const formattedGlobalScriptData = computed(() =>
     Object.entries(globalScriptData.value).map(([name, meta]) => ({
         name,
         ...meta,
-        dynamicSchema: Object.keys(meta.expectedReturnSchema).length ? "Yes" : "No",
     }))
 );
 </script>
@@ -69,7 +68,7 @@ const formattedGlobalScriptData = computed(() =>
         <DataTable 
             class="w-full"
             :value="formattedGlobalScriptData" 
-            :globalFilterFields="['fsPath', 'name', 'dynamicSchema', 'modifyedAt']"
+            :globalFilterFields="['fsPath', 'name', 'lastModified']"
             :filters="scriptFilter"
             @filter="(e) => {isFiltered = (e.filteredValue.length < formattedGlobalScriptData.length)}"
 
@@ -82,8 +81,7 @@ const formattedGlobalScriptData = computed(() =>
             sortable>
                 <Column field="fsPath" header="File Path"></Column>
                 <Column field="name" header="Name"></Column>
-                <Column field="dynamicSchema" header="Supports static schema"></Column>
-                <Column field="modifyedAt" header="Last Modyfied"></Column>
+                <Column field="lastModified" header="Last Modyfied"></Column>
                 <Column header="Edit/Delete">
                     <template #body="slotProps">
                         <div class="space-x-2">

@@ -63,7 +63,8 @@ const computedScript = computed((): undefined | ScriptMeta  => {
         validationMsg: 'File present on the Server.',
         availableParameters: thisScript.inputSchema,
         valid: false,
-        supportsStaticSchema: thisScript.expectedReturnSchema !== undefined && Object.keys(thisScript.expectedReturnSchema).length > 0};
+        supportsStaticSchema: thisScript.supportsStaticSchema
+    };
     nameStatus.field = currentScriptName.value;
     nameStatus.severity = 'success';
     nameStatus.summary = '';
