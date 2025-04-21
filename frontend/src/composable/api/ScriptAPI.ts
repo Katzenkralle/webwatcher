@@ -10,8 +10,8 @@ export interface ScriptMeta {
     fsPath: string;
     description: string;
     modifyedAt: string;
-    staticSchema: Record<string, any>; // expected return schema of the script
-    availableParameters: Record<string, string>; //  input parameters for the script
+    expectedReturnSchema: Record<string, any>; // expected return schema of the script
+    inputSchema: Record<string, string>; //  input parameters for the script
 }
 
 export interface ScriptValidationResult {
@@ -29,10 +29,13 @@ const toBase64 = (file: File) => new Promise((resolve, reject) => {
     reader.onerror = reject;
 });
 
-const setScriptMetaData = (data: (ScriptMeta & { name: string})[]) => {
+const setScriptMetaData = (data: Record<string, any>[]) => {
     data.forEach((element) => {
         const { name, ...rest } = element;
-        globalScriptData.value[name] = rest;
+        rest.inputSchema = recordListToRecord(rest.inputSchema);
+        rest.expectedReturnSchema = recordListToRecord(rest.expectedReturnSchema);
+        // we use the name as key in the dict        
+        globalScriptData.value[name] = rest as ScriptMeta;
     });
 };
 
@@ -104,15 +107,15 @@ export async function fetchScripts() {
                 fsPath: '/path/to/script1',
                 modifyedAt: '1742369540',
                 description: 'Description of script1',
-                staticSchema: {},
-                availableParameters: {}
+                expectedReturnSchema: {},
+                inputSchema: {}
             },
             script2:{
                 fsPath: '/path/to/script2',
                 modifyedAt: '1742369540',
                 description: 'Description of script2',
-                staticSchema: {"test": "string", "data": "int"},
-                availableParameters: { "test": "string", "data": "int"}
+                expectedReturnSchema: {"test": "string", "data": "int"},
+                inputSchema: { "test": "string", "data": "int"}
             }
         };
         reportError(e);
@@ -169,17 +172,27 @@ export async function submitScript(name: String, discription: String, id: String
             name: $name,
             description: $discription
         ) {
-            __typename
-            ... on jobsMetaData {
-                fsPath
-                description
-                staticSchema
-                availableParameters
-            }
-            ... on Message {
+            ... on ScriptContentList {
+                __typename
+                scripts {
+                    description
+                    expectedReturnSchema {
+                    key
+                    value
+                    }
+                    fsPath
+                    inputSchema {
+                    key
+                    value
+                    }
+                    name
+                }
+                }
+                ... on Message {
+                __typename
                 message
                 status
-            }
+                }
         }
         }`;
     return new Promise((resolve, reject) => {
@@ -188,9 +201,9 @@ export async function submitScript(name: String, discription: String, id: String
             name: name,
             discription: discription,
         }).then((response) => {
-            console.log(response);
-            if (response.providedTypes[0].type === "jobsMetaData") {
-                setScriptMetaData(response.data as (ScriptMeta & { name: string})[]);
+            if (response.providedTypes[0].type === "ScriptContentList") {
+                console.log(response.data.uploadScriptData.scripts);
+                setScriptMetaData(response.data.uploadScriptData.scripts);
                 resolve();
             } 
             throw response

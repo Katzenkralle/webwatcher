@@ -30,7 +30,7 @@ const formattedGlobalScriptData = computed(() =>
     Object.entries(globalScriptData.value).map(([name, meta]) => ({
         name,
         ...meta,
-        dynamicSchema: Object.keys(meta.staticSchema).length ? "Yes" : "No",
+        dynamicSchema: Object.keys(meta.expectedReturnSchema).length ? "Yes" : "No",
     }))
 );
 </script>

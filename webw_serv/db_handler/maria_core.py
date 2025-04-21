@@ -8,7 +8,7 @@ import json
 from typing import Optional
 
 from webw_serv.db_handler.misc import libroot, read_sql_blocks
-from .maria_schemas import DbUser, DbSession, DbUserDisplayConfig, DbScriptInfo
+from .maria_schemas import DbUser, DbSession, DbUserDisplayConfig, DbScriptInfo, DbParameter
 
 from webw_serv.utility import DEFAULT_LOGGER as logger
 from webw_serv.configurator import Config
@@ -132,44 +132,38 @@ class MariaDbHandler:
             return DbUser(*user)
         except Exception as e:
             return None
+    
+    async def get_script_info(self, name: str | None = None) -> list[DbScriptInfo]:
+        registered_scripts = []
+        if name == None:
+            self.__cursor.execute("SELECT * FROM script_list")
+            registered_scripts = self.__cursor.fetchall()
+        else:
+            self.__cursor.execute("SELECT * FROM script_list WHERE name = ?", (name,))
+            result = self.__cursor.fetchone()
+            if result:
+                registered_scripts.append(result)
+        found_scripts: list[DbScriptInfo] = []
+        for script in registered_scripts:
+            self.__cursor.execute("SELECT keyword,datatype FROM script_input_info WHERE script_name = ?", (script[1],))
+            db_schema = self.__cursor.fetchall()
+            input_schema = []
+            for entry in db_schema:
+                input_schema.append(DbParameter(*entry))
+            expected_return_schema = []
+            if script[3]:
+                try:
+                    for key, value in json.loads(script[3]).items():
+                        expected_return_schema.append(DbParameter(key,value))
+                except Exception as e:
+                    logger.warning(f"MARIA: Failed to parse script schema for {script[1]}: {e}")
+            
+            found_scripts.append(
+                DbScriptInfo(script[0], script[1], script[2], script[4], expected_return_schema, input_schema))
+        return found_scripts
+          
 
-    async def get_script_info(self, name: str) -> DbScriptInfo | None:
-        self.__cursor.execute("""
-            SELECT fs_path, name, description
-            FROM script_list
-            WHERE name = ?
-        """, (name,))
-        script_list_data = self.__cursor.fetchone()
-
-        if not script_list_data:
-            return None
-
-        self.__cursor.execute("""
-            SELECT excpected_return_schema, input_schema
-            FROM script_input_info
-            WHERE name = ?
-        """, (name,))
-        script_input_info_data = self.__cursor.fetchall()
-
-        if not script_input_info_data:
-            return None
-
-        excpected_return_schema = {}
-        input_schema = {}
-
-        for row in script_input_info_data:
-            excpected_return_schema.update(row[0])
-            input_schema.update(row[1])
-        # TODO: transform the schema to the correct format
-        return DbScriptInfo(
-            fs_path=script_list_data[0],
-            name=script_list_data[1],
-            description=script_list_data[2],
-            excpected_return_schema=excpected_return_schema,
-            input_schema=input_schema
-        )
-
-    async def add_temp_script(self, fs_path: str, name: str, excpected_return_schema: dict) -> bool:
+    async def add_temp_script(self, fs_path: str, name: str, excpected_return_schema: dict, expected_input: dict) -> bool:
         expected = {}
         for key, value in excpected_return_schema.items():
             if value == str:
@@ -183,6 +177,18 @@ class MariaDbHandler:
         self.__cursor.execute("""INSERT INTO script_list (fs_path, name, description, expected_return_schema, temporary) 
         VALUES (?, ?, ?, ?, ?)""",
                               (fs_path, name, None, json.dumps(expected), True))
+        
+        for key, value in expected_input.items():
+            if value == str:
+                value = "str"
+            elif value == int:
+                value = "int"
+            elif value == bool:
+                value = "bool"
+            self.__cursor.execute("""INSERT INTO script_input_info (script_name, keyword, datatype) 
+            VALUES (?, ?, ?)""",
+                (name, key, value))
+
         self.__conn.commit()
         return True
 

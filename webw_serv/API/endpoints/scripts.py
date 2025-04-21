@@ -1,19 +1,22 @@
 import strawberry
 
-from typing_extensions import Optional
+from typing_extensions import Optional, Any
 from uuid import uuid4
 
 from webw_serv.db_handler import MariaDbHandler
+from webw_serv.db_handler.maria_schemas import DbScriptInfo
 from webw_serv.watcher.script_checker import script_checker
 from webw_serv.utility.file_to_b64 import b64_to_file
 from webw_serv import CONFIG
 
 from ..gql_base_types import PaginationInput, JsonStr, MessageType, Message
 from ..endpoints.auth import admin_guard, user_guard
-from ..gql_base_types import ScriptValidationResult, Parameter, B64Str, ScriptContent
+from ..gql_base_types import ScriptValidationResult, Parameter, B64Str
 from ..gql_types import script_content_result, jobs_metadata_result, jobs_settings_result, job_entrys_result, \
     user_job_config_result, job_metadata_result, job_full_info_result, job_entry_result, ScriptContentList
 from webw_serv.configurator.config import Config
+
+
 
 @strawberry.type
 class Mutation:
@@ -35,8 +38,8 @@ class Mutation:
                 return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False,
                                               validation_msg=f"Failed to get script info; {e}", id="")
             new_script_config_data = script_check_result[1]
-            if old_script_config_data is not None and new_script_config_data is not None:
-                if old_script_config_data != new_script_config_data:
+            if len(old_script_config_data) != 0 and new_script_config_data is not None:
+                if old_script_config_data[0] != new_script_config_data:
                     return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False,
                                                   validation_msg="The script doesn't match the scheme", id="")
 
@@ -52,7 +55,7 @@ class Mutation:
                 parameters_list = []
                 static_supported = False
             try:
-                await maria.add_temp_script(fs_path=path, name=uuid, excpected_return_schema=script_check_result[2])
+                await maria.add_temp_script(fs_path=path, name=uuid, excpected_return_schema=script_check_result[2], expected_input=script_check_result[1])
             except Exception as e:
                 return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False,
                                               validation_msg=f"Failed to upload script; {e}", id="")
@@ -83,8 +86,8 @@ class Mutation:
                 await maria.edit_script_description(name=name, description=description)
             except Exception as e:
                 return Message(message=f"Failed to update script description; {e}", status=MessageType.DANGER)
-        return Message(message="Script uploaded successfully", status=MessageType.SUCCESS)
-        # ToDo: return script metadata instead of message
+        scripts_info = await maria.get_script_info(name)
+        return ScriptContentList(scripts=scripts_info)
 
     @strawberry.mutation
     @admin_guard()
