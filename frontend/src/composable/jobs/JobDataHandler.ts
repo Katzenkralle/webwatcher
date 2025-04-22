@@ -76,7 +76,6 @@ export const useJobDataHandler = (
                 ...localJobData.value,
                 ...await apiHandler.fetchData(!all ? [startAt, startAt + fetchAmount.value] : undefined)
                     .then((data) => {
-                        console.log(data)
                         if (Object.keys(data).length < fetchAmount.value) {
                             allFetched.value = true;
                         }
@@ -159,7 +158,7 @@ export const useJobDataHandler = (
     }   
 
     const addOrEditEntry = async(entry: jobEntryInput) => {
-        apiHandler.addOrUpdateJobEntry(entry).then((data) => {         
+        apiHandler.addOrUpdateJobEntry(entry).then((data) => {   
             localJobData.value = {
                 ...localJobData.value,
                 ...data
@@ -201,7 +200,7 @@ export const useJobDataHandler = (
                 return null;
             }).filter((layout): layout is TableLayout => layout !== null)
         ];
-          
+
         const contextColNames: TableLayout[] = [...Object.values(localJobData.value).flatMap((row: jobEnty) => 
                 Object.entries(row.context)
                 .map(([key, value]) => ({ key, type: typeof value }))
@@ -354,7 +353,7 @@ export const useJobDataHandler = (
         highlightSubstring,
         computeLayout,
         computeLayoutUnfiltered,
-        hasStaticContext: computed(() => staticContextSchema.value !== undefined && Object.keys(staticContextSchema.value).length > 0),
+        hasStaticContext: computed(() => staticContextSchema.value && Object.keys(staticContextSchema.value).length > 0),
         computedAllFetched: computed(() => allFetched.value),
         localJobData,
         filters,
