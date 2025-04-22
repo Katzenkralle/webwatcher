@@ -216,7 +216,7 @@ export const useJobData = (jobId: number) => {
                     getJobEntries(
                         jobId: $jobId,
                         newestN: $lastN,
-                        range: $range,
+                        range_: $range,
                         specificRows: $specificRows
                     ) {
                         ... on JobEntryList {
