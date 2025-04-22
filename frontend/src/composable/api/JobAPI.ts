@@ -59,7 +59,7 @@ const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
                 case "JobsMetaDataList":
                     const relevantData: TableMetaData[] = []
                     response.data.jobsMetadata.jobs.forEach((entry: Record<string, any>) => {
-                        if (entry.expectedReturnSchema) {
+                        if (entry.expectedReturnSchema && Array.isArray(entry.expectedReturnSchema)) {
                             entry.expectedReturnSchema = recordListToRecord(entry.expectedReturnSchema);
                         }
                         relevantData.push(entry as TableMetaData)
@@ -200,7 +200,9 @@ export const useJobData = (jobId: number) => {
         const callId: number = entry.callId!;
         delete entry.callId;
         try {
-            entry.context = JSON.parse(entry.context);
+            if (entry.context && typeof entry.context === "string") {
+                entry.context = JSON.parse(entry.context);
+            }
         } catch (e) {
             entry.context = {}
         }

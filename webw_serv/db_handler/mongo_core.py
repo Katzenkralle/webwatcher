@@ -29,6 +29,13 @@ job_entry_search_mode_options = Union[
 
 
 class MongoDbHandler:
+    @staticmethod
+    def reformat_data(data: dict) -> dict:
+        if data.get("context", None) and isinstance(data["context"], str):
+            # If the data has a context, we need to convert it to a string
+            # This is because pymongo does not support the context object
+            data["context"] = json.loads(data["context"])
+        return data
 
     def __init__(self, mongo_config):
         logger.debug("MONGO: Initializing MongoDbHandler")
@@ -115,6 +122,7 @@ class MongoDbHandler:
         so each entry should be a single document
         """
         # Check if the jobId exists
+        data = self.reformat_data(data)
         if not await self.check_if_job_exists(job_id):
             raise ValueError(f"Job {job_id} not registered")
 
