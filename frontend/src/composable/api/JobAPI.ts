@@ -57,10 +57,13 @@ const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
             const key = response.providedTypes[0].type;
             switch (key) {
                 case "JobsMetaDataList":
-                    const relevantData = response.data.jobsMetadata.jobs
-                    if (relevantData.expectedReturnSchema) {
-                        relevantData.expectedReturnSchema = recordListToRecord(relevantData.expectedReturnSchema);
-                    }
+                    const relevantData: TableMetaData[] = []
+                    response.data.jobsMetadata.jobs.forEach((entry: Record<string, any>) => {
+                        if (entry.expectedReturnSchema) {
+                            entry.expectedReturnSchema = recordListToRecord(entry.expectedReturnSchema);
+                        }
+                        relevantData.push(entry as TableMetaData)
+                    })
                     return resolve(relevantData)
                 default:
                     throw response
@@ -261,9 +264,13 @@ export const useJobData = (jobId: number) => {
 
     const addOrUpdateJobEntry = async (entry: jobEntryInput & {id?: number|undefined}): Promise<Record<number, jobEnty>> => {
         // This is a workaround for we use mix naming for the callId and id
-        if (!entry.callId && entry.id) {
-            entry.callId = entry.id;
-            delete entry.id;
+        const to_send: Record<string, any> = JSON.parse(JSON.stringify(entry));
+        if (!to_send.callId && to_send.id !== undefined) {
+            to_send.callId = to_send.id;
+            delete to_send.id;
+        }
+        if(to_send.context) {
+            to_send.context = JSON.stringify(to_send.context);
         }
 
         const query = `
@@ -290,9 +297,8 @@ export const useJobData = (jobId: number) => {
                 }`
         return queryGql(query, {
             jobId: jobId,
-            entry: entry}).then((response) => {
+            entry: to_send}).then((response) => {
             const key = response.providedTypes[0].type;
-            console.log(response)
             switch (key) {
                 case "JobEntry":
                     return pfraseeJobEntry(response.data.addOrEditEntryInJob)
