@@ -2,7 +2,10 @@ import strawberry
 
 from typing import Optional
 from dataclasses import asdict
+from random import choice
 
+import CONFIG
+from db_handler import MariaDbHandler
 from ..endpoints.auth import admin_guard, user_guard
 from ..gql_base_types import JobEntyInput, Message, MessageType, JobEntry, PaginationInput, JsonStr
 from ..gql_types import job_entry_result, job_entrys_result, JobEntryList, JobsMetaDataList, job_full_info_result, jobs_metadata_result
@@ -88,12 +91,16 @@ class Mutation:
                              execute_timer: Optional[str], # CRON
                              paramerter_kv: Optional[JsonStr],
                              forbid_dynamic_schema: bool = False,
-                             description: str = "Here could be your job description",
+                             description: Optional[str] = None,
                              id_: Optional[int] = strawberry.argument(name="id")) -> job_full_info_result:
         """
         When editing, we only want to allow changing the script if the expected schema of the new and old script match
         or when allowing dynamic schema
         """
+        maria: MariaDbHandler = info.context["request"].state.maria
+
+        if description is None:
+            description = choice(CONFIG.DEFAULT_JOB_DESCRIPTIONS)
 
         pass
 
