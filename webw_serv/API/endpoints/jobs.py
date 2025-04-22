@@ -124,7 +124,7 @@ class Query:
 
     @strawberry.field
     @user_guard()
-    async def getJobEntries(
+    async def get_job_entries(
         self,
         info: strawberry.Info,
         job_id: int = strawberry.argument(name="jobId"),
