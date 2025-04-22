@@ -68,6 +68,7 @@ const computedScript = computed((): undefined | ScriptMeta  => {
     nameStatus.field = currentScriptName.value;
     nameStatus.severity = 'success';
     nameStatus.summary = '';
+    discription.value = thisScript.description;
     return thisScript;
 });
 

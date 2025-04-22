@@ -212,6 +212,18 @@ class MariaDbHandler:
             raise ValueError("Failed to move script file")
         if description is None:
             description = script[2]
+
+        self.__cursor.execute("SELECT * FROM script_list WHERE name = ?", (name,))
+        existing_script = self.__cursor.fetchone()
+        if existing_script:
+            # Replace script
+            self.__cursor.execute("DELETE FROM script_list WHERE name = ?", (id_,))
+            try:
+                os.remove(existing_script[0])   
+            except Exception as e:  
+                logger.warning(f"MARIA: Failed to delete script file {existing_script[0]}: {e}")
+            id_ = name
+
         self.__cursor.execute("""UPDATE script_list SET fs_path = ?, name = ?, description = ?, last_edited = ?, temporary = 0 WHERE name = ?""",
                       (mv_result[1], name, description, unix_to_mariadb_timestamp(), id_))
         self.__conn.commit()
