@@ -115,29 +115,29 @@ class Query:
     async def getJobEntries(
         self,
         info: strawberry.Info,
-        jobId: int,
-        range: Optional[PaginationInput] = None,
-        specificRows: Optional[list[int]] = None,
-        newestN: Optional[int] = None,
+        job_id: int = strawberry.argument(name="jobId"),
+        range_: Optional[PaginationInput] = None,
+        specific_rows: Optional[list[int]] = None,
+        newest_n: Optional[int] = None,
     ) -> job_entrys_result:
         try:
-            if range is not None:
+            if range_ is not None:
                 options = JobEntrySearchModeOptionsRange(
-                    start=range.start_element,
-                    n_elements=range.max,
+                    start=range_.start_element,
+                    n_elements=range_.max,
                 )
-            elif specificRows is not None:
+            elif specific_rows is not None:
                 options = JobEntrySearchModeOptionsSpecific(
-                    specific=specificRows,
+                    specific=specific_rows,
                 )
-            elif newestN is not None:
+            elif newest_n is not None:
                 options = JobEntrySearchModeOptionsNewest(
-                    newest=newestN,
+                    newest=newest_n,
                 )
             else:
                 options = None
             
-            data = await info.context["request"].state.mongo.get_job_entries(jobId, options)
+            data = await info.context["request"].state.mongo.get_job_entries(job_id, options)
             return JobEntryList(
                 jobs=[JobEntry(**entry) for entry in data],
             )
