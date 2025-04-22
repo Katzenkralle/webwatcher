@@ -62,16 +62,16 @@ class Mutation:
         
     @strawberry.mutation
     @user_guard()
-    async def deleteJob(self, info: strawberry.Info, jobId: int) -> Message:
+    async def deleteJob(self, info: strawberry.Info, job_id: int = strawberry.argument(name="jobId")) -> Message:
         try:
-            await info.context["request"].state.maria.delete_job(jobId)
+            await info.context["request"].state.maria.delete_job(job_id)
         except Exception as e:
             return Message(
                 message=f"Failed to delete job: {str(e)}",
                 status=MessageType.DANGER,
             )
         try:
-            await info.context["request"].state.mongo.delete_job(jobId)
+            await info.context["request"].state.mongo.delete_job(job_id)
         except Exception as e:
             pass
         return Message(
@@ -94,6 +94,7 @@ class Mutation:
         When editing, we only want to allow changing the script if the expected schema of the new and old script match
         or when allowing dynamic schema
         """
+
         pass
 
 @strawberry.type
