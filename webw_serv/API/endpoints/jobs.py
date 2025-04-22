@@ -5,7 +5,7 @@ from dataclasses import asdict
 from random import choice
 
 import CONFIG
-from db_handler import MariaDbHandler
+from db_handler import MariaDbHandler, MongoDbHandler
 from ..endpoints.auth import admin_guard, user_guard
 from ..gql_base_types import JobEntyInput, Message, MessageType, JobEntry, PaginationInput, JsonStr
 from ..gql_types import job_entry_result, job_entrys_result, JobEntryList, JobsMetaDataList, job_full_info_result, jobs_metadata_result
@@ -22,12 +22,12 @@ class Mutation:
         data: JobEntyInput,
         job_id: int = strawberry.argument(name="jobId"),
     ) -> job_entry_result:
-        
+        mongo: MongoDbHandler = info.context["request"].state.mongo
         mongo_data = asdict(data)
         entry_id = mongo_data.pop('call_id', None)
 
         try: 
-            result = await info.context["request"].state.mongo.create_or_modify_job_entry(job_id,entry_id, mongo_data)
+            result = await mongo.create_or_modify_job_entry(job_id,entry_id, mongo_data)
             return JobEntry(
                 **result,
             )
@@ -45,8 +45,9 @@ class Mutation:
         job_id: int = strawberry.argument(name="jobId"),
         entry_ids: list[int] = strawberry.argument(name="entryIds"),
     ) -> Message:
+        mongo: MongoDbHandler = info.context["request"].state.mongo
         try:
-            amount_deleted = await info.context["request"].state.mongo.delete_job_entry(job_id, entry_ids)
+            amount_deleted = await mongo.delete_job_entry(job_id, entry_ids)
             if amount_deleted == len(entry_ids):
                 return Message(
                     message=f"Entrys deleted successfully",
@@ -66,15 +67,17 @@ class Mutation:
     @strawberry.mutation
     @user_guard()
     async def deleteJob(self, info: strawberry.Info, job_id: int = strawberry.argument(name="jobId")) -> Message:
+        maria: MariaDbHandler = info.context["request"].state.maria
+        mongo: MongoDbHandler = info.context["request"].state.mongo
         try:
-            await info.context["request"].state.maria.delete_job(job_id)
+            await maria.delete_job(job_id)
         except Exception as e:
             return Message(
                 message=f"Failed to delete job: {str(e)}",
                 status=MessageType.DANGER,
             )
         try:
-            await info.context["request"].state.mongo.delete_job(job_id)
+            await mongo.delete_job(job_id)
         except Exception as e:
             pass
         return Message(
@@ -109,8 +112,9 @@ class Query:
     @strawberry.field
     @user_guard()
     async def jobs_metadata(self, info: strawberry.Info, name_filter: str | None = None) -> jobs_metadata_result:
+        maria: MariaDbHandler = info.context["request"].state.maria
         try:
-            data = await info.context["request"].state.maria.get_job_metadata(name_filter)
+            data = await maria.get_job_metadata(name_filter)
             return JobsMetaDataList(jobs=data)
         except Exception as e:
             return Message(
@@ -128,6 +132,7 @@ class Query:
         specific_rows: Optional[list[int]] = None,
         newest_n: Optional[int] = None,
     ) -> job_entrys_result:
+        mongo: MongoDbHandler = info.context["request"].state.mongo
         try:
             if range_ is not None:
                 options = JobEntrySearchModeOptionsRange(
@@ -145,7 +150,7 @@ class Query:
             else:
                 options = None
             
-            data = await info.context["request"].state.mongo.get_job_entries(job_id, options)
+            data = await mongo.get_job_entries(job_id, options)
             return JobEntryList(
                 jobs=[JobEntry(**entry) for entry in data],
             )
