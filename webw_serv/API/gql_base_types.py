@@ -79,11 +79,12 @@ class ScriptValidationResult:
 
 @strawberry.type
 class JobMetaData(DbJobMetaData):
+    id: int
     expected_return_schema: Optional[list[Parameter]]
 
 @strawberry.type
 class JobSettings:
-    int: int
+    id: int
     parameters: list[Parameter]
 
 @strawberry.type
