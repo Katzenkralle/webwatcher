@@ -359,6 +359,16 @@ class MariaDbHandler:
         self.__conn.commit()
         return True
 
+    async def set_job_input_settings(self, job_id: int, settings: dict) -> bool:
+        self.__cursor.execute("DELETE FROM job_input_settings WHERE job_id = ?", (job_id,))
+        for key, value in settings.items():
+            self.__cursor.execute("INSERT INTO job_input_settings (job_id, keyword, value) VALUES (?, ?, ?)",
+                                  (job_id, key, value))
+        self.__conn.commit()
+        return True
+
+
+
     def close(self):
         self.__cursor.close()
         self.__conn.close()
