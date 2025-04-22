@@ -367,7 +367,26 @@ class MariaDbHandler:
         self.__conn.commit()
         return True
 
+    async def add_cron_job(self, job_id: int, cron_time: str, enabled: bool) -> bool:
+        self.__cursor.execute("INSERT INTO cron_list (job_id, cron_time, enabled) VALUES (?, ?, ?)",
+                              (job_id, cron_time, enabled))
+        self.__conn.commit()
+        return True
 
+    async def delete_cron_job(self, job_id: int) -> bool:
+        self.__cursor.execute("DELETE FROM cron_list WHERE job_id = ?", (job_id,))
+        self.__conn.commit()
+        return True
+
+    async def set_cron_enabled(self, job_id: int, enabled: bool) -> bool:
+        self.__cursor.execute("UPDATE cron_list SET enabled = ? WHERE job_id = ?", (enabled, job_id))
+        self.__conn.commit()
+        return True
+
+    async def set_cron_timestamp(self, job_id: int, timestamp: datetime):
+        self.__cursor.execute("UPDATE cron_list SET executed_last = ? WHERE job_id = ?", (timestamp, job_id))
+        self.__conn.commit()
+        return True
 
     def close(self):
         self.__cursor.close()
