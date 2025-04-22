@@ -6,8 +6,8 @@ from typing import Optional
 from dataclasses import asdict
 from random import choice
 
-import CONFIG
-from db_handler import MariaDbHandler, MongoDbHandler
+from webw_serv import CONFIG
+from webw_serv.db_handler import MariaDbHandler, MongoDbHandler
 from ..endpoints.auth import admin_guard, user_guard
 from ..gql_base_types import JobEntyInput, Message, MessageType, JobEntry, PaginationInput, JsonStr, JobFullInfo, \
     Parameter
