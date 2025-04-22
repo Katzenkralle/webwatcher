@@ -50,7 +50,6 @@ export async function deleteScript(name: string) {
         }
         }`;   
     queryGql(mutation, {name: name}).then((response) => {
-        console.log(response);
         if (response.data.deleteScript.status === "SUCCESS") {
             delete globalScriptData.value[name]
             return
@@ -96,7 +95,6 @@ export async function fetchScripts() {
         const key = response.providedTypes[0].type;
         switch (key) {
             case "ScriptContentList":
-                console.log(response.data.scriptsMetadata.scripts)
                 setScriptMetaData(response.data.scriptsMetadata.scripts);
                 return;
             default:
@@ -185,7 +183,6 @@ export async function submitScript(name: String, discription: String, id: String
             discription: discription,
         }).then((response) => {
             if (response.providedTypes[0].type === "ScriptContentList") {
-                console.log(response.data.uploadScriptData.scripts);
                 setScriptMetaData(response.data.uploadScriptData.scripts);
                 resolve();
             } 

@@ -1,6 +1,7 @@
 import pymongo
 from webw_serv.utility import DEFAULT_LOGGER as logger
 import logging
+import json
 from enum import Enum
 from dataclasses import dataclass
 from typing import Union
@@ -28,12 +29,6 @@ job_entry_search_mode_options = Union[
 
 
 class MongoDbHandler:
-   
-    @staticmethod
-    def phrase_data(data: dict) -> dict:
-        if data.get("result", None) and isinstance(data["result"], Enum):
-            data["result"] = data["result"].value
-        return data
 
     def __init__(self, mongo_config):
         logger.debug("MONGO: Initializing MongoDbHandler")
@@ -119,9 +114,8 @@ class MongoDbHandler:
         for ideal performanc, mongodb has a maximum of 16MB per document,
         so each entry should be a single document
         """
-        data = self.phrase_data(data)
         # Check if the jobId exists
-        if not self.check_if_job_exists(job_id):
+        if not await self.check_if_job_exists(job_id):
             raise ValueError(f"Job {job_id} not registered")
 
         entry = self.__db.job_data.find_one({"job_id": job_id, "call_id": entry_id})
