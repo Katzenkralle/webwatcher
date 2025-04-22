@@ -336,7 +336,7 @@ class MariaDbHandler:
         self.__conn.commit()
         return self.__cursor.lastrowid
 
-    async def modify_job_list(self, script_name: str, job_name: str, description: str, dynamic_schema: bool, job_id: int) -> bool:
+    async def edit_job_list(self, script_name: str, job_name: str, description: str, dynamic_schema: bool, job_id: int) -> bool:
         if not dynamic_schema:
             self.__cursor.execute("SELECT script_name FROM job_list WHERE id = ?", (job_id,))
             old_script_name = self.__cursor.fetchone()
