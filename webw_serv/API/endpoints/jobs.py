@@ -1,3 +1,5 @@
+import json
+
 import strawberry
 
 from typing import Optional
@@ -7,7 +9,8 @@ from random import choice
 import CONFIG
 from db_handler import MariaDbHandler, MongoDbHandler
 from ..endpoints.auth import admin_guard, user_guard
-from ..gql_base_types import JobEntyInput, Message, MessageType, JobEntry, PaginationInput, JsonStr
+from ..gql_base_types import JobEntyInput, Message, MessageType, JobEntry, PaginationInput, JsonStr, JobFullInfo, \
+    Parameter
 from ..gql_types import job_entry_result, job_entrys_result, JobEntryList, JobsMetaDataList, job_full_info_result, jobs_metadata_result
 
 from webw_serv.db_handler.mongo_core import JobEntrySearchModeOptionsNewest, JobEntrySearchModeOptionsRange, JobEntrySearchModeOptionsSpecific
@@ -105,7 +108,46 @@ class Mutation:
         if description is None:
             description = choice(CONFIG.DEFAULT_JOB_DESCRIPTIONS)
 
-        pass
+        if id_ is not None:
+            try:
+                await maria.edit_job_list(script_name=script, job_name=name, description=description, dynamic_schema=not forbid_dynamic_schema, job_id=id_)
+            except Exception as e:
+                return Message(
+                    message=f"Failed to edit job: {str(e)}",
+                    status=MessageType.DANGER,
+                )
+        else:
+            try:
+                id_ = await maria.add_job_list(script_name=script, job_name=name, description=description, dynamic_schema=not forbid_dynamic_schema)
+            except Exception as e:
+                return Message(
+                    message=f"Failed to add job: {str(e)}",
+                    status=MessageType.DANGER,
+                )
+
+        if paramerter_kv is not None:
+            try:
+                json_data = json.loads(paramerter_kv)
+                await maria.set_job_input_settings(job_id=id_, settings=json_data)
+            except Exception as e:
+                return Message(
+                    message=f"Failed to set job input settings: {str(e)}",
+                    status=MessageType.DANGER,
+                )
+
+        if execute_timer is not None:
+            try:
+                await maria.delete_cron_job(job_id=id_)
+                await maria.add_cron_job(job_id=id_, cron_time=execute_timer, enabled=True)
+                # TODO: register cron job
+            except Exception as e:
+                return Message(
+                    message=f"Failed to add cron job: {str(e)}",
+                    status=MessageType.DANGER,
+                )
+        params = [Parameter(key=key, value=value) for key, value in json_data.items()]
+        return_data = JobFullInfo(id=id_, parameters=params, )  # TODO: add remaining data
+        return return_data
 
 @strawberry.type
 class Query:
