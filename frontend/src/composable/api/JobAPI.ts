@@ -62,6 +62,9 @@ const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
                         if (entry.expectedReturnSchema && Array.isArray(entry.expectedReturnSchema)) {
                             entry.expectedReturnSchema = recordListToRecord(entry.expectedReturnSchema);
                         }
+                        if  (entry.parameters && Array.isArray(entry.parameters)){
+                            entry.parameters = recordListToRecord(entry.parameters);
+                        }
                         relevantData.push(entry as TableMetaData)
                     })
                     return resolve(relevantData)
@@ -201,6 +204,7 @@ export const useJobData = (jobId: number) => {
         delete entry.callId;
         try {
             if (entry.context && typeof entry.context === "string") {
+                //  this should be done by gql but we may call it from other places
                 entry.context = JSON.parse(entry.context);
             }
         } catch (e) {

@@ -1,7 +1,7 @@
 
 INSERT INTO script_list (fs_path, name, description, temporary, supports_static_schema)
 VALUES (
-    'http_return.py',
+    './webw_serv_scripts_store/scripts/http_return.py',
     'HTTP-Status Watcher',
     'This watcher checks the HTTP status of a given URL and returns the status code.\nArguments:\n- url: The URL to check (string).',
     FALSE,
@@ -21,7 +21,7 @@ VALUES (
 
 INSERT INTO script_list (fs_path, name, description, temporary)
 VALUES (
-    'device_sensors.py',
+    './webw_serv_scripts_store/scripts/device_sensors.py',
     'Sensor Watcher',
     'This watcher retrieves the status of sensors on the device.\nArguments:\n- ignore_chips: A list of chips to ignore (list of strings). E.g.: acpitz,x86_pkg_temp\n- ignore_sensors: A list of sensors to ignore (list of strings). E.g.: cpu0,cpu1',
     FALSE
@@ -43,7 +43,7 @@ VALUES (
 
 INSERT INTO script_list (fs_path, name, description, temporary)
 VALUES (
-    'weather.py',
+    './webw_serv_scripts_store/scripts/weather.py',
     'Weather Watcher',
     'This watcher retrieves the current weather information for a given location (default Berlin).\nArguments:    \n- lat: "float" # Latitude of the location, default is Berlin\n- lon: "float" # Longitude of the location, default is Berlin\n- timezone: "str" # Timezone of the location, default is Europe/Berlin\n- mode: "str" # Mode of the query, can be "hourly", "daily" or "current", default is "current"\n- future: "int" # Future time, unit depends on the mode, either hours or days, default is 1\n\n- api_key: "str" # API key for the Open Meteo API, default is None\n- custom_query: "str" # Allows to use a custom query string, see: https://open-meteo.com/en/docs',
     FALSE
