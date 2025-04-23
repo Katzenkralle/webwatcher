@@ -94,11 +94,10 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
 <template>
     <main>
         <div>
-            <div class="grid grid-cols-3 items-center">
+            <div class="flex flex-wrap items-center justify-between pt-3">
                 <NavButtons />
-                <h1 v-if="!isEdit">Create Job</h1>
-                <h1 v-else>Edit Job</h1>
-                <div class="input-box !flex-row w-min items-center">
+                <h1 class="m-0!">{{ !isEdit ? 'Create Job' : 'Edit Job'}}</h1>
+                <div class="input-box !flex-row !w-min items-center">
                     <label for="enableToggle" class="!mb-0 mr-2 ml-auto">Enabled</label>
                     <InputSwitch id="enableToggle" v-model="jobMetaData.enabled" />
                 </div>

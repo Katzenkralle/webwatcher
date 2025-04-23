@@ -58,8 +58,11 @@ export function requireLogin() {
 
 export const changePassword = async (oldPassword: string, newPassword: string) => {
     const query = `
-    mutation {
-        changePassword(oldPassword: "${oldPassword}", newPassword: "${newPassword}") {
+    mutation changePassword($oldPassword: String!, $newPassword: String!) {
+        changePassword(
+            oldPassword: $oldPassword,
+            newPassword: $newPassword
+            ) {
             __typename
             ... on Message {
                 message
@@ -67,7 +70,7 @@ export const changePassword = async (oldPassword: string, newPassword: string) =
             }
         }
     }`;
-    return queryGql(query).then((response: GQLResponse) => {
+    return queryGql(query, {oldPassword: oldPassword, newPassword: newPassword}).then((response: GQLResponse) => {
         useStatusMessage().newStatusMessage(response.data.changePassword.message, response.data.changePassword.status);
     }).catch((error) => {
         reportError(error);
@@ -85,8 +88,11 @@ export const logout = async (sessionName: string|undefined = undefined, sessionI
     }
 
     const query = `
-      mutation {
-        logout(sessionId: "${sessionId ?? ''}", sessionName: "${sessionName ?? ''}") {
+      mutation logout($sessionId: String, $sessionName: String) {
+        logout(
+            sessionId: $sessionId,
+            sessionName: $sessionName
+        ) {
         __typename
         ... on Message {
             message
@@ -95,7 +101,7 @@ export const logout = async (sessionName: string|undefined = undefined, sessionI
         }
     }`;
     return new Promise((resolve, reject) => {
-        queryGql(query).then((response: GQLResponse) => {
+        queryGql(query, {sessionId: sessionId ?? '', sessionName: sessionName ?? ''}).then((response: GQLResponse) => {
             if (!response.data.logout) {
                 throw response;     
             }

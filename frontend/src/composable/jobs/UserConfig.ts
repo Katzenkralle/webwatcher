@@ -94,9 +94,9 @@ export const jobUserDisplayConfig = (id: number) => {
     }
 
     const loadConfigQuery = async () => {
-        await queryGql(`
-            query { 
-            userJobConfig(id: ${id}) {
+        const query = `
+            query updateUserJobConfig($id: Int!) { 
+            userJobConfig(id: $id) {
                 ... on UserDisplayConfig {
                 __typename
                 filterConfig
@@ -109,8 +109,9 @@ export const jobUserDisplayConfig = (id: number) => {
                 status
                 }
             }
-        }`).then((response) => {
-            console.log(response);
+        }`
+        
+        await queryGql(query, {id: id}).then((response) => {
             switch (response.providedTypes[0].type) {
                 case "UserDisplayConfig":
                     baseFilter.value = response.data.userJobConfig.filterConfig ? JSON.parse(response.data.userJobConfig.filterConfig) : {};
