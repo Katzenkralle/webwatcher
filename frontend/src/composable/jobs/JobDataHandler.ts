@@ -54,7 +54,6 @@ function longestCommonSubstring(input: string, target: string, caseSensitive: bo
 export const useJobDataHandler = (
     jobId: number, 
     fetchAmount: Ref<number>|ComputedRef<number>,
-    hiddenColumns: Ref<string[]> = ref([]),
     sortByString: ComputedRef<sortByString> | undefined = undefined, // [key, [columns_NOT_to_sort_by]]
     filters: IterationContext|undefined = undefined,
     staticContextSchema: ComputedRef<Record<string,string>|undefined>
@@ -172,6 +171,24 @@ export const useJobDataHandler = (
             });
         })
     }
+
+
+    const hiddenColumnsState = ref<string[]>([]);
+    const filterHiddenColumns = (columns: string[]) => {
+        const known_columns = computeLayoutUnfiltered.value.map((layout) => layout.key);
+        return columns.filter((col) =>
+            known_columns.includes(col)
+        );
+    }  
+    const hiddenColumns = computed({
+        get(): string[] {
+            return filterHiddenColumns(hiddenColumnsState.value);
+        },
+        set(columns: string[]) {
+            hiddenColumnsState.value = filterHiddenColumns(columns);
+        }
+    })
+
 
     const getColumnsByType = (type: string|undefined, includeHiddenColumns: boolean = true): string[] => {
         /*
@@ -357,6 +374,7 @@ export const useJobDataHandler = (
         computedAllFetched: computed(() => allFetched.value),
         localJobData,
         filters,
+        hiddenColumns,
         saveToFile,
         addOrEditEntry,
         deleteEntry,
@@ -369,7 +387,6 @@ export const useJobDataHandler = (
 export const useJobUiCreator = (jobId: number) => {
     const intenalColums = [...Object.keys(DUMMY_JOB_ENTRY).filter((col) => col != 'context'), 'id'];
 
-    const hiddenColumns = ref<string[]>(intenalColums.filter((col) => col != 'id'));
     const fetchAmount = ref(30);
     const page = ref(0);
     const sortByString = ref<sortByString>({ key: "", ignoreColumns: [], caseInsensitive: true });
@@ -385,11 +402,12 @@ export const useJobUiCreator = (jobId: number) => {
 
     const jobDataHandler = useJobDataHandler(jobId,
         computed(() => fetchAmount.value+1),
-        hiddenColumns,
         computed(() => sortByString.value),
         filterContext,
         computed(() => metaData.value?.expectedReturnSchema));
     
+    jobDataHandler.hiddenColumns.value = intenalColums.filter((col) => col != 'id')
+
     const unsetSortByString = () => {
         sortByString.value.key = "";
         }
@@ -401,7 +419,6 @@ export const useJobUiCreator = (jobId: number) => {
     return {
         jobDataHandler,
         mainDataTable,
-        hiddenColumns,
         fetchAmount,
         intenalColums,
         page,
