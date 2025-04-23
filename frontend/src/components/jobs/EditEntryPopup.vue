@@ -26,6 +26,41 @@ const emits = defineEmits<{
     close: [];
 }>();
 
+const getDefaultForType = (type: any) => {
+        if (type.includes('|')) {
+            type = type.split('|')[0];
+        }
+        switch (type) {
+            case 'string':
+                return '';
+            case 'number':
+                return 0;
+            default:
+                return false;
+        }
+    };
+
+const typeChange = (value: any, type: string) => {
+    try  {
+        switch (type) {
+            case 'string':
+                return String(value);
+            case 'number':
+                const asNum = Number(value);
+                if (isNaN(asNum)) {
+                    throw new Error('Invalid number');
+                }
+                return asNum;
+            case 'boolean':
+                return Boolean(value);
+            default:
+                return value;
+        }
+    } catch (e) {
+        return getDefaultForType(type);
+    }
+}
+
 const popup = ref();
 const layout = ref(!props.newEntry ? props.layout : (() => {
     const new_layout = props.layout
@@ -33,17 +68,7 @@ const layout = ref(!props.newEntry ? props.layout : (() => {
     return new_layout
     })());  
 const writableEntryValues = ref(Object.keys(layout.value).reduce((acc, key: string) => {
-    const get_default_val = () => {
-      switch (layout.value[key]) {
-        case 'string':
-          return '';
-        case 'number':
-          return 0;
-        default:
-          return false;
-      }
-    };
-    acc[key] = props.entryValues[key] ?? get_default_val();
+    acc[key] = props.entryValues[key] ?? getDefaultForType(layout.value[key]);
     return acc;
 }, {} as Record<string, any>));
 const externalColumns = ref(
@@ -72,7 +97,7 @@ const getElementForColumn = defineComponent({
     emits: ['onUpdate:modelValue'],
     setup(subprops: any, { emit, slots }: any) {
         const availableTypes = props.canModifySchema ? "string|number|boolean" : layout.value[subprops.column];
-        const selectedType = ref<string>(layout.value[subprops.column].split("|")[0]);
+        const selectedType = ref<string>(typeof subprops.moduleValue || layout.value[subprops.column].split("|")[0]);
         const moduleValue = ref(subprops.moduleValue);
 
         watchEffect(() => {
@@ -153,7 +178,9 @@ const getElementForColumn = defineComponent({
                         optionValue: "label",
                         disabled: props.readonly,
                         modelValue: selectedType.value,
-                        'onUpdate:modelValue': (val: string) => selectedType.value = val 
+                        'onUpdate:modelValue': (val: string) => {
+                            selectedType.value = val
+                            moduleValue.value = typeChange(moduleValue.value, val)}
                     }),
                 ]),
                 computeInputElement.value
@@ -231,7 +258,10 @@ const waitEmitClose = () => {
                                     severity="danger"
                                     size="small"
                                     variant="text"
-                                    @click="() => externalColumns = externalColumns.filter(elem => elem !== key) "
+                                    @click="() => {
+                                        externalColumns = externalColumns.filter(elem => elem !== key)
+                                        delete writableEntryValues[key]
+                                     }"
                                     />
                             </template>
                             </getElementForColumn>
