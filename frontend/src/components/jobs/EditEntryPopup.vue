@@ -68,7 +68,7 @@ const layout = ref(!props.newEntry ? props.layout : (() => {
     return new_layout
     })());  
 const writableEntryValues = ref(Object.keys(layout.value).reduce((acc, key: string) => {
-    acc[key] = props.entryValues[key] ?? getDefaultForType(layout.value[key]);
+    acc[key] = props.entryValues[key] || !props.newEntry  ? props.entryValues[key] : getDefaultForType(layout.value[key]);
     return acc;
 }, {} as Record<string, any>));
 const externalColumns = ref(
@@ -91,14 +91,14 @@ const getElementForColumn = defineComponent({
         },
         moduleValue: {
             type: [String, Boolean, Number],
-            required: true
+            required: false,
         }
     },
     emits: ['onUpdate:modelValue'],
     setup(subprops: any, { emit, slots }: any) {
-        const availableTypes = props.canModifySchema ? "string|number|boolean" : layout.value[subprops.column];
-        const selectedType = ref<string>(typeof subprops.moduleValue || layout.value[subprops.column].split("|")[0]);
+        let availableTypes = props.canModifySchema ? "string|number|boolean" : layout.value[subprops.column];
         const moduleValue = ref(subprops.moduleValue);
+        const selectedType = ref<string>(typeof subprops.moduleValue || layout.value[subprops.column].split("|")[0]);
 
         watchEffect(() => {
             emit('onUpdate:modelValue', moduleValue.value)
@@ -160,9 +160,10 @@ const getElementForColumn = defineComponent({
                         ])
                         
                     ]);
-
+                case 'undefined':
+                    return h('div', { class: 'text-warning mr-auto' }, `Column has no value or type for this entry`);
                 default:
-                    return h('div', {}, `Unknown type: ${availableTypes} for ${subprops.column}`);
+                    return h('div', { class: 'text-warning' }, `Unknown type: ${availableTypes} for ${subprops.column}`);
 
             }
         })
@@ -173,7 +174,8 @@ const getElementForColumn = defineComponent({
                 slots.default ? slots.default() : h("a"),
                 h('h4', subprops.column),
                     h(Select, { 
-                        options: availableTypes.split('|').map((elem) => {return {label: elem}}),
+                        options: [...availableTypes.split('|').map((elem) => {return {label: elem}}), 
+                                    ...(selectedType.value === 'undefined' ? [{label: 'undefined'}] : [])],
                         optionLabel: "label",
                         optionValue: "label",
                         disabled: props.readonly,
@@ -247,25 +249,27 @@ const waitEmitClose = () => {
                     </div>
                     <div class="editor-box">
                         <template v-for="key in externalColumns">
-                            <getElementForColumn 
-                                :column="key" 
-                                class="mx-auto"
-                                :moduleValue="writableEntryValues[key]"
-                                @on-update:model-value="(e) => writableEntryValues[key] = e">
-                                <template v-if="props.canModifySchema && !props.readonly" #default>
-                                    <Button
-                                    icon="pi pi-times"
-                                    severity="danger"
-                                    size="small"
-                                    variant="text"
-                                    @click="() => {
-                                        externalColumns = externalColumns.filter(elem => elem !== key)
-                                        delete writableEntryValues[key]
-                                     }"
-                                    />
+                            <template v-if="writableEntryValues[key] !== undefined || !props.readonly">
+                                <getElementForColumn 
+                                    :column="key" 
+                                    class="mx-auto"
+                                    :moduleValue="writableEntryValues[key]"
+                                    @on-update:model-value="(e) => writableEntryValues[key] = e">
+                                    <template v-if="props.canModifySchema && !props.readonly" #default>
+                                        <Button
+                                        icon="pi pi-times"
+                                        severity="danger"
+                                        size="small"
+                                        variant="text"
+                                        @click="() => {
+                                            externalColumns = externalColumns.filter(elem => elem !== key)
+                                            delete writableEntryValues[key]
+                                        }"
+                                        />
+                                </template>
+                                </getElementForColumn>
+                                <SmallSeperator class="mb-3"/>
                             </template>
-                            </getElementForColumn>
-                            <SmallSeperator class="mb-3"/>
                         </template>
                     </div>
                 </div>
