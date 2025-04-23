@@ -123,7 +123,16 @@ export const deleteJob = async(id: number) => {
 
 export const updateOrCreateJob = async(entry: TableMetaData): Promise<void> => {
     const query = `
-        mutation {
+        mutation createOrModifyJob(
+            $id: Int,
+            $name: String!,
+            $script: String!,
+            $description: String,
+            $enabled: Boolean,
+            $forbidDynamicSchema: Boolean,
+            $executeTimer: String,
+            $expectedReturnSchema: JsonStr
+            ){
             createOrModifyJob(
                 ${entry.id >= 0 ? `id: ${entry.id},` : ``}
                 name: "${entry.name}",
@@ -153,8 +162,18 @@ export const updateOrCreateJob = async(entry: TableMetaData): Promise<void> => {
                     }
                 }
             }`;
+    const variables = {
+        id: entry.id >= 0 ? entry.id : undefined,
+        name: entry.name,
+        script: entry.script,
+        description: entry.description,
+        enabled: entry.enabled,
+        forbidDynamicSchema: entry.forbidDynamicSchema,
+        executeTimer: entry.executeTimer,
+        expectedReturnSchema: JSON.stringify(entry.expectedReturnSchema)
+    };
     return new Promise((resolve, reject) => {
-        queryGql(query).then((response) => {
+        queryGql(query, variables).then((response) => {
             const key = response.providedTypes[0].type;
             switch (key) {
                 case "jobsMetaDataList":

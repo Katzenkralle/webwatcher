@@ -204,7 +204,11 @@ const getLoginUrl = (token: string, type: string) => {
                             useStatusMessage().newStatusMessage('Passwords do not match.', 'danger');
                             return;
                         }
-                        changePassword(passwdChange.old_passwd, passwdChange.new_passwd)
+                        changePassword(passwdChange.old_passwd, passwdChange.new_passwd).then(() => {
+                            passwdChange.old_passwd = '';
+                            passwdChange.new_passwd = '';
+                            passwdChange.new_passwd_confirm = '';
+                        })
                     }" />
             </div>
 
