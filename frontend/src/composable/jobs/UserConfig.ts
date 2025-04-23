@@ -10,12 +10,26 @@ export interface GraphConfig {
     data: GraphDataSeries; 
 }
 
+export interface SaveUserConfig {
+    filterConfig?: string;
+    graphConfig?: string;
+    hiddenCols?: string;
+}
 
 export const jobUserDisplayConfig = (id: number) => {
     const baseFilter = ref<Record<string, FilterGroup>>({});
     const baseGraph = ref<GraphConfig[]>([]);
+    const baseHiddenCols = ref<string[]|undefined>(undefined);
 
     const hasQueryedOnce: string[] = []
+
+    const getRemoteStateHiddenCols = async () => {
+        if (!hasQueryedOnce.includes('hiddenCols')) {
+            await loadConfig()
+            hasQueryedOnce.push('hiddenCols');
+        }
+        return baseHiddenCols.value;
+    }
 
     const filter = computed({
         async get() {
@@ -35,7 +49,7 @@ export const jobUserDisplayConfig = (id: number) => {
                     delete newConfig[key];
                 }
             }
-            comitConfig(undefined, JSON.stringify(newConfig));
+            comitConfig({filterConfig: JSON.stringify(newConfig)});
             baseFilter.value = newConfig;
         }
     });
@@ -66,19 +80,28 @@ export const jobUserDisplayConfig = (id: number) => {
             if (value.change) {
                 newConfig[value.change.index] = value.change.value;
             }
-            comitConfig(JSON.stringify(newConfig))
+            comitConfig({graphConfig: JSON.stringify(newConfig)});
             baseGraph.value = newConfig;
         }
     });
 
+    let loadPromise: Promise<void> | null = null;
     const loadConfig = async () => {
-        queryGql(`
+        if (!loadPromise) {
+            loadPromise = loadConfigQuery()
+        }
+        return loadPromise;
+    }
+
+    const loadConfigQuery = async () => {
+        await queryGql(`
             query { 
             userJobConfig(id: ${id}) {
                 ... on UserDisplayConfig {
                 __typename
                 filterConfig
                 graphConfig
+                hiddenColsConfig
                 }
                 ... on Message {
                 __typename
@@ -87,10 +110,12 @@ export const jobUserDisplayConfig = (id: number) => {
                 }
             }
         }`).then((response) => {
+            console.log(response);
             switch (response.providedTypes[0].type) {
                 case "UserDisplayConfig":
                     baseFilter.value = response.data.userJobConfig.filterConfig ? JSON.parse(response.data.userJobConfig.filterConfig) : {};
                     baseGraph.value = response.data.userJobConfig.graphConfig ? JSON.parse(response.data.userJobConfig.graphConfig) : [];
+                    baseHiddenCols.value = response.data.userJobConfig.hiddenColsConfig ? JSON.parse(response.data.userJobConfig.hiddenColsConfig) : undefined;
                     break;
                 default:
                     throw response;
@@ -100,21 +125,21 @@ export const jobUserDisplayConfig = (id: number) => {
         });
     }
 
-    const comitConfig = async (newGraphConfig: string | undefined = undefined,
-        newFilterConfig: string | undefined = undefined) => {
+    const comitConfig = async (newState: SaveUserConfig) => {
         queryGql(`
-            mutation UpdateUserJobConfig($id: Int!, $graphConfig: JsonStr, $filterConfig: JsonStr) {
+            mutation UpdateUserJobConfig($id: Int!, $graphConfig: JsonStr, $filterConfig: JsonStr, $hiddenCols: JsonStr) {
                 userJobConfig(
                     id: $id,
                     graphConfig: $graphConfig,
-                    filterConfig: $filterConfig
+                    filterConfig: $filterConfig,
+                    hiddenColsConfig: $hiddenCols
                 ) {
                     __typename
                     message
                     status
                 }
             }
-        `, {id: id, filterConfig: newFilterConfig, graphConfig: newGraphConfig}).then((response) => {
+        `, {id: id, ...newState}).then((response) => {
             if (response.providedTypes[0].type !== "Message" || response.data.userJobConfig.status !== "SUCCESS") {
                 throw response;        
             }
@@ -126,6 +151,7 @@ export const jobUserDisplayConfig = (id: number) => {
     return { 
         filter,
         graph,
+        getRemoteStateHiddenCols,
         loadConfig,
         comitConfig
     };

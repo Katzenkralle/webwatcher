@@ -58,10 +58,11 @@ class Mutation:
     @user_guard()
     async def userJobConfig(self, info: strawberry.Info, id: int,
                     filter_config: Optional[JsonStr] = None,
-                    graph_config:  Optional[JsonStr] = None) -> Message:
+                    graph_config:  Optional[JsonStr] = None,
+                    hidden_cols_config: Optional[JsonStr] = None) -> Message:
         try:
             await info.context["request"].state.maria\
-                .set_user_config_for_job(info.context["user"].username, id, filter_config, graph_config)
+                .set_user_config_for_job(info.context["user"].username, id, filter_config, graph_config, hidden_cols_config)
             return Message(message="User job config set successfully", status=MessageType.SUCCESS)
         except Exception as e:
             return Message(message=f"Failed to set user job config: {e}", status=MessageType.DANGER)
@@ -106,6 +107,7 @@ class Query:
                 job_id=id,
                 filter_config=None,
                 graph_config=None,
+                hidden_cols_config=None,
             )
         except Exception as e:
             return Message(message=f"Failed to get user job config: {e}", status=MessageType.DANGER)

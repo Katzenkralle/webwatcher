@@ -21,6 +21,7 @@ class DbUserDisplayConfig:
     job_id: int
     filter_config: str
     graph_config: str
+    hidden_cols_config: str
 
 
 @dataclass
