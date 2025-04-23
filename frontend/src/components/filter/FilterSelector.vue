@@ -3,14 +3,13 @@ import InputGroup from 'primevue/inputgroup';
 import InputText from 'primevue/inputtext';
 import Select from 'primevue/select';
 import Button from 'primevue/button';
-import Galleria from 'primevue/galleria';   
 
 import { jobUserDisplayConfig } from '@/composable/jobs/UserConfig';
 import { type Group, type IterationContext } from '@/composable/jobs/FilterGroups';
 import { ref, watch } from "vue";
 import { useStatusMessage } from "@/composable/core/AppState";
 
-import PopupDialog from '@/components/reusables/PopupDialog.vue';
+import PopupImageSlideshow from '@/components/reusables/PopupImageSlideshow.vue';
 
 const activeFilterConfig = ref<string>("")
 const newFilterConfigName = ref<string>("")
@@ -31,8 +30,6 @@ watch(() => props.userConfig.filter.value, async (newVal) => {
   
 }, { immediate: true });
 
-const helpPopup = ref();
-
 const helpImages = [
     new URL('@/assets/img/filters/help_filters1.webp', import.meta.url).href,
     new URL('@/assets/img/filters/help_filters2.webp', import.meta.url).href,
@@ -43,41 +40,12 @@ const helpImages = [
 </script>
 
 <template>
-<PopupDialog
-    ref="helpPopup"
-    title="Help: Logical Filters"
-    :hide-seperator="true">
-    <template #default>
-        <Galleria 
-        containerStyle="background-color: var(--color-base);"
-        :value="helpImages" 
-        :numVisible="5" 
-        :showItemNavigators="true"
-        :showThumbnails="false" 
-        :showIndicators="true" 
-        :changeItemOnIndicatorHover="true">
-            <template #item="slotProps">
-                <img :src="slotProps.item" style="width: 100%; display: block" />
-            </template>
-        </Galleria>
-    </template>
-    <template #footer>
-        <div></div>
-    </template>
-</PopupDialog>
-
-
     <div class="flex flex-wrap items-center justify-between w-full space-y-1">
     <div>
-        <Button
-        icon="pi pi-question"
-        severity="info"
-        size="small"
-        class="mr-2"
-        variant="outlined"
-        @click="() => {
-            helpPopup?.openDialog();
-        }"
+        <PopupImageSlideshow
+            :images="helpImages"
+            title="Logical Filter: Help"
+            class="mr-2"
         />
         <Button
         label="Reset"

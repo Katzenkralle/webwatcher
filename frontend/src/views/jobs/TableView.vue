@@ -76,6 +76,11 @@ const graphCoardinator = ref();
           class="w-full mb-2"
           :value="['0']" 
           multiple
+          @tab-close="(e) => { 
+            if (e.index === 1) {
+              graphCoardinator?.resetInput();
+            }
+          }"
           unstyled>
 
           <AccordionPanel value="0">

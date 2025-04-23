@@ -202,7 +202,7 @@ export const useJobDataHandler = (
         ];
 
         const contextColNames: TableLayout[] = [...Object.values(localJobData.value).flatMap((row: jobEnty) => 
-                Object.entries(row.context)
+                Object.entries(row.context ?? {})
                 .map(([key, value]) => ({ key, type: typeof value }))
             ), ...(staticContextSchema.value 
                 ?  Object.entries(staticContextSchema.value)

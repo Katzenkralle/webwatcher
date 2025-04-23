@@ -49,6 +49,14 @@ const getRowRange = async(baseRange: number[]):  Promise<number[]> => {
 
 const adjustForReturnType =  (data: number|string|boolean) => {
     if  (typeof data === 'string') {
+        const asNum = parseFloat(data);
+        try{
+            if (!isNaN(asNum)) {
+                return asNum;
+            }
+        } catch  {
+            // Ignore error
+        }
         return data.length;
     }
     return data;
