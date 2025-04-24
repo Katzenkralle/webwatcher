@@ -1,9 +1,8 @@
-@import url("./fonts.css");
-@import "tailwindcss";
+@import url('./fonts.css');
+@import 'tailwindcss';
 @import './components.css';
 @import './tailwind-typography.css';
 @layer base, primevue, utilities, theme;
-
 
 @layer theme {
   @theme {
@@ -59,9 +58,9 @@
     --color-fun: #f4b8e4;
     --color-fun-h: #f8d3ee;
 
-    --color-deep-d:  #ea7e48;
+    --color-deep-d: #ea7e48;
     --color-deep: #ef9f76;
-    --color-deep-h: #f4bfa4;  
+    --color-deep-h: #f4bfa4;
 
     --color-primary: var(--color-info); /* + selection */
     --color-primary-contrast: var(--color-h-text);
@@ -77,24 +76,24 @@
     --breakpoint-lg: 1024px;
     --breakpoint-xl: 1440px;
 
-    --font-display: "Barlow", "sans-serif";
-    --font-display: "Source Code Pro", "serif";
-    --font-display: "Doto", "sans-serif";
+    --font-display: 'Barlow', 'sans-serif';
+    --font-display: 'Source Code Pro', 'serif';
+    --font-display: 'Doto', 'sans-serif';
 
     --spacing-128: 32rem;
     --spacing-144: 36rem;
     --spacing-20v: 20vh;
     --spacing-20h: 20vw;
     --spacing-95h: 95vw;
-    
+
     --radius-4xl: 2rem;
     --animate-fade-in: fade-in 0.25s ease-in-out;
     @keyframes fade-in {
-      0%  { 
-          opacity: 0; 
+      0% {
+        opacity: 0;
       }
-      100% {      
-          opacity: 1;     
+      100% {
+        opacity: 1;
       }
     }
   }
@@ -127,15 +126,15 @@
   box-shadow: var(--p-message-error-shadow);
 }
 
-.p-disabled{
+.p-disabled {
   @apply !cursor-not-allowed [pointer-events:auto];
 }
 .w-fit {
   /* Fix for applying wrong moz */
-    width: -moz-available;
+  width: -moz-available;
 }
 
-#fileSelect span:not(.p-button-label){
+#fileSelect span:not(.p-button-label) {
   /* fixing padding for selected file info field */
   @apply pr-2;
 }

@@ -1,22 +1,20 @@
-import { queryGql, reportError, type GQLResponse } from "@/composable/api/QueryHandler";
-import { ref } from "vue";
-import { useLoadingAnimation, useStatusMessage } from "../core/AppState";
-
-
+import { queryGql, reportError, type GQLResponse } from '@/composable/api/QueryHandler'
+import { ref } from 'vue'
+import { useLoadingAnimation, useStatusMessage } from '../core/AppState'
 
 export interface User {
-    username: string;
-    isAdmin: boolean;
+  username: string
+  isAdmin: boolean
 }
 
-const curentUser = ref<User | null>(null);
+const curentUser = ref<User | null>(null)
 
-export const getUser = async (forceRefetch:  boolean = false): Promise<User> => {
-    if (!forceRefetch && curentUser.value) {
-        return curentUser.value;
-    }
+export const getUser = async (forceRefetch: boolean = false): Promise<User> => {
+  if (!forceRefetch && curentUser.value) {
+    return curentUser.value
+  }
 
-    const query = `
+  const query = `
     {
         user {
             __typename
@@ -29,25 +27,26 @@ export const getUser = async (forceRefetch:  boolean = false): Promise<User> => 
                 status
             }
         }
-    }`;
-    
-    return queryGql(query).then((response: GQLResponse) => {
-        switch (response.providedTypes[0].type) {
-            case "User":
-                curentUser.value = response.data.user as User;
-                return curentUser.value;
-            default:
-                throw response
-                
-        }
-    }).catch((error: GQLResponse | Error) => {
-        reportError(error);
-        throw error;
-    });
-};
+    }`
+
+  return queryGql(query)
+    .then((response: GQLResponse) => {
+      switch (response.providedTypes[0].type) {
+        case 'User':
+          curentUser.value = response.data.user as User
+          return curentUser.value
+        default:
+          throw response
+      }
+    })
+    .catch((error: GQLResponse | Error) => {
+      reportError(error)
+      throw error
+    })
+}
 
 export const allUsers = async (): Promise<User[]> => {
-    const query = `
+  const query = `
     {
         allUsers {
             ... on UserList {
@@ -63,24 +62,28 @@ export const allUsers = async (): Promise<User[]> => {
             status
             }
         }
-    }`;
+    }`
 
-    return queryGql(query).then((response: GQLResponse) => {
-        switch (response.providedTypes[0].type) {
-            case "UserList":
-                return response.data.allUsers.users as User[];
-            default:
-                throw response;
-        }
-    }).catch((error: GQLResponse | Error) => {
-        reportError(error);
-        throw error;
-    });
+  return queryGql(query)
+    .then((response: GQLResponse) => {
+      switch (response.providedTypes[0].type) {
+        case 'UserList':
+          return response.data.allUsers.users as User[]
+        default:
+          throw response
+      }
+    })
+    .catch((error: GQLResponse | Error) => {
+      reportError(error)
+      throw error
+    })
 }
 
-export const createUser  = async (newUser: User & { password:  string, currentPassword: string }): Promise<User> => {
-    useLoadingAnimation().setState(true);
-    const mutation = `
+export const createUser = async (
+  newUser: User & { password: string; currentPassword: string },
+): Promise<User> => {
+  useLoadingAnimation().setState(true)
+  const mutation = `
     mutation createNewUser ($password: String!, $username: String!, $currentPassword: String!, $isAdmin: Boolean) {
         createUser(
             password: $password,
@@ -98,27 +101,30 @@ export const createUser  = async (newUser: User & { password:  string, currentPa
             status
             }
         }
-    }`;
+    }`
 
-    return queryGql(mutation, newUser).then((response: GQLResponse) => {
-        switch (response.providedTypes[0].type) {
-            case "User":
-                useStatusMessage().newStatusMessage("User created", "success");
-                return response.data.createUser as User;
-            default:
-                throw response;
-        }
-    }).catch((error: GQLResponse | Error) => {
-        reportError(error);
-        throw error;
-    }).finally(() => {
-        useLoadingAnimation().setState(false);
-    });
+  return queryGql(mutation, newUser)
+    .then((response: GQLResponse) => {
+      switch (response.providedTypes[0].type) {
+        case 'User':
+          useStatusMessage().newStatusMessage('User created', 'success')
+          return response.data.createUser as User
+        default:
+          throw response
+      }
+    })
+    .catch((error: GQLResponse | Error) => {
+      reportError(error)
+      throw error
+    })
+    .finally(() => {
+      useLoadingAnimation().setState(false)
+    })
 }
 
 export const deleteUser = async (username: string): Promise<void> => {
-    useLoadingAnimation().setState(true);
-    const mutation = `
+  useLoadingAnimation().setState(true)
+  const mutation = `
     mutation {
         deleteUser(username: "${username}") {
         __typename
@@ -127,19 +133,24 @@ export const deleteUser = async (username: string): Promise<void> => {
                 status
             }
         }
-    }`;
+    }`
 
-    return queryGql(mutation).then((response: GQLResponse) => {
-        if(!response.errors && response.data.deleteUser.status === "SUCCESS") {
-            useStatusMessage().newStatusMessage(response.data.deleteUser.message,
-                response.data.deleteUser.status);
-            return;
-        }
-        throw response;
-    }).catch((error: GQLResponse | Error) => {
-        reportError(error);
-        throw error;
-    }).finally(() => {
-        useLoadingAnimation().setState(false);
-    });
+  return queryGql(mutation)
+    .then((response: GQLResponse) => {
+      if (!response.errors && response.data.deleteUser.status === 'SUCCESS') {
+        useStatusMessage().newStatusMessage(
+          response.data.deleteUser.message,
+          response.data.deleteUser.status,
+        )
+        return
+      }
+      throw response
+    })
+    .catch((error: GQLResponse | Error) => {
+      reportError(error)
+      throw error
+    })
+    .finally(() => {
+      useLoadingAnimation().setState(false)
+    })
 }
