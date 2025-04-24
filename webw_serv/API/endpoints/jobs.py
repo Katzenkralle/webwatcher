@@ -23,7 +23,7 @@ class Mutation:
         self,
         info: strawberry.Info,
         data: JobEntyInput,
-        job_id: int = strawberry.argument(name="jobId"),
+        job_id: int,
     ) -> job_entry_result:
         mongo: MongoDbHandler = info.context["request"].state.mongo
         mongo_data = asdict(data)
@@ -45,8 +45,8 @@ class Mutation:
     async def delete_entry_in_job(
         self,
         info: strawberry.Info,
-        job_id: int = strawberry.argument(name="jobId"),
-        entry_ids: list[int] = strawberry.argument(name="entryIds"),
+        job_id: int,
+        entry_ids: list[int],
     ) -> Message:
         mongo: MongoDbHandler = info.context["request"].state.mongo
         try:
@@ -69,7 +69,7 @@ class Mutation:
         
     @strawberry.mutation
     @user_guard()
-    async def deleteJob(self, info: strawberry.Info, job_id: int = strawberry.argument(name="jobId")) -> Message:
+    async def deleteJob(self, info: strawberry.Info, job_id: int) -> Message:
         maria: MariaDbHandler = info.context["request"].state.maria
         mongo: MongoDbHandler = info.context["request"].state.mongo
         try:
@@ -98,7 +98,7 @@ class Mutation:
                              paramerter_kv: Optional[JsonStr],
                              forbid_dynamic_schema: bool = False,
                              description: Optional[str] = None,
-                             id_: Optional[int] = strawberry.argument(name="id")) -> job_full_info_result:
+                             id_: Optional[int] = None) -> job_full_info_result:
         """
         When editing, we only want to allow changing the script if the expected schema of the new and old script match
         or when allowing dynamic schema
@@ -146,7 +146,7 @@ class Mutation:
                     status=MessageType.DANGER,
                 )
         params = [Parameter(key=key, value=value) for key, value in json_data.items()]
-        return_data = JobFullInfo(id=id_, parameters=params, )  # TODO: add remaining data
+        return_data = JobFullInfo(id=id_, expected_return_schema=params, )  # TODO: add remaining data
         return return_data
 
 @strawberry.type
@@ -169,7 +169,7 @@ class Query:
     async def get_job_entries(
         self,
         info: strawberry.Info,
-        job_id: int = strawberry.argument(name="jobId"),
+        job_id: int,
         range_: Optional[PaginationInput] = None,
         specific_rows: Optional[list[int]] = None,
         newest_n: Optional[int] = None,
