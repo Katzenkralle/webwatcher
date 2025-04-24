@@ -6,7 +6,7 @@ from webw_serv import Watcher, CONFIG
 from webw_serv.watcher.errors import ScriptFormatException, ScriptException
 
 
-def script_checker(module_name: str)  -> tuple[str, dict[str, Type[str | int | bool]] | None, dict[str, Type[str | int | bool]] | None] | ScriptFormatException | ScriptException:
+def script_checker(module_name: str)  -> tuple[str, dict[str, Type[str | int | bool]] | None, bool] | ScriptFormatException | ScriptException:
     try:
         module = importlib.import_module(module_name, CONFIG.PACKAGE_NAME)
         if not hasattr(module, "ScriptMain"):
@@ -25,16 +25,27 @@ def script_checker(module_name: str)  -> tuple[str, dict[str, Type[str | int | b
             return ScriptException(f"Exception while getting config schema: {e}")
 
         try:
-            return_schema = instance.get_return_schema()
-            if any(key in CONFIG.ILLEGAL_KEYS for key in return_schema.keys()):
-                return ScriptFormatException(f"Return schema contains illegal keys: {CONFIG.ILLEGAL_KEYS}")
+            if not hasattr(instance, "supports_static_schema"):
+                return ScriptFormatException(f"ScriptMain must have a 'supports_static_schema' class attribute")
+            return_schema_static = instance.supports_static_schema
         except Exception as e:
-            return ScriptException(f"Exception while getting return schema: {e}")
+            return ScriptException(f"Exception while getting return schema static support: {e}")
 
-        return "Success", config_schema, return_schema
+        return "Success", config_schema, return_schema_static
     except Exception as e:
         return ScriptFormatException(e)
 
 
 def abc_implemented(cls) -> bool:
     return not bool(cls.__abstractmethods__)
+
+def are_keys_legal(data: dict[str, Type[str | int | bool]]) -> bool:
+    """
+    Check if the keys in the data dictionary are legal according to the CONFIG.ILLEGAL_KEYS.
+
+    :param data: The dictionary to check.
+    :type data: dict[str, Type[str | int | bool]]
+    :return: True if all keys are legal, False otherwise.
+    :rtype: bool
+    """
+    return not any(key in CONFIG.ILLEGAL_KEYS for key in data.keys())
