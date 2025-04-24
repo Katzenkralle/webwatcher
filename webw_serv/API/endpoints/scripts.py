@@ -46,15 +46,12 @@ class Mutation:
                     return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False,
                                                   validation_msg="The new script must support the input parameters of the old.", id="")
 
-        jsonize_type_list = lambda x: [Parameter(key=k, value=script_check_result[2][k].__name__) for k in x]
+        jsonize_type_list = lambda x: [Parameter(key=k, value=script_check_result[1][k].__name__) for k in x]
 
         if isinstance(script_check_result, tuple):
             script_msg = str(script_check_result[0])
             was_valid = True
-            if script_check_result[2] is not None:
-                static_supported = True
-            else:
-                static_supported = False
+            static_supported = script_check_result[2]
             try:
                 await maria.add_temp_script(fs_path=path, name=uuid, expected_input=script_check_result[1], supports_static_schema=static_supported)
             except Exception as e:
