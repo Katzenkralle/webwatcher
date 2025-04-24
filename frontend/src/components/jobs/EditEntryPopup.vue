@@ -26,6 +26,41 @@ const emits = defineEmits<{
     close: [];
 }>();
 
+const getDefaultForType = (type: any) => {
+        if (type.includes('|')) {
+            type = type.split('|')[0];
+        }
+        switch (type) {
+            case 'string':
+                return '';
+            case 'number':
+                return 0;
+            default:
+                return false;
+        }
+    };
+
+const typeChange = (value: any, type: string) => {
+    try  {
+        switch (type) {
+            case 'string':
+                return String(value);
+            case 'number':
+                const asNum = Number(value);
+                if (isNaN(asNum)) {
+                    throw new Error('Invalid number');
+                }
+                return asNum;
+            case 'boolean':
+                return Boolean(value);
+            default:
+                return value;
+        }
+    } catch (e) {
+        return getDefaultForType(type);
+    }
+}
+
 const popup = ref();
 const layout = ref(!props.newEntry ? props.layout : (() => {
     const new_layout = props.layout
@@ -33,17 +68,7 @@ const layout = ref(!props.newEntry ? props.layout : (() => {
     return new_layout
     })());  
 const writableEntryValues = ref(Object.keys(layout.value).reduce((acc, key: string) => {
-    const get_default_val = () => {
-      switch (layout.value[key]) {
-        case 'string':
-          return '';
-        case 'number':
-          return 0;
-        default:
-          return false;
-      }
-    };
-    acc[key] = props.entryValues[key] ?? get_default_val();
+    acc[key] = props.entryValues[key] || !props.newEntry  ? props.entryValues[key] : getDefaultForType(layout.value[key]);
     return acc;
 }, {} as Record<string, any>));
 const externalColumns = ref(
@@ -66,14 +91,14 @@ const getElementForColumn = defineComponent({
         },
         moduleValue: {
             type: [String, Boolean, Number],
-            required: true
+            required: false,
         }
     },
     emits: ['onUpdate:modelValue'],
     setup(subprops: any, { emit, slots }: any) {
-        const availableTypes = props.canModifySchema ? "string|number|boolean" : layout.value[subprops.column];
-        const selectedType = ref<string>(layout.value[subprops.column].split("|")[0]);
+        let availableTypes = props.canModifySchema ? "string|number|boolean" : layout.value[subprops.column];
         const moduleValue = ref(subprops.moduleValue);
+        const selectedType = ref<string>(typeof subprops.moduleValue || layout.value[subprops.column].split("|")[0]);
 
         watchEffect(() => {
             emit('onUpdate:modelValue', moduleValue.value)
@@ -135,9 +160,10 @@ const getElementForColumn = defineComponent({
                         ])
                         
                     ]);
-
+                case 'undefined':
+                    return h('div', { class: 'text-warning mr-auto' }, `Column has no value or type for this entry`);
                 default:
-                    return h('div', {}, `Unknown type: ${availableTypes} for ${subprops.column}`);
+                    return h('div', { class: 'text-warning' }, `Unknown type: ${availableTypes} for ${subprops.column}`);
 
             }
         })
@@ -148,12 +174,15 @@ const getElementForColumn = defineComponent({
                 slots.default ? slots.default() : h("a"),
                 h('h4', subprops.column),
                     h(Select, { 
-                        options: availableTypes.split('|').map((elem) => {return {label: elem}}),
+                        options: [...availableTypes.split('|').map((elem) => {return {label: elem}}), 
+                                    ...(selectedType.value === 'undefined' ? [{label: 'undefined'}] : [])],
                         optionLabel: "label",
                         optionValue: "label",
                         disabled: props.readonly,
                         modelValue: selectedType.value,
-                        'onUpdate:modelValue': (val: string) => selectedType.value = val 
+                        'onUpdate:modelValue': (val: string) => {
+                            selectedType.value = val
+                            moduleValue.value = typeChange(moduleValue.value, val)}
                     }),
                 ]),
                 computeInputElement.value
@@ -220,22 +249,27 @@ const waitEmitClose = () => {
                     </div>
                     <div class="editor-box">
                         <template v-for="key in externalColumns">
-                            <getElementForColumn 
-                                :column="key" 
-                                class="mx-auto"
-                                :moduleValue="writableEntryValues[key]"
-                                @on-update:model-value="(e) => writableEntryValues[key] = e">
-                                <template v-if="props.canModifySchema && !props.readonly" #default>
-                                    <Button
-                                    icon="pi pi-times"
-                                    severity="danger"
-                                    size="small"
-                                    variant="text"
-                                    @click="() => externalColumns = externalColumns.filter(elem => elem !== key) "
-                                    />
+                            <template v-if="writableEntryValues[key] !== undefined || !props.readonly">
+                                <getElementForColumn 
+                                    :column="key" 
+                                    class="mx-auto"
+                                    :moduleValue="writableEntryValues[key]"
+                                    @on-update:model-value="(e) => writableEntryValues[key] = e">
+                                    <template v-if="props.canModifySchema && !props.readonly" #default>
+                                        <Button
+                                        icon="pi pi-times"
+                                        severity="danger"
+                                        size="small"
+                                        variant="text"
+                                        @click="() => {
+                                            externalColumns = externalColumns.filter(elem => elem !== key)
+                                            delete writableEntryValues[key]
+                                        }"
+                                        />
+                                </template>
+                                </getElementForColumn>
+                                <SmallSeperator class="mb-3"/>
                             </template>
-                            </getElementForColumn>
-                            <SmallSeperator class="mb-3"/>
                         </template>
                     </div>
                 </div>

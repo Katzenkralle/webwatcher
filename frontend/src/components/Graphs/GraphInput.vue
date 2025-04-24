@@ -11,6 +11,7 @@ import AnimatedArrow from '@/components/reusables/AnimatedArrow.vue';
 import Checkbox from 'primevue/checkbox';
 
 import SmallSeperator from '../reusables/SmallSeperator.vue'; 
+import PopupImageSlideshow from '../reusables/PopupImageSlideshow.vue';
 import { computed, ref, type ComputedRef,  type Reactive } from 'vue';
 
 import { useGraphConstructor, type GraphInput } from '@/composable/jobs/GraphDataHandler';
@@ -27,10 +28,19 @@ const graphConstructor = computed(() => {
     return useGraphConstructor(props.jobData);
 });
 
-defineExpose<{tableInputForGraph: Reactive<GraphInput>}>({
-    tableInputForGraph  :graphConstructor.value.graphInput
+const resetInput = () => {
+    console.log('resetInput');
+    graphConstructor.value.reset();
+}
+
+defineExpose<{tableInputForGraph: Reactive<GraphInput>, resetInput: () => void}>({
+    tableInputForGraph: graphConstructor.value.graphInput,
+    resetInput
 });
 
+const helpImages = [
+    new URL('@/assets/img/placeholder.png', import.meta.url).href,
+]
 
 
 const title = ref('');
@@ -69,7 +79,7 @@ const lastSavedTitle = ref<string | undefined>(undefined);
                 />
         </div>
         <div class="options-grid mt-4">
-            <div class="flex flex-row items-center">
+            <div class="flex flex-row items-center min-h-16">
                 <ToggleSwitch
                     id="multiRowViewGraphCreator"
                     v-model="graphConstructor.pullFutureRows.value"
@@ -130,8 +140,12 @@ const lastSavedTitle = ref<string | undefined>(undefined);
                         @click="scrollToElement(`table${graphConstructor.jobId}`)"
                     />
                 </div>
-                <span v-else>
-                        Select a <a class="text-info">graph type</a> first
+                <span v-else class="flex flex-col items-center">
+                    <PopupImageSlideshow
+                        :images="helpImages"
+                        class="mb-1"
+                        title="Graph Type: Help"/>
+                        <p>Select a <a class="text-info">graph type</a> first</p>
                 </span>
             </template>
             <template v-else>
@@ -158,6 +172,7 @@ const lastSavedTitle = ref<string | undefined>(undefined);
                         icon="pi pi-arrow-down"
                         @click="() => {
                             if (!lastSavedTitle) return
+                            graphConstructor.reset();
                             scrollToElement('graph-' + lastSavedTitle);
                         }"  
                     />

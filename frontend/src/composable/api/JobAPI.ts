@@ -59,8 +59,11 @@ const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
                 case "JobsMetaDataList":
                     const relevantData: TableMetaData[] = []
                     response.data.jobsMetadata.jobs.forEach((entry: Record<string, any>) => {
-                        if (entry.expectedReturnSchema) {
+                        if (entry.expectedReturnSchema && Array.isArray(entry.expectedReturnSchema)) {
                             entry.expectedReturnSchema = recordListToRecord(entry.expectedReturnSchema);
+                        }
+                        if  (entry.parameters && Array.isArray(entry.parameters)){
+                            entry.parameters = recordListToRecord(entry.parameters);
                         }
                         relevantData.push(entry as TableMetaData)
                     })
@@ -120,7 +123,16 @@ export const deleteJob = async(id: number) => {
 
 export const updateOrCreateJob = async(entry: TableMetaData): Promise<void> => {
     const query = `
-        mutation {
+        mutation createOrModifyJob(
+            $id: Int,
+            $name: String!,
+            $script: String!,
+            $description: String,
+            $enabled: Boolean,
+            $forbidDynamicSchema: Boolean,
+            $executeTimer: String,
+            $expectedReturnSchema: JsonStr
+            ){
             createOrModifyJob(
                 ${entry.id >= 0 ? `id: ${entry.id},` : ``}
                 name: "${entry.name}",
@@ -150,8 +162,18 @@ export const updateOrCreateJob = async(entry: TableMetaData): Promise<void> => {
                     }
                 }
             }`;
+    const variables = {
+        id: entry.id >= 0 ? entry.id : undefined,
+        name: entry.name,
+        script: entry.script,
+        description: entry.description,
+        enabled: entry.enabled,
+        forbidDynamicSchema: entry.forbidDynamicSchema,
+        executeTimer: entry.executeTimer,
+        expectedReturnSchema: JSON.stringify(entry.expectedReturnSchema)
+    };
     return new Promise((resolve, reject) => {
-        queryGql(query).then((response) => {
+        queryGql(query, variables).then((response) => {
             const key = response.providedTypes[0].type;
             switch (key) {
                 case "jobsMetaDataList":
@@ -200,7 +222,10 @@ export const useJobData = (jobId: number) => {
         const callId: number = entry.callId!;
         delete entry.callId;
         try {
-            entry.context = JSON.parse(entry.context);
+            if (entry.context && typeof entry.context === "string") {
+                //  this should be done by gql but we may call it from other places
+                entry.context = JSON.parse(entry.context);
+            }
         } catch (e) {
             entry.context = {}
         }
@@ -214,7 +239,7 @@ export const useJobData = (jobId: number) => {
                     getJobEntries(
                         jobId: $jobId,
                         newestN: $lastN,
-                        range: $range,
+                        range_: $range,
                         specificRows: $specificRows
                     ) {
                         ... on JobEntryList {

@@ -59,6 +59,29 @@ const userConfig = computed(() => {
   return jobUserDisplayConfig(currentJobId.value);
 });
 
+
+let hiddenColsRemoteState = false;
+watch(userConfig, (newHandler) => {
+  newHandler.getRemoteStateHiddenCols().then((res) => {
+    console.log("Hidden columns from remote state", res);
+    if (res) {
+      jobHandler.jobDataHandler.hiddenColumns.value = res;
+    }
+  }).finally(() => {
+    hiddenColsRemoteState = true;
+  });
+}, { immediate: true });
+watch(
+  () => jobHandler.jobDataHandler.hiddenColumns.value,
+  (newVal) => {
+    console.log("Hidden columns changed", hiddenColsRemoteState);
+    if (!hiddenColsRemoteState) return;
+    userConfig.value.comitConfig({
+      hiddenCols: JSON.stringify(newVal),
+    });
+  }
+);
+
 const graphCoardinator = ref();
 
 </script>
@@ -76,6 +99,11 @@ const graphCoardinator = ref();
           class="w-full mb-2"
           :value="['0']" 
           multiple
+          @tab-close="(e) => { 
+            if (e.index === 1) {
+              graphCoardinator?.resetInput();
+            }
+          }"
           unstyled>
 
           <AccordionPanel value="0">
@@ -134,12 +162,12 @@ const graphCoardinator = ref();
                 <AccordionContent>
                   <div class="content-box shrinkable">
                     <ColumnSelection
-                      :hiddenColumns="jobHandler?.hiddenColumns.value"
+                      :hiddenColumns="jobHandler?.jobDataHandler.hiddenColumns.value"
                       :allColumns="jobHandler.jobDataHandler.computeLayoutUnfiltered.value"
                       :visableColumns="jobHandler.jobDataHandler.computeLayout.value"
                       :internalColumns="jobHandler.intenalColums"
                       @update:hiddenColumns="(e) => { if (jobHandler) 
-                          jobHandler.hiddenColumns.value = e }"
+                          jobHandler.jobDataHandler.hiddenColumns.value = e }"
                       />
 
                     <StringSearch
@@ -195,7 +223,7 @@ const graphCoardinator = ref();
               <SplitButton
               label="Export visible"
               icon="pi pi-download"
-              @click="() => { jobHandler?.jobDataHandler.saveToFile('visable', jobHandler?.hiddenColumns.value)
+              @click="() => { jobHandler?.jobDataHandler.saveToFile('visable', jobHandler?.jobDataHandler.hiddenColumns.value)
                     .then(() => downloadSuccessPopup?.openDialog()) }"
               :model="[
                 {

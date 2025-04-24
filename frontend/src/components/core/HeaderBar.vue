@@ -109,8 +109,6 @@ onMounted(() => {
 })
 
 
-
-
 // Shared itemRenderer component
 const ItemRenderer = defineComponent({
     name: 'ItemRenderer',
@@ -248,7 +246,8 @@ const ItemContainerVertical = defineComponent({
                     ]) 
                 : h(ItemRenderer, { item, slave: props.slave })
         }
-        return () => h("div", {  class: "flex flex-col absolute bg-panel p-0 w-auto rounded-lg border-2 border-info space-y-1 z-10" }, [
+        return () => h("div", {  class: "flex flex-col absolute bg-panel p-0 w-max max-w-60 rounded-lg \
+            border-2 border-info space-y-1 z-10" }, [
             props.items.filter(item =>  item.fixed != "end").map((item) => 
                 getItemLayout(item) 
             ),

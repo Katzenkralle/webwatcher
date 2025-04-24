@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS job_display_user_config
     job_id        INT,
     filter_config JSON DEFAULT '{}',
     graph_config  JSON DEFAULT '{}',
+    hidden_cols_config JSON DEFAULT '[]',
     FOREIGN KEY (username) REFERENCES web_users (username) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (job_id) REFERENCES job_list (job_id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (username, job_id)

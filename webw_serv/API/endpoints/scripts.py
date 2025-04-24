@@ -37,11 +37,14 @@ class Mutation:
             except Exception as e:
                 return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False,
                                               validation_msg=f"Failed to get script info; {e}", id="")
-            new_script_config_data = script_check_result[1]
-            if len(old_script_config_data) != 0 and new_script_config_data is not None:
-                if old_script_config_data[0] != new_script_config_data:
+            new_script_input_data = script_check_result[1]
+            if len(old_script_config_data) != 0 and new_script_input_data is not None:
+                if not all([(param.key in new_script_input_data and 
+                            param.value == getattr(new_script_input_data[param.key], "__name__", None))
+                            for param in old_script_config_data[0].input_schema]):
+                #old_script_config_data[0] != new_script_input_data:
                     return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False,
-                                                  validation_msg="The script doesn't match the scheme", id="")
+                                                  validation_msg="The new script must support the input parameters of the old.", id="")
 
         jsonize_type_list = lambda x: [Parameter(key=k, value=script_check_result[2][k].__name__) for k in x]
 

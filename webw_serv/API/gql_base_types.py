@@ -58,6 +58,7 @@ class SessionList():
 class UserDisplayConfig(DbUserDisplayConfig):
     graph_config: Optional[JsonStr]
     filter_config: Optional[JsonStr]
+    hidden_cols_config: Optional[JsonStr]
 
 @strawberry.type
 class Message:

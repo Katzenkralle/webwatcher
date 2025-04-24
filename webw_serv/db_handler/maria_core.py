@@ -197,6 +197,18 @@ class MariaDbHandler:
             raise ValueError("Failed to move script file")
         if description is None:
             description = script[2]
+
+        self.__cursor.execute("SELECT * FROM script_list WHERE name = ?", (name,))
+        existing_script = self.__cursor.fetchone()
+        if existing_script:
+            # Replace script
+            self.__cursor.execute("DELETE FROM script_list WHERE name = ?", (id_,))
+            try:
+                os.remove(existing_script[0])   
+            except Exception as e:  
+                logger.warning(f"MARIA: Failed to delete script file {existing_script[0]}: {e}")
+            id_ = name
+
         self.__cursor.execute("""UPDATE script_list SET fs_path = ?, name = ?, description = ?, last_edited = ?, temporary = 0 WHERE name = ?""",
                       (mv_result[1], name, description, unix_to_mariadb_timestamp(), id_))
         self.__conn.commit()
@@ -315,7 +327,7 @@ class MariaDbHandler:
         return DbUserDisplayConfig(*db_config)
 
     async def set_user_config_for_job(self, username: str, job: int,
-                                       filter_config: Optional[str], graph_config: Optional[str]) -> bool:
+                                       filter_config: Optional[str], graph_config: Optional[str], hidden_cols_config: Optional[str]) -> bool:
         self.__cursor.execute("SELECT * FROM job_display_user_config WHERE username = ? AND job_id = ?", (username, job))
         db_config = self.__cursor.fetchone()
         if db_config:
@@ -323,11 +335,13 @@ class MariaDbHandler:
                 filter_config = db_config[2]
             if graph_config is None:
                 graph_config = db_config[3]
-            self.__cursor.execute("UPDATE job_display_user_config SET filter_config = ?, graph_config = ? WHERE username = ? AND job_id = ?",
-                                  (filter_config, graph_config, username, job))
+            if hidden_cols_config is None:
+                hidden_cols_config = db_config[4]
+            self.__cursor.execute("UPDATE job_display_user_config SET filter_config = ?, graph_config = ?, hidden_cols_config = ? WHERE username = ? AND job_id = ?",
+                                  (filter_config, graph_config, hidden_cols_config, username, job))
         else:
-            self.__cursor.execute("INSERT INTO job_display_user_config (username, job_id, filter_config, graph_config) VALUES (?, ?, ?, ?)",
-                                  (username, job, filter_config, graph_config))
+            self.__cursor.execute("INSERT INTO job_display_user_config (username, job_id, filter_config, graph_config, hidden_cols_config) VALUES (?, ?, ?, ?, ?)",
+                                  (username, job, filter_config, graph_config, hidden_cols_config))
         self.__conn.commit()
 
     async def add_job_list(self, script_name: str, job_name: str, description: str, dynamic_schema: bool) -> int:

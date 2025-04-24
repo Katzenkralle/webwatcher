@@ -35,7 +35,7 @@ VALUES (
     'GitHub Status',
     'Retrives the current Status of https://github.com/',
     FALSE,
-    '{"url": "string", "status_code": "integer", "description": "string"}'
+    '{"url": "string", "status_code": "number", "description": "string"}'
 );
 INSERT INTO cron_list (job_id, cron_time, executed_last, enabled)
 VALUES (
