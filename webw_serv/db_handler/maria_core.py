@@ -123,16 +123,23 @@ class MariaDbHandler:
         except Exception as e:
             return None
     
-    async def get_script_info(self, name: Optional[str] = None) -> list[DbScriptInfo]:
+    async def get_script_info(self, name: Optional[str] = None, exclude_temp: bool = False) -> list[DbScriptInfo]:
         registered_scripts = []
         if name == None:
-            self.__cursor.execute("SELECT * FROM script_list")
+            if exclude_temp:
+                self.__cursor.execute("SELECT * FROM script_list WHERE temporary = 0")
+            else:
+                self.__cursor.execute("SELECT * FROM script_list")
             registered_scripts = self.__cursor.fetchall()
         else:
-            self.__cursor.execute("SELECT * FROM script_list WHERE name = ?", (name,))
+            if exclude_temp:
+                self.__cursor.execute("SELECT * FROM script_list WHERE name = ? AND temporary = 0", (name,))
+            else:
+                self.__cursor.execute("SELECT * FROM script_list WHERE name = ?", (name,))
             result = self.__cursor.fetchone()
             if result:
                 registered_scripts.append(result)
+        
         found_scripts: list[DbScriptInfo] = []
         for script in registered_scripts:
             self.__cursor.execute("SELECT keyword,datatype FROM script_input_info WHERE script_name = ?", (script[1],))
