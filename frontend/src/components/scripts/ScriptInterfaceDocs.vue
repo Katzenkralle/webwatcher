@@ -43,24 +43,29 @@ Your script must implement the following interface to be used as a Watcher.
 \`\`\`py
 ${WatcherInterfacePy}
 \`\`\`
-> The base Interface can be imported by your script with:
+> The base Interface must be imported by your script with:
 > \`\`\`py
 > from webw_serv import Watcher
 > \`\`\`
 
 ### Return of run()
-When called it must return a dictionary of the following format:
+When called your Script must return a dictionary of the following format:
 \`\`\`py
 return {
     "<key>": <value>,  # where value is of type str, int, float, or bool
     ...
   }
 \`\`\`
+> **Note:** The dictionary **must never** include the keys \`call_id\`, \`id\`, \`timestamp\`, \`runtime\`, \`result\`, or \`script_failure\`.
 
-> **Note:** The \`context\` may never include thes keys: \`call_id\`, \`id\` \`timestamp\`, \`runtime\`, \`result\` and \`script_failure\`.  
+### Dependencies
+To install additional dependencies for your scripts, bind a \`.sh\` file on the host to \`/pre_start.sh\` inside the container and place the appropriate installation commands in it.  
+This script runs every time the server starts, ensuring your dependencies remain intact after updates.
+> Reference: [Docker Documentation](https://docs.docker.com/engine/storage/bind-mounts/) to learn more about bind mounts.
+
 
 ### Example
-The following script fetches thee HTTP-Status of a given URL.
+The following script fetches the HTTP-Status of a given URL.
 \`\`\`py
 ${HttpReturnPy}
 \`\`\`

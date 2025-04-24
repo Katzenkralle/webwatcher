@@ -69,6 +69,33 @@ export async function deleteScript(name: string) {
     })
 }
 
+export async function removeTemporaryScripts() {
+  useLoadingAnimation().setState(true)
+  const mutation = `
+    mutation removeTemporaryScripts {
+        removeTemporaryScripts {
+            message
+            status
+        }
+        }`
+  return queryGql(mutation)
+    .then((response) => {
+      if (response.data.removeTemporaryScripts.status === 'SUCCESS') {
+        useStatusMessage().newStatusMessage(
+          response.data.removeTemporaryScripts.message,
+          response.data.removeTemporaryScripts.status,
+        )
+      }
+      throw response
+    })
+    .catch((e) => {
+      reportError(e)
+    })
+    .finally(() => {
+      useLoadingAnimation().setState(false)
+    })
+}
+
 export async function fetchScripts() {
   return queryGql(`
         query fetchScripts{
