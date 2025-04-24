@@ -94,8 +94,8 @@ class Mutation:
     async def create_or_modify_job(self, info: strawberry.Info, 
                              name: str,
                              script: str,
-                             execute_timer: Optional[str], # CRON
-                             paramerter_kv: Optional[JsonStr],
+                             execute_timer: Optional[str] = None, # CRON
+                             paramerter_kv: Optional[JsonStr] = None,
                              forbid_dynamic_schema: bool = False,
                              description: Optional[str] = None,
                              id_: Optional[int] = None) -> job_full_info_result:
@@ -134,6 +134,8 @@ class Mutation:
                     message=f"Failed to set job input settings: {str(e)}",
                     status=MessageType.DANGER,
                 )
+        else:
+            json_data = {}
 
         if execute_timer is not None:
             try:
@@ -145,8 +147,11 @@ class Mutation:
                     message=f"Failed to add cron job: {str(e)}",
                     status=MessageType.DANGER,
                 )
+
         params = [Parameter(key=key, value=value) for key, value in json_data.items()]
-        return_data = JobFullInfo(id=id_, expected_return_schema=params, )  # TODO: add remaining data
+        return_data = JobFullInfo(id=id_, parameters=params, )  # TODO: add remaining data
+        script_info = await maria.get_script_info(name=script)
+        script_info = script_info[0]
         return return_data
 
 @strawberry.type
