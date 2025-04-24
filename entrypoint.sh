@@ -12,6 +12,11 @@ cleanup() {
 # Trap SIGTERM signal
 trap cleanup SIGTERM
 
+# Execute pre-start script if it exists
+if [ -f /pre_start.sh ]; then
+    echo "Executing pre-start script"
+    bash /pre_start.sh || true
+fi
 
 if [ "$DEV" ]; then
     echo "Running in development mode"

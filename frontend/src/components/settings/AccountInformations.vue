@@ -6,6 +6,7 @@ import Button from 'primevue/button'
 import ConfirmableButton from '../reusables/ConfirmableButton.vue'
 import { getUser } from '@/composable/api/User'
 import { logout } from '@/composable/api/Auth'
+import { removeTemporaryScripts } from '@/composable/api/ScriptAPI'
 
 const user = ref()
 
@@ -45,6 +46,7 @@ onMounted(() => {
           confirm-message="This will clean up unused temporary files
                     E.g. scripts that where uploaded but never implemented as watchers."
           confirm-icon="pi pi-exclamation-triangle"
+          @confirm="() => removeTemporaryScripts()"
         />
       </div>
     </div>

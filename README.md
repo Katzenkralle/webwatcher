@@ -26,7 +26,7 @@ _(Assuming you are on a Linux host)_
 Let me know if you'd like this as part of a full setup guide or README!
 
 ### Configuration  
-Although the provided Docker Compose file offers a functional setup, you may want to change the behavior of the webserver in some way. Please reference [this guide](./docs/backend_conf.md).  
+Although the provided Docker Compose file offers a functional setup, you may want to change the behavior of the webserver in some way. Please reference [this document](./docs/backend_conf.md) that describes possible configuration options.
 For configuration of other containers, please refer to their respective documentation.
 
 ### Maintenance  
@@ -34,6 +34,13 @@ For configuration of other containers, please refer to their respective document
 - To start the stack: `docker compose start`  
 - To remove the stack and all its containers: `docker compose down`  
 - To force-rebuild all used images: `docker compose up --build --force-recreate`
+
+## Creating Your Own Watchers
+
+For information on how to write your own watchers, please refer to the help page under `/scripts` on your running instance of WebWatcher.  
+Basically, you only need to implement the interface described in [](./webw_serv/watcher/base.py).
+
+If you need to install additional dependencies, you can bind `/pre_start.sh` to a Bash script on the host, as shown in [this document](./docs/backend_conf.md).
 
 ## Running in Development Mode  
 1. Clone or pull this repo  
