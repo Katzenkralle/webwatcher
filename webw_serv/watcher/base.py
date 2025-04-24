@@ -7,6 +7,7 @@ class Watcher(ABC):
     """
     The base class for a watcher.
     """
+    supports_static_schema: bool
 
     @abstractmethod
     def __init__(self, config: dict[str, Any]):
