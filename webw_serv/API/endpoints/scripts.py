@@ -105,5 +105,5 @@ class Query:
     @user_guard()
     async def scripts_metadata(self, info: strawberry.Info, name: str|None = None) -> script_content_result:
         maria: MariaDbHandler = info.context["request"].state.maria
-        scripts_info = await maria.get_script_info(name)
+        scripts_info = await maria.get_script_info(name, exclude_temp=True)
         return ScriptContentList(scripts=scripts_info)

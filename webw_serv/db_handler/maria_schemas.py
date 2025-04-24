@@ -34,7 +34,7 @@ class DbJobMetaData:
     id: int
     name: str
     script: str
-    description: str
+    description: Optional[str]
     enabled: bool
     execute_timer: str
     executed_last: Optional[str]
@@ -45,7 +45,7 @@ class DbJobMetaData:
 class DbScriptInfo:
     fs_path: str
     name: str
-    description: str
+    description: Optional[str]
     last_modified: str
     input_schema: DbParameter
     supports_static_schema: bool
