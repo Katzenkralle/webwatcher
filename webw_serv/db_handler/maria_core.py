@@ -38,13 +38,13 @@ class MariaDbHandler:
         )
         self.check_and_build_schema()
         # We currently dont react to the return, so no need to await
-        
+
         try_create_user = self.__try_create_default_user(
                 app_config.default_admin_username,
                 app_config.default_admin_hash)
         asyncio.run(try_create_user)
-        
-    
+
+
     async def __try_create_default_user(self, username, hash):
         if username and hash:
             if await self.get_user(username):
@@ -57,19 +57,34 @@ class MariaDbHandler:
         return None
 
     def __establish_connection(self, host, port, user, password, db):
-        conn = mariadb.connect(
-            host=host,
-            user=user,
-            port=port,
-            password=password,
-            database=db if db != "" and None else None
-        )
+        retry = 3
+        while retry > 0:
+            try:
+                conn = mariadb.connect(
+                    host=host,
+                    user=user,
+                    port=port,
+                    password=password,
+                    database=db if db != "" and None else None
+                )
+                break
+            except mariadb.Error as e:
+                logger.warning(f"MARIA: Failed to connect to MariaDB: {e} - {retry} retries left")
+                time.sleep(30)
+                retry -= 1
+                conn = None
+        if conn is None:
+            logger.error("MARIA: Failed to connect to MariaDB, exiting")
+            exit(1)
+
+        conn.auto_reconnect = True
         cursor = conn.cursor()
-        if not conn.database: 
+        if not conn.database:
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db}")
             cursor.execute(f"USE {db}")
+        logger.info("MARIA: Connected to MariaDB")
         return [conn, cursor]
-    
+
     def check_and_build_schema(self):
         self.__cursor.execute("SHOW TABLES")
         existing_tables = list(map(lambda x: x[0], self.__cursor.fetchall()))
@@ -86,14 +101,14 @@ class MariaDbHandler:
         if "job_list" not in existing_tables:
             logger.warning("MARIA: Registering default job list")
             for block in read_sql_blocks(f"{self.SQL_DIR}/init_jobs.sql"):
-                self.__cursor.execute(block)    
+                self.__cursor.execute(block)
         self.__conn.commit()
-    
+
     async def create_user(self, username: str, password: str, is_admin: bool):
         self.__cursor.execute("INSERT INTO web_users (username, password, is_admin) VALUES (?, ?, ?)", (username, password, is_admin))
         self.__conn.commit()
         return DbUser(username, password, is_admin)
-    
+
     async def delete_user(self, username: str) -> bool:
         self.__cursor.execute("DELETE FROM web_users WHERE username = ?", (username,))
         self.__conn.commit()
@@ -165,7 +180,7 @@ class MariaDbHandler:
             excpected += f'"{key}": "{value}", '
         excpected += "}"
 
-        self.__cursor.execute("""INSERT INTO script_list (fs_path, name, description, excpected_return_schema, temporary) 
+        self.__cursor.execute("""INSERT INTO script_list (fs_path, name, description, excpected_return_schema, temporary)
         VALUES (?, ?, ?, ?, ?)""",
                               (fs_path, name, None, excpected, True))
         self.__conn.commit()

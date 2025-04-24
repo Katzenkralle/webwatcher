@@ -19,8 +19,8 @@ _(Assuming you are on a Linux host)_
 2. Optional, but **highly recommended**: Change the default `CRYPTO_SECRET_KEY` environment variable of the Webwatcher container in the Compose file to a newly chosen one.
 3. Build and pull the containers, and set up the environment:
    - `docker compose up`
-4. Done! The web server should now be accessible on port `80` with the default credentials:  
-   Username: `admin`  
+4. Done! The web server should now be accessible on port `80` with the default credentials:
+   Username: `admin`
    Password: `webwatcher`.
 
 Let me know if you'd like this as part of a full setup guide or README!
@@ -38,8 +38,8 @@ For configuration of other containers, please refer to their respective document
 ## Running in Development Mode  
 1. Clone or pull this repo  
 2. Choose whether you need SSH or not:
-   - With SSH: `ROOT_PASSWD=<SOME_PASSWD> docker compose --profile dev up`
-   - Without SSH: `docker compose --profile dev up`
+   - With SSH: `ROOT_PASSWD=<SOME_PASSWD> docker compose -f conf/compose.dev.yaml up`
+   - Without SSH: `docker compose -f conf/compose.dev.yaml up`
 3. Done!
 
 

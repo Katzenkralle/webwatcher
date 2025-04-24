@@ -1,0 +1,43 @@
+include:
+ - compose.external.yaml
+services:
+  webwatcher-dev:
+    build:
+      context: ../
+      dockerfile: conf/Dockerfile
+      args:
+        - ROOT_PASSWD=${ROOT_PASSWD:-} # default value is empty
+      target: dev
+    stop_grace_period: 10s
+    image: katzenkralle/webwatcher:dev
+    pull_policy: build   # only build locally—never try to pull
+    networks:
+      - internal
+      - global
+    ports:
+      - "3306:3306"
+      - "27017:27017"
+      - "22:22"
+      - "7000-8080:7000-8080"
+    volumes:
+      - maria_data:/mounted_maria
+      - mongo_data:/mounted_mongo
+      - webwatcher_data:/webwatcher/webw_serv_scripts_store
+
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  global:
+    driver: bridge
+    internal: false
+  reverse-proxy:
+    external: true
+
+volumes:
+  mongo_data:
+    driver: local
+  maria_data:
+    driver: local
+  webwatcher_data:
+    driver: local

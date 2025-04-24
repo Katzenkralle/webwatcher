@@ -1,68 +1,25 @@
-version: "3.9"
-
+include:
+ - conf/compose.external.yaml
 services:
-  mongo:
-    image: mongodb/mongodb-community-server:latest
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=webwatcher
-    profiles: ["production", "dev"]
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - internal
-
-  maria:
-    image: mariadb:latest
-    profiles: ["production", "dev"]
-    environment:
-      - MARIADB_USER=root
-      - MARIADB_ROOT_PASSWORD=webwatcher
-    volumes:
-      - maria_data:/var/lib/mysql
-    networks:
-      - internal
-
   webwatcher:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: conf/Dockerfile
       target: production
     image: katzenkralle/webwatcher:latest 
-    profiles: ["production"]
+    pull_policy: build   # only build locally—never try to pull
     environment:
-      - APP_DEFAULT_ADMIN_USERNAME=admin
-      - APP_DEFAULT_ADMIN_PASSWORD=$2b$12$SNsRVcWKAEB/h5x0tUXqQeoBwc8MY3seQFD3mPmu9Z4I6NUvQgHQS
-      - CRYPTO_SECRET_KEY=51bc0c1562e265a67af236137d6b17f14e5e1c5c580c066dff775b2d53f05d04
+       # Note: use $$ to escape $ used for enviorment variables.
+       # Refere to: https://docs.docker.com/reference/compose-file/interpolation/
+       - APP_DEFAULT_ADMIN_USERNAME=admin
+       - APP_DEFAULT_ADMIN_HASH=$$2b$$12$$SNsRVcWKAEB/h5x0tUXqQeoBwc8MY3seQFD3mPmu9Z4I6NUvQgHQS
+       - CRYPTO_SECRET_KEY=51bc0c1562e265a67af236137d6b17f14e5e1c5c580c066dff775b2d53f05d04
     networks:
       - internal
       - global
-      - reverse-proxy
     ports:
       - "80:8080"
     volumes:
-      - webwatcher_data:/webwatcher/webw_serv_scripts_store
-  webwatcher-dev:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - ROOT_PASSWD=${ROOT_PASSWD:-} # default value is empty
-      target: dev
-    stop_grace_period: 10s
-    image: katzenkralle/webwatcher:dev 
-    profiles: ["dev"]
-    networks:
-      - internal
-      - global
-    ports:
-      - "3306:3306"
-      - "27017:27017"
-      - "22:22"
-      - "7000-8080:7000-8080"
-    volumes:
-      - maria_data:/mounted_maria
-      - mongo_data:/mounted_mongo
       - webwatcher_data:/webwatcher/webw_serv_scripts_store
 
 networks:
@@ -72,8 +29,6 @@ networks:
   global:
     driver: bridge
     internal: false
-  reverse-proxy:
-    external: true
 
 volumes:
   mongo_data:
