@@ -1,6 +1,8 @@
 # Idea for watcher call
 import importlib
 import threading
+
+import datetime
 import sys
 import asyncio
 
@@ -8,6 +10,8 @@ from typing_extensions import Dict, Any, Optional
 
 from .errors import ScriptException
 from webw_serv import CONFIG
+from webw_serv.main_establish_dbs import establish_db_connections
+
 
 # Proposed DB Managert for  to let Watchers add Rows to mongo db
 class DbManager:
@@ -42,7 +46,7 @@ class DbManager:
         pass
 
 
-class MainThread(threading.Thread):
+class ScriptThread(threading.Thread):
     def __init__(self, module_name, config: Optional[dict[str, Any]] = None):
         threading.Thread.__init__(self)
         self.module_name = CONFIG.MODULE_PREFIX + module_name
@@ -66,40 +70,29 @@ def delete_script(module_name):
         except KeyError:
             print(f"Module {module_name} is not in cache.")
 
-async def run_main_threads(script_name, num_threads):
-    threads = []
-    for _ in range(num_threads):
-        main_thread = MainThread(script_name)
-        main_thread.start()
-        threads.append(main_thread)
 
-    for thread in threads:
-        thread.join()
-        print(thread.result)
-
-
-class WatcherManager: 
+def watch_runner(script_name: str, fs_path: str, config: dict, job_id: int) -> Any:
     """
-    ToDo: Implement.
-    Note: This may change in the future
-
-    Calls the watchers, handels the results and sends them to the database.
-    Proxie for calls from the API to the watchers (:meth:`.base.WatcherBase.get_return_schema`
-    and :meth:`.base.WatcherBase.get_config_schema`).
-
-    Also handels timed execution of watchers, and registers/deleates them by request in the database.
+    Run the script in a separate thread and return the result.
+    :param script_name: Name of the script to run.
+    :param fs_path: File system path of the script.
+    :param config: Configuration for the script.
+    :param job_id: Job ID for the script.
+    :return: Result of the script execution.
     """
-    def __init__(self):
-        pass
-    async def run(self):
-        ...
+    # Establish database connections
+    mongo, maria = establish_db_connections()
+    maria.set_cron_timestamp(job_id=job_id, timestamp=datetime.datetime.now())
 
-    @staticmethod
-    def get_metadata(module_name):
-        ...
+    # Run the main thread
+    # TODO: fix script import
+    script_thread = ScriptThread(script_name, config)
+    script_thread.start()
+    script_thread.join()
+    result = script_thread.result
 
-def manager_main():
-    pass
+    mongo.create_or_modify_job_entry(job_id=job_id, entry_id=None, data=result)
+    # Clean up
+    delete_script(script_name)
 
-if __name__ == "__main__":
-    manager_main()
+    return result
