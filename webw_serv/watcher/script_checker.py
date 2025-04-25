@@ -35,6 +35,45 @@ def script_checker(module_name: str)  -> tuple[str, dict[str, Type[str | int | b
     except Exception as e:
         return ScriptFormatException(e)
 
+def run_once_get_schema(module_name: str, config: dict[str, str]) ->  dict[str, Type[str | int | bool | float]] | ScriptFormatException | ScriptException:
+    try:
+        module = importlib.import_module(module_name, CONFIG.PACKAGE_NAME)
+        if not hasattr(module, "ScriptMain"):
+            return ScriptFormatException(f"ScriptMain not found in {module_name}")
+        instance = module.ScriptMain(config=config)
+        if not issubclass(instance, Watcher):
+            return ScriptFormatException(f"ScriptMain must be a subclass of Watcher")
+        if not abc_implemented(instance):
+            return ScriptFormatException(f"ScriptMain must implement all abstract methods")
+
+        return_schema = instance.get_return_schema()
+        if any(key in CONFIG.ILLEGAL_KEYS for key in return_schema.keys()):
+            return ScriptFormatException(f"Config schema contains illegal keys: {CONFIG.ILLEGAL_KEYS}")
+        return return_schema
+    except Exception as e:
+        return ScriptException(e)
+
+
+def value_to_type(value: str | int | bool | float) -> Type[str | int | bool | float]:
+    """
+    Convert a value to its type.
+
+    :param value: The value to convert.
+    :type value: str | int | bool | float
+    :return: The type of the value.
+    :rtype: Type[str | int | bool | float]
+    """
+    if isinstance(value, str):
+        return str
+    elif isinstance(value, int):
+        return int
+    elif isinstance(value, bool):
+        return bool
+    elif isinstance(value, float):
+        return float
+    else:
+        raise ValueError(f"Unsupported type: {type(value)}")
+
 
 def abc_implemented(cls) -> bool:
     return not bool(cls.__abstractmethods__)
