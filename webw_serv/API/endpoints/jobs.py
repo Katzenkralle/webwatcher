@@ -110,34 +110,61 @@ class Mutation:
         if description is None:
             description = choice(CONFIG.DEFAULT_JOB_DESCRIPTIONS)
 
-        if id_ is not None:
-            try:
-                await maria.edit_job_list(script_name=script, job_name=name, description=description, dynamic_schema=not forbid_dynamic_schema, job_id=id_)
-            except Exception as e:
-                return Message(
-                    message=f"Failed to edit job: {str(e)}",
-                    status=MessageType.DANGER,
-                )
-        else:
+        new_job = False
+        if id_ is None:
             try:
                 id_ = await maria.add_job_list(script_name=script, job_name=name, description=description, dynamic_schema=not forbid_dynamic_schema)
+                new_job = True
             except Exception as e:
                 return Message(
                     message=f"Failed to add job: {str(e)}",
                     status=MessageType.DANGER,
                 )
 
+
+        json_data = None
         if paramerter_kv is not None:
             try:
                 json_data = json.loads(paramerter_kv)
-                await maria.set_job_input_settings(job_id=id_, settings=json_data)
+                if json_data is not None:
+                    await maria.set_job_input_settings(job_id=id_, settings=json_data)
             except Exception as e:
                 return Message(
                     message=f"Failed to set job input settings: {str(e)}",
                     status=MessageType.DANGER,
                 )
-        else:
+        if not json_data:
             json_data = {}
+
+
+        try:
+            # script must be resolved first
+            script_check_result = (await maria.get_script_info(script, True))
+            classedReturnSchema = run_once_get_schema(script_check_result[0].fs_path, json_data)
+            return_schema = None
+            if classedReturnSchema:
+                return_schema = []
+                for key, value in classedReturnSchema.items():
+                    return_schema.append(Parameter(key=key, value=getattr(value, "__name__", None)))        
+        except Exception as e:
+            return Message(
+                message=f"Failed to get return schema: {str(e)}",
+                status=MessageType.DANGER,
+            )
+
+
+
+        # We need to ron edit even on a new job, because we need to
+        # save the expected schema
+        try:
+            await maria.edit_job_list(script_name=script, job_name=name, description=description, dynamic_schema=not forbid_dynamic_schema, job_id=id_, expected_schema=return_schema)
+        except Exception as e:
+            return Message(
+                message=f"Failed to edit job: {str(e)}",
+                status=MessageType.DANGER,
+            )
+
+
 
         if execute_timer is not None:
             try:
@@ -149,30 +176,6 @@ class Mutation:
                     message=f"Failed to add cron job: {str(e)}",
                     status=MessageType.DANGER,
                 )
-
-        try:
-            # script must be resolved first
-            script_check_result = (await maria.get_script_info(script, True))[0]
-            classedReturnSchema = run_once_get_schema(script_check_result.fs_path, json_data)
-            return_schema = None
-            if classedReturnSchema:
-                return_schema = []
-                for key, value in classedReturnSchema.items():
-                    if value == str:
-                        value = "str"
-                    elif value == int:
-                        value = "int"
-                    elif value == bool:
-                        value = "bool"
-                    else:
-                        value = "unknown"
-                    return_schema.append(Parameter(key=key, value=value))
-                
-        except Exception as e:
-            return Message(
-                message=f"Failed to get return schema: {str(e)}",
-                status=MessageType.DANGER,
-            )
 
         try:
             _, executed_last, enabled = await maria.get_cron_job(id_)

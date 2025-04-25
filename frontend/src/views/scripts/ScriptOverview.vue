@@ -8,6 +8,7 @@ import InputText from 'primevue/inputtext'
 import ScriptInterfaceDocs from '@/components/scripts/ScriptInterfaceDocs.vue'
 
 import SmallSeperator from '@/components/reusables/SmallSeperator.vue'
+import { globalTableMetaData } from '@/composable/api/JobAPI'
 import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue'
 import { FilterMatchMode } from '@primevue/core/api'
 import { getUser } from '@/composable/api/User'
@@ -97,7 +98,11 @@ const formattedGlobalScriptData = computed(() =>
                 button-icon="pi pi-trash"
                 button-class="p-button-danger"
                 button-label=""
-                @confirm="() => deleteScript(slotProps.data.name)"
+                @confirm="() => deleteScript(slotProps.data.name).then(() => {
+                  globalTableMetaData = globalTableMetaData.filter(
+                    (entry) => entry.script !== slotProps.data.name,
+                  )
+                })"
               />
             </div>
           </template>

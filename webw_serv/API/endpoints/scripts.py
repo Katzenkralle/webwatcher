@@ -87,7 +87,10 @@ class Mutation:
     @strawberry.mutation
     @admin_guard()
     async def upload_script_data(self, info: strawberry.Info, name: str, description: Optional[str], id_: str | None = None) -> script_content_result:
-        maria: MariaDbHandler = info.context["request"].state.maria
+        if len(name) == 0:
+            return Message(message="Script name cannot be empty", status=MessageType.WARN)
+        
+        maria: MariaDbHandler = info.context["request"].state.maria        
         if id_:
             try:
                 await maria.transfer_script(id_=id_, name=name, description=description)

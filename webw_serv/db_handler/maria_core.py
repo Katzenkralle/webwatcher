@@ -181,19 +181,14 @@ class MariaDbHandler:
 
     async def add_temp_script(self, fs_path: str, name: str, expected_input: dict, supports_static_schema: bool) -> bool:
         self.__cursor.execute("""INSERT INTO script_list (fs_path, name, description, supports_static_schema, temporary) 
-        VALUES (?, ?, ?, ?, ?)""",
-                              (fs_path, name, None, supports_static_schema, True))
+            VALUES (?, ?, ?, ?, ?)""",
+            (fs_path, name, None, supports_static_schema, True))
         
         for key, value in expected_input.items():
-            if value == str:
-                value = "str"
-            elif value == int:
-                value = "int"
-            elif value == bool:
-                value = "bool"
+            strType = getattr(value, "__name__", None)
             self.__cursor.execute("""INSERT INTO script_input_info (script_name, keyword, datatype) 
             VALUES (?, ?, ?)""",
-                (name, key, value))
+                (name, key, strType))
 
         self.__conn.commit()
         return True
@@ -398,21 +393,27 @@ class MariaDbHandler:
         self.__conn.commit()
         return self.__cursor.lastrowid
 
-    async def edit_job_list(self, script_name: str, job_name: str, description: str, dynamic_schema: bool, job_id: int) -> bool:
-        if not dynamic_schema:
-            self.__cursor.execute("SELECT script_name FROM job_list WHERE job_id = ?", (job_id,))
-            old_script_name = self.__cursor.fetchone()
-            self.__cursor.execute("SELECT expected_return_schema FROM script_list WHERE job_name = ?", (old_script_name[0],))
-            old_return_schema = self.__cursor.fetchone()
+    async def edit_job_list(self, script_name: str, job_name: str, description: str, dynamic_schema: bool, job_id: int, expected_schema: dict[str, str]) -> bool:
+        self.__cursor.execute("SELECT expected_return_schema, dynamic_schema FROM job_list WHERE job_id = ?", (job_id,))
+        [old_expected_layout, old_dynamic_schema] = self.__cursor.fetchone()
+        if not old_dynamic_schema:
+            new_keys = set(map(lambda x: x.key, expected_schema))
+            if old_dynamic_schema != dynamic_schema:
+                raise ValueError("You cannot disallow static schema after job creation") 
 
-            self.__cursor.execute("SELECT expected_return_schema FROM script_list WHERE job_name = ?", (script_name,))
-            return_schema = self.__cursor.fetchone()
-
-            if not old_return_schema == return_schema:
+            old_return_schema = json.loads(old_expected_layout) 
+            if new_keys != set(old_return_schema.keys()):
                 raise ValueError("The expected return schema of the new and old script do not match")
 
-        self.__cursor.execute("UPDATE job_list SET script_name = ?, job_name = ?, description = ?, dynamic_schema = ? WHERE job_id = ?",
-                              (script_name, job_name, description, dynamic_schema, job_id))
+        if expected_schema:
+            try:
+                expected_schema = json.dumps({entry.key: entry.value for entry in expected_schema})
+            except Exception as e:
+                logger.warning(f"MARIA: Failed to parse job schema for {job_name}: {e}")
+                expected_schema = None
+
+        self.__cursor.execute("UPDATE job_list SET script_name = ?, job_name = ?, description = ?, dynamic_schema = ?, expected_return_schema = ? WHERE job_id = ?",
+                              (script_name, job_name, description, dynamic_schema, expected_schema, job_id))
         self.__conn.commit()
         return True
 
