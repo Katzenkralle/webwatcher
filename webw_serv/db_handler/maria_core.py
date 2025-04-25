@@ -421,6 +421,14 @@ class MariaDbHandler:
         self.__conn.commit()
         return True
 
+    async def get_job_input_settings(self, job_id: int) -> dict:
+        self.__cursor.execute("SELECT keyword, value FROM job_input_settings WHERE job_id = ?", (job_id,))
+        db_settings = self.__cursor.fetchall()
+        settings = {}
+        for entry in db_settings:
+            settings[entry[0]] = entry[1]
+        return settings
+
     async def add_cron_job(self, job_id: int, cron_time: str, enabled: bool) -> bool:
         self.__cursor.execute("INSERT INTO cron_list (job_id, cron_time, enabled) VALUES (?, ?, ?)",
                               (job_id, cron_time, enabled))
