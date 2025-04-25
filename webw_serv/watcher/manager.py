@@ -99,13 +99,7 @@ class WatcherManager:
         ...
 
 def manager_main():
-    script_name = ".scripts.http_return"  # Name of the script without .py extension
-
-    # Run multiple instances of MainThread asynchronously
-    asyncio.run(run_main_threads(script_name, 5))
-
-    # Delete the script and remove the module from cache
-    delete_script(script_name)
+    pass
 
 if __name__ == "__main__":
     manager_main()
