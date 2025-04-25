@@ -1,6 +1,7 @@
 import uvicorn  # Unicorn
 import asyncio
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 from contextlib import asynccontextmanager
 
 from webw_serv import CONFIG
@@ -85,11 +86,32 @@ def create_app():
 
         response = await call_next(request)
         return response
+
     scheduler.start()
     return app
 
 def self_cleanup_cycle():
     cleanup_folder(CONFIG.SCRIPTS_TEMP_PATH)
+
+def load_cron_jobs(maria: MariaDbHandler, scheduler: BackgroundScheduler):
+    # Load cron jobs from the database
+    jobs = asyncio.run(maria.get_job_metadata())
+    for job in jobs:
+        script_name = job.script
+        script_info = asyncio.run(maria.get_script_info(script_name))[0]
+        fs_path = script_info.fs_path
+        id_ = job.id
+        cron_time = job.execute_timer
+        config = asyncio.run(maria.get_job_input_settings(job_id=id_))
+        scheduler.add_job(
+            func=...,  # TODO: Implement the function to run the script
+            trigger=CronTrigger.from_crontab(cron_time),
+            args=(),
+            kwargs={"config": config, "fs_path": fs_path},
+            id=str(id_),
+            name=job.name,
+            replace_existing=True
+        )
 
 def main():
     CustomLogger.set_default_log_opperation(level=Config().app.log_level, dev=Config().app.dev_mode)
