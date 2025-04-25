@@ -136,7 +136,6 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
           id="jobName"
           v-model:model-value="jobMetaData.name"
           placeholder="Who am I?"
-          :disabled="isEdit"
           class="w-full"
           aria-describedby="jobName"
         />
@@ -247,6 +246,7 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
         <Button
           label="Save"
           security="success"
+          :disabled="jobMetaData.name === '' || jobMetaData.script === ''"
           @click="
             () => {
               const normalizedJobData = { ...jobMetaData, parameters: {} }

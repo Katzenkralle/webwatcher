@@ -121,7 +121,7 @@ const elementColor = computed((): string[] => {
                   </div>
                   <a class="text-info">Last Run: {{ element.executedLast ?? 'never' }}</a>
                 </div>
-                <p class="h-40 truncate bg-panel p-2 rounded-lg mt-3 whitespace-normal">
+                <p class="h-40 truncate bg-panel p-2 rounded-lg mt-3 whitespace-pre-wrap">
                   {{ element.description }}
                 </p>
                 <SmallSeperator class="card-seperator" />

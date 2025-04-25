@@ -107,14 +107,14 @@ class Mutation:
         or when allowing dynamic schema
         """
         maria: MariaDbHandler = info.context["request"].state.maria
+        mongo: MongoDbHandler = info.context["request"].state.mongo
         if description is None:
             description = choice(CONFIG.DEFAULT_JOB_DESCRIPTIONS)
 
-        new_job = False
         if id_ is None:
             try:
                 id_ = await maria.add_job_list(script_name=script, job_name=name, description=description, dynamic_schema=not forbid_dynamic_schema)
-                new_job = True
+                await mongo.register_job(id_)
             except Exception as e:
                 return Message(
                     message=f"Failed to add job: {str(e)}",

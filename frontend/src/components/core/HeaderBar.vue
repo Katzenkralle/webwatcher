@@ -268,7 +268,7 @@ const ItemContainerHorizontal = defineComponent({
           'div',
           {
             class:
-              'flex flex-row overflow-x-auto overflow-y-hidden sm:overflow-y-visible sm:overflow-x-visible',
+              'flex flex-row overflow-x-auto overflow-y-hidden sm:overflow-y-visible sm:overflow-x-visible gap-2',
           },
           [props.items.filter((item) => !item.fixed).map((item) => getItemLayout(item))],
         ),
