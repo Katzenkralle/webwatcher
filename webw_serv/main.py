@@ -26,7 +26,7 @@ def generate_scheduler():
         },
         job_defaults={
             'coalesce': False,
-            'max_instances': 3
+            'max_instances': 1
         }
     )
     return scheduler
@@ -92,7 +92,7 @@ def load_cron_jobs(maria: MariaDbHandler, scheduler: BackgroundScheduler):
             func=...,  # TODO: Implement the function to run the script
             trigger=CronTrigger.from_crontab(cron_time),
             args=(),
-            kwargs={"config": config, "fs_path": fs_path},
+            kwargs={"config": config, "fs_path": fs_path, "script_name": script_name, "job_id": id_},
             id=str(id_),
             name=job.name,
             replace_existing=True
