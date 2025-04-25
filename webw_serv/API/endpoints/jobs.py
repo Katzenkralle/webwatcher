@@ -14,6 +14,8 @@ from ..gql_base_types import JobEntyInput, Message, MessageType, JobEntry, Pagin
 from ..gql_types import job_entry_result, job_entrys_result, JobEntryList, JobsMetaDataList, job_full_info_result, jobs_metadata_result
 
 from webw_serv.db_handler.mongo_core import JobEntrySearchModeOptionsNewest, JobEntrySearchModeOptionsRange, JobEntrySearchModeOptionsSpecific
+from webw_serv.watcher.script_checker import run_once_get_schema
+from webw_serv.watcher.errors import ScriptFormatException, ScriptException
 
 @strawberry.type
 class Mutation:
@@ -58,7 +60,7 @@ class Mutation:
                 )
             else:
                 return Message(
-                    message=f"Could not delete {len(entry_ids) - amount_deleted} of the reequested {len(entry_ids)} entries",
+                    message=f"Could not delete {len(entry_ids) - amount_deleted} of the requested {len(entry_ids)} entries",
                     status=MessageType.WARN,
                 )
         except Exception as e:
@@ -148,10 +150,33 @@ class Mutation:
                     status=MessageType.DANGER,
                 )
 
+        try:
+            return_schema = run_once_get_schema(script, json_data)
+        except Exception as e:
+            return Message(
+                message=f"Failed to get return schema: {str(e)}",
+                status=MessageType.DANGER,
+            )
+
+        try:
+            _, executed_last, enabled = await maria.get_cron_job(id_)
+        except ValueError as e:
+            if "No cron job found for this job" in str(e):
+                executed_last = None
+                enabled = False
+            else:
+                return Message(
+                    message=f"Failed to get cron job: {str(e)}",
+                    status=MessageType.DANGER,
+                )
+        except Exception as e:
+            return Message(
+                message=f"Failed to get cron job: {str(e)}",
+                status=MessageType.DANGER,
+            )
+
         params = [Parameter(key=key, value=value) for key, value in json_data.items()]
-        return_data = JobFullInfo(id=id_, parameters=params, )  # TODO: add remaining data
-        script_info = await maria.get_script_info(name=script)
-        script_info = script_info[0]
+        return_data = JobFullInfo(id=id_, parameters=params, expected_return_schema=return_schema, name=name, script=script, description=description, enabled=enabled, execute_timer=execute_timer, executed_last=executed_last, forbid_dynamic_schema=forbid_dynamic_schema)
         return return_data
 
 @strawberry.type
