@@ -20,6 +20,20 @@ from webw_serv.configurator.config import Config
 
 @strawberry.type
 class Mutation:
+    
+    @strawberry.mutation
+    @admin_guard()
+    async def remove_temporary_scripts(
+        self,
+        info: strawberry.Info) -> Message:
+        maria: MariaDbHandler = info.context["request"].state.maria
+        try:
+            await maria.remove_temp_scripts()
+            return Message(message="Temporary scripts removed successfully", status=MessageType.SUCCESS)
+        except Exception as e:
+            return Message(message=f"Failed to remove temporary scripts; {e}", status=MessageType.DANGER)
+
+
     @strawberry.mutation
     @admin_guard(use_http_exception=True)
     async def preupload_script(self, info: strawberry.Info, file: B64Str, name: Optional[str]) -> ScriptValidationResult:
@@ -105,5 +119,5 @@ class Query:
     @user_guard()
     async def scripts_metadata(self, info: strawberry.Info, name: str|None = None) -> script_content_result:
         maria: MariaDbHandler = info.context["request"].state.maria
-        scripts_info = await maria.get_script_info(name)
+        scripts_info = await maria.get_script_info(name, exclude_temp=True)
         return ScriptContentList(scripts=scripts_info)

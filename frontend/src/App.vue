@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterView } from 'vue-router'
 
 import HeaderBar from '@/components/core/HeaderBar.vue'
-import Footer from '@/components/core/Footer.vue'
+import Footer from '@/components/core/FooterBar.vue'
 import GoUpButton from '@/components/core/GoUpButton.vue'
 </script>
 
