@@ -9,6 +9,7 @@ from webw_serv.main_establish_dbs import establish_db_connections
 from webw_serv.utility.oven_cleaner import cleanup_folder
 from webw_serv.API.core import get_routes
 from webw_serv.configurator import Config
+from webw_serv.watcher.manager import watch_runner
 
 from webw_serv.utility.custom_logging import CustomLogger
 from webw_serv.utility import DEFAULT_LOGGER
@@ -89,7 +90,7 @@ def load_cron_jobs(maria: MariaDbHandler, scheduler: BackgroundScheduler):
         cron_time = job.execute_timer
         config = asyncio.run(maria.get_job_input_settings(job_id=id_))
         scheduler.add_job(
-            func=...,  # TODO: Implement the function to run the script
+            func=watch_runner,
             trigger=CronTrigger.from_crontab(cron_time),
             args=(),
             kwargs={"config": config, "fs_path": fs_path, "script_name": script_name, "job_id": id_},
