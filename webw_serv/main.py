@@ -20,6 +20,22 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 
+
+def establish_db_connections():
+    # Setup everything
+    mongo = MongoDbHandler(Config().mongo)
+    maria = MariaDbHandler(Config().maria, Config().app)
+    
+    async def registerSession():
+        jobs = await maria.get_all_job_info()
+        await mongo.register_all_sql_jobs([job.id for job in jobs])
+    try:
+        asyncio.run(registerSession())
+    except Exception as e:
+        DEFAULT_LOGGER.error(f"Failed to register SQL jobs: {e}")
+        
+    return [mongo, maria]
+
 def generate_scheduler():
     scheduler = BackgroundScheduler(
         executors={

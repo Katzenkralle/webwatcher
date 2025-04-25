@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import { queryGql, reportError, recordListToRecord } from '@/composable/api/QueryHandler'
+import { queryGql, reportError, recordListToRecord, type GQLResponse } from '@/composable/api/QueryHandler'
 
 export interface TableMetaData {
   id: number
@@ -19,6 +19,20 @@ export type TableLayout = {
   type: string
 }
 
+const tableMetaDataFormatt = (data: Record<string, any>): TableMetaData[] => {
+  const relevantData: TableMetaData[] = []
+  data.jobs.forEach((entry: Record<string, any>) => {
+    if (entry.expectedReturnSchema && Array.isArray(entry.expectedReturnSchema)) {
+      entry.expectedReturnSchema = recordListToRecord(entry.expectedReturnSchema)
+    }
+    if (entry.parameters && Array.isArray(entry.parameters)) {
+      entry.parameters = recordListToRecord(entry.parameters)
+    }
+    relevantData.push(entry as TableMetaData)
+  })
+  return relevantData
+}
+
 export const globalTableMetaData: Ref<TableMetaData[]> = ref([])
 let fetchedTableMetaData = false
 
@@ -27,47 +41,42 @@ const fetchAllJobMetaData = async (): Promise<TableMetaData[]> => {
     const query = `
         query fetchJobMetadata {
         jobsMetadata {
-            ... on JobsMetaDataList {
+        ... on JobFullInfoList {
             __typename
             jobs {
-                description
-                enabled
-                executeTimer
-                forbidDynamicSchema
-                id
-                name
-                executedLast
-                expectedReturnSchema {
+              description
+              enabled
+              executeTimer
+              forbidDynamicSchema
+              id
+              name
+              executedLast
+              expectedReturnSchema {
                 key
                 value
-                }
-                script
+              }
+              script
+              parameters {
+                key
+                value
+              }
             }
-            }
-            ... on Message {
+          }
+          ... on Message {
             __typename
             message
             status
-            }
+          }
         }
         }
         `
-    queryGql(query)
+    return queryGql(query)
       .then((response) => {
         const key = response.providedTypes[0].type
         switch (key) {
-          case 'JobsMetaDataList':
+          case 'JobFullInfoList':
             // eslint-disable-next-line no-case-declarations
-            const relevantData: TableMetaData[] = []
-            response.data.jobsMetadata.jobs.forEach((entry: Record<string, any>) => {
-              if (entry.expectedReturnSchema && Array.isArray(entry.expectedReturnSchema)) {
-                entry.expectedReturnSchema = recordListToRecord(entry.expectedReturnSchema)
-              }
-              if (entry.parameters && Array.isArray(entry.parameters)) {
-                entry.parameters = recordListToRecord(entry.parameters)
-              }
-              relevantData.push(entry as TableMetaData)
-            })
+            const relevantData: TableMetaData[] = tableMetaDataFormatt(response.data.jobsMetadata)
             return resolve(relevantData)
           default:
             throw response
@@ -137,37 +146,46 @@ export const updateOrCreateJob = async (entry: TableMetaData): Promise<void> => 
             $enabled: Boolean,
             $forbidDynamicSchema: Boolean,
             $executeTimer: String,
-            $expectedReturnSchema: JsonStr
+            $parameterKv: JsonStr
             ){
             createOrModifyJob(
-                ${entry.id >= 0 ? `id: ${entry.id},` : ``}
-                name: "${entry.name}",
-                script: "${entry.script}",
-                description: "${entry.description}",
-                enabled: ${entry.enabled},
-                forbidDynamicSchema: ${entry.forbidDynamicSchema},
-                executeTimer: "${entry.executeTimer}",
-                expectedReturnSchema: ${JSON.stringify(entry.expectedReturnSchema)}
+                id_: $id,
+                name: $name,
+                script: $script,
+                description: $description,
+                enabled: $enabled,
+                forbidDynamicSchema: $forbidDynamicSchema,
+                executeTimer: $executeTimer,
+                paramerterKv: $parameterKv
             ) {
-                __typename
-                ... on Message {
-                    message
-                    status
+            ... on JobFullInfoList {
+              __typename
+              jobs {
+                description
+                enabled
+                executeTimer
+                executedLast
+                expectedReturnSchema {
+                  key
+                  value
                 }
-                ... on jobsMetaDataResult {
-                    jobs {
-                    id
-                    name
-                    script
-                    description
-                    enabled
-                    executeTimer
-                    executedLast
-                    forbidDynamicSchema
-                    expectedReturnSchema
-                    }
+                forbidDynamicSchema
+                name
+                id
+                script
+                parameters {
+                  key
+                  value
                 }
-            }`
+              }
+            }
+            ... on Message {
+              __typename
+              message
+              status
+            }
+          }
+        }`
   const variables = {
     id: entry.id >= 0 ? entry.id : undefined,
     name: entry.name,
@@ -176,20 +194,25 @@ export const updateOrCreateJob = async (entry: TableMetaData): Promise<void> => 
     enabled: entry.enabled,
     forbidDynamicSchema: entry.forbidDynamicSchema,
     executeTimer: entry.executeTimer,
-    expectedReturnSchema: JSON.stringify(entry.expectedReturnSchema),
+    parameterKv: JSON.stringify(entry.parameters),
   }
   return new Promise((resolve, reject) => {
     queryGql(query, variables)
-      .then((response) => {
+      .then(async(response) => {
+        console.log(response)
         const key = response.providedTypes[0].type
         switch (key) {
-          case 'jobsMetaDataList':
-            globalTableMetaData.value = response.data[key]
+          case 'JobFullInfoList':
+            // eslint-disable-next-line no-case-declarations
+            const relevantData: TableMetaData[] = tableMetaDataFormatt(response.data.createOrModifyJob)
+            const newIds = relevantData.map((table) => table.id)
+            globalTableMetaData.value = [
+              ...globalTableMetaData.value.filter((table) => !newIds.includes(table.id)),
+              ...relevantData,
+            ]
             resolve()
-            break
           default:
-            reportError(response)
-            reject(response)
+            throw response
         }
       })
       .catch((error) => {

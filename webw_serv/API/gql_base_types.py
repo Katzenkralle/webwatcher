@@ -1,6 +1,6 @@
 import strawberry
 from enum import Enum
-from typing import Annotated, Union, Optional
+from typing import Annotated, Union, Optional, Any, List, Dict
 
 from webw_serv.db_handler.maria_schemas import DbUser, DbSession, DbUserDisplayConfig, DbJobMetaData, DbScriptInfo, DbParameter
 
@@ -86,7 +86,7 @@ class JobMetaData(DbJobMetaData):
 @strawberry.type
 class JobSettings:
     id: int
-    parameters: list[Parameter]
+    parameters: Optional[list[Parameter]] = None
 
 @strawberry.type
 @strawberry.interface

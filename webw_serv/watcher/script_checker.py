@@ -4,7 +4,7 @@ from typing_extensions import Type
 
 from webw_serv import Watcher, CONFIG
 from webw_serv.watcher.errors import ScriptFormatException, ScriptException
-
+import re
 
 def script_checker(module_name: str)  -> tuple[str, dict[str, Type[str | int | bool]] | None, bool] | ScriptFormatException | ScriptException:
     try:
@@ -36,19 +36,21 @@ def script_checker(module_name: str)  -> tuple[str, dict[str, Type[str | int | b
         return ScriptFormatException(e)
 
 def run_once_get_schema(module_name: str, config: dict[str, str]) ->  dict[str, Type[str | int | bool | float]] | ScriptFormatException | ScriptException:
+    match = re.search(r'/([^/]+?)\.py$', module_name)
+    if match:
+        base_module_name = match.group(1)
+    else:
+        # Fall back to just using the provided module name
+        base_module_name = module_name
+    base_module_name = CONFIG.MODULE_PREFIX + base_module_name
     try:
-        module = importlib.import_module(module_name, CONFIG.PACKAGE_NAME)
-        if not hasattr(module, "ScriptMain"):
-            return ScriptFormatException(f"ScriptMain not found in {module_name}")
+        module = importlib.import_module(base_module_name, CONFIG.PACKAGE_NAME)
+        # We checked subclasses when uploading the script
         instance = module.ScriptMain(config=config)
-        if not issubclass(instance, Watcher):
-            return ScriptFormatException(f"ScriptMain must be a subclass of Watcher")
-        if not abc_implemented(instance):
-            return ScriptFormatException(f"ScriptMain must implement all abstract methods")
-
+        
         return_schema = instance.get_return_schema()
-        if any(key in CONFIG.ILLEGAL_KEYS for key in return_schema.keys()):
-            return ScriptFormatException(f"Config schema contains illegal keys: {CONFIG.ILLEGAL_KEYS}")
+        if return_schema and any(key in CONFIG.ILLEGAL_KEYS for key in return_schema.keys()):
+            return ScriptFormatException(f"Config schema contains illegal keys: {CONFIG.ILLEGAL_KEYS}")        
         return return_schema
     except Exception as e:
         return ScriptException(e)

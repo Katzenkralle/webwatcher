@@ -13,7 +13,7 @@ from ..gql_base_types import PaginationInput, JsonStr, MessageType, Message
 from ..endpoints.auth import admin_guard, user_guard
 from ..gql_base_types import ScriptValidationResult, Parameter, B64Str
 from ..gql_types import script_content_result, jobs_metadata_result, jobs_settings_result, job_entrys_result, \
-    user_job_config_result, job_metadata_result, job_full_info_result, job_entry_result, ScriptContentList
+    user_job_config_result, job_metadata_result, job_entry_result, ScriptContentList
 from webw_serv.configurator.config import Config
 
 

@@ -6,8 +6,13 @@ import sensors
 
 class ScriptMain(Watcher):
     def __init__(self, config: dict[str, Any]):
-        self.ignore_chips = config.get("ignore_chips", "").split(",")
-        self.ignore_sensors = config.get("ignore_sensors", "").split(",")
+        chips_cfg = config.get("ignore_chips", "") 
+        chips_cfg = chips_cfg if type(chips_cfg) == "str" else ""
+        sensor_cfg = config.get("ignore_sensors", "")
+        sensor_cfg = sensor_cfg if type(sensor_cfg) == "str" else ""
+
+        self.ignore_chips = chips_cfg.split(",")
+        self.ignore_sensors = sensor_cfg.split(",")
         sensors.init()
         
 

@@ -6,7 +6,7 @@ import string
 import os
 import time
 import json
-from typing import Optional
+from typing import Optional, TypedDict
 
 from webw_serv.db_handler.misc import libroot, read_sql_blocks
 from .maria_schemas import DbUser, DbSession, DbUserDisplayConfig, DbScriptInfo, DbParameter, DbJobMetaData
@@ -285,7 +285,11 @@ class MariaDbHandler:
         self.__conn.commit()
         return new_session
 
-    async def get_job_metadata(self, job_id: int|None = None) -> list[DbJobMetaData]:
+    class JobInfoReturn(TypedDict):
+        metadata: list[list[DbJobMetaData]]
+        settings: list[list]
+        
+    async def get_all_job_info(self, job_id: int|None = None) -> JobInfoReturn:
         jobs = []
         if job_id is None:
             self.__cursor.execute("SELECT * FROM job_list")
@@ -296,7 +300,8 @@ class MariaDbHandler:
             if job:
                 jobs.append(job)
         
-        composed_jobs = []
+        job_metadata = []
+        job_settings = []
         for job in jobs:
             self.__cursor.execute("SELECT cron_time,executed_last,enabled FROM cron_list WHERE job_id = ?", (job[1],))    
             db_corn  = self.__cursor.fetchone()
@@ -311,7 +316,7 @@ class MariaDbHandler:
                 except Exception as e:
                     logger.warning(f"MARIA: Failed to parse job schema for {job[2]}: {e}")
 
-            composed_jobs.append(
+            job_metadata.append(
                 DbJobMetaData(
                         id= job[1],
                         name= job[2],
@@ -323,7 +328,10 @@ class MariaDbHandler:
                         forbid_dynamic_schema= not job[4],
                         expected_return_schema= expected_return_schema,
                     ))
-        return composed_jobs
+            self.__cursor.execute("SELECT keyword,value FROM job_input_settings WHERE job_id = ?", (job[1],))
+            job_settings.append(list(map(lambda x: DbParameter(x[0], x[1]), self.__cursor.fetchall())))
+
+        return {"metadata": job_metadata, "settings": job_settings}
 
     async def get_cron_job(self, job_id: int) -> tuple[str, str, bool]:
         self.__cursor.execute("SELECT cron_time,executed_last,enabled FROM cron_list WHERE job_id = ?", (job_id,))
@@ -392,18 +400,18 @@ class MariaDbHandler:
 
     async def edit_job_list(self, script_name: str, job_name: str, description: str, dynamic_schema: bool, job_id: int) -> bool:
         if not dynamic_schema:
-            self.__cursor.execute("SELECT script_name FROM job_list WHERE id = ?", (job_id,))
+            self.__cursor.execute("SELECT script_name FROM job_list WHERE job_id = ?", (job_id,))
             old_script_name = self.__cursor.fetchone()
-            self.__cursor.execute("SELECT expected_return_schema FROM script_list WHERE name = ?", (old_script_name[0],))
+            self.__cursor.execute("SELECT expected_return_schema FROM script_list WHERE job_name = ?", (old_script_name[0],))
             old_return_schema = self.__cursor.fetchone()
 
-            self.__cursor.execute("SELECT expected_return_schema FROM script_list WHERE name = ?", (script_name,))
+            self.__cursor.execute("SELECT expected_return_schema FROM script_list WHERE job_name = ?", (script_name,))
             return_schema = self.__cursor.fetchone()
 
             if not old_return_schema == return_schema:
                 raise ValueError("The expected return schema of the new and old script do not match")
 
-        self.__cursor.execute("UPDATE job_list SET script_name = ?, job_name = ?, description = ?, dynamic_schema = ? WHERE id = ?",
+        self.__cursor.execute("UPDATE job_list SET script_name = ?, job_name = ?, description = ?, dynamic_schema = ? WHERE job_id = ?",
                               (script_name, job_name, description, dynamic_schema, job_id))
         self.__conn.commit()
         return True

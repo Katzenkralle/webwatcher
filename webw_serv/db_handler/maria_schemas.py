@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Any
+import strawberry
 
 @dataclass
 class DbUser:
@@ -26,7 +27,7 @@ class DbUserDisplayConfig:
 @dataclass
 class DbParameter:
     key: str
-    value: str
+    value: Optional[str]
 
 @dataclass
 class DbJobMetaData:

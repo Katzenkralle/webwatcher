@@ -11,7 +11,7 @@ from webw_serv.db_handler import MariaDbHandler, MongoDbHandler
 from ..endpoints.auth import admin_guard, user_guard
 from ..gql_base_types import JobEntyInput, Message, MessageType, JobEntry, PaginationInput, JsonStr, JobFullInfo, \
     Parameter
-from ..gql_types import job_entry_result, job_entrys_result, JobEntryList, JobsMetaDataList, job_full_info_result, jobs_metadata_result
+from ..gql_types import job_entry_result, job_entrys_result, JobEntryList, JobsMetaDataList, JobFullInfoList, job_full_info_list_result, JobMetaData
 
 from webw_serv.db_handler.mongo_core import JobEntrySearchModeOptionsNewest, JobEntrySearchModeOptionsRange, JobEntrySearchModeOptionsSpecific
 from webw_serv.watcher.script_checker import run_once_get_schema
@@ -96,17 +96,17 @@ class Mutation:
     async def create_or_modify_job(self, info: strawberry.Info, 
                              name: str,
                              script: str,
+                             enabled: bool = True,
                              execute_timer: Optional[str] = None, # CRON
                              paramerter_kv: Optional[JsonStr] = None,
                              forbid_dynamic_schema: bool = False,
                              description: Optional[str] = None,
-                             id_: Optional[int] = None) -> job_full_info_result:
+                             id_: Optional[int] = None) -> job_full_info_list_result:
         """
         When editing, we only want to allow changing the script if the expected schema of the new and old script match
         or when allowing dynamic schema
         """
         maria: MariaDbHandler = info.context["request"].state.maria
-
         if description is None:
             description = choice(CONFIG.DEFAULT_JOB_DESCRIPTIONS)
 
@@ -142,7 +142,7 @@ class Mutation:
         if execute_timer is not None:
             try:
                 await maria.delete_cron_job(job_id=id_)
-                await maria.add_cron_job(job_id=id_, cron_time=execute_timer, enabled=True)
+                await maria.add_cron_job(job_id=id_, cron_time=execute_timer, enabled=enabled)
                 # TODO: register cron job
             except Exception as e:
                 return Message(
@@ -151,7 +151,23 @@ class Mutation:
                 )
 
         try:
-            return_schema = run_once_get_schema(script, json_data)
+            # script must be resolved first
+            script_check_result = (await maria.get_script_info(script, True))[0]
+            classedReturnSchema = run_once_get_schema(script_check_result.fs_path, json_data)
+            return_schema = None
+            if classedReturnSchema:
+                return_schema = []
+                for key, value in classedReturnSchema.items():
+                    if value == str:
+                        value = "str"
+                    elif value == int:
+                        value = "int"
+                    elif value == bool:
+                        value = "bool"
+                    else:
+                        value = "unknown"
+                    return_schema.append(Parameter(key=key, value=value))
+                
         except Exception as e:
             return Message(
                 message=f"Failed to get return schema: {str(e)}",
@@ -176,18 +192,29 @@ class Mutation:
             )
 
         params = [Parameter(key=key, value=value) for key, value in json_data.items()]
-        return_data = JobFullInfo(id=id_, parameters=params, expected_return_schema=return_schema, name=name, script=script, description=description, enabled=enabled, execute_timer=execute_timer, executed_last=executed_last, forbid_dynamic_schema=forbid_dynamic_schema)
+        return_data = JobFullInfoList(
+            jobs =[JobFullInfo(id=id_, parameters=params, expected_return_schema=return_schema, name=name, script=script, description=description, enabled=enabled, execute_timer=execute_timer, executed_last=executed_last, forbid_dynamic_schema=forbid_dynamic_schema)])
         return return_data
 
 @strawberry.type
 class Query:
     @strawberry.field
     @user_guard()
-    async def jobs_metadata(self, info: strawberry.Info, name_filter: str | None = None) -> jobs_metadata_result:
+    async def jobs_metadata(self, info: strawberry.Info, name_filter: str | None = None) -> job_full_info_list_result:
         maria: MariaDbHandler = info.context["request"].state.maria
         try:
-            data = await maria.get_job_metadata(name_filter)
-            return JobsMetaDataList(jobs=data)
+            data = await maria.get_all_job_info(name_filter)
+
+
+            jobs_list = []
+            for metadata, settings in zip(data["metadata"], data["settings"]):
+                parameters = settings if settings and len(settings) > 0 else None
+                job_info = JobFullInfo(
+                    **{**metadata.__dict__, "parameters": parameters}
+                )
+                jobs_list.append(job_info)
+
+            return JobFullInfoList(jobs=jobs_list)
         except Exception as e:
             return Message(
                 message=f"Failed to get job metadata: {str(e)}",

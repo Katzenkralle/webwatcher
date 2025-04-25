@@ -33,6 +33,10 @@ const jobMetaData = ref<
   expectedReturnSchema: {},
   parameters: {},
 })
+
+const serverJobParams = ref<Record<string, any>>({})
+const serverScript = ref<string>('')
+
 const nameStatus = computed((): { severity: string; summary: string } => {
   if (jobMetaData.value.name === '') {
     return { severity: 'warn', summary: 'Should be provided.' }
@@ -42,17 +46,27 @@ const nameStatus = computed((): { severity: string; summary: string } => {
 
 const availableScriptsOptions = ref<Record<string, string>[]>([])
 
-const newParameterKvLayout = async (scriptName: string): Promise<Record<string, [string, any]>> => {
-  const allScripts = await getAllScripts()
-  return allScripts[scriptName]
-    ? Object.keys(allScripts[scriptName].inputSchema).reduce(
+const newParameterKvLayout = async (scriptName: string, jobParams: Record<string, any>|undefined = undefined): Promise<Record<string, [string, any]>> => {
+  const script = (await getAllScripts())[scriptName]
+  const scriptParam = script
+    ? Object.keys(script.inputSchema).reduce(
         (acc, key) => {
-          acc[key] = [allScripts[scriptName].inputSchema[key], null]
+          acc[key] = [script.inputSchema[key], null]
           return acc
         },
         {} as Record<string, [string, any]>,
       )
     : {}
+  if (jobParams) {
+    Object.entries(jobParams).forEach(([key, value]) => {
+        if (scriptParam[key]) {
+          scriptParam[key][1] = value
+        } else {
+          scriptParam[key] = ['string', value]
+        }
+      })
+  }
+  return scriptParam
 }
 
 const getAvailableStrings = async () => {
@@ -71,7 +85,12 @@ const refreshJobMetaData = (id: string | string[] | undefined) => {
   }
   getJobMetaData(Number(id))
     .then(async (data: TableMetaData) => {
-      jobMetaData.value = { ...data, parameters: await newParameterKvLayout(data.script) }
+      serverJobParams.value = data.parameters ? JSON.parse(JSON.stringify(data.parameters)) : {}
+      serverScript.value = data.script
+       jobMetaData.value = { 
+        ...data,
+        parameters: await newParameterKvLayout(data.script, data.parameters),
+      }
       isEdit.value = true
     })
     .catch(() => {
@@ -141,7 +160,10 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
           @change="
             async (newVal) => {
               jobMetaData.forbidDynamicSchema = false
-              jobMetaData.parameters = await newParameterKvLayout(newVal.value)
+              const knownParams = serverScript === newVal.value
+                ? serverJobParams
+                : {}
+              jobMetaData.parameters = await newParameterKvLayout(newVal.value, knownParams)
             }
           "
         />

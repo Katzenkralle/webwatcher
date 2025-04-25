@@ -15,6 +15,7 @@ import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue'
 import SmallSeperator from '@/components/reusables/SmallSeperator.vue'
 
 import { onMounted, ref, computed } from 'vue'
+import { updateOrCreateJob } from '@/composable/api/JobAPI'
 import { useStatusMessage } from '@/composable/core/AppState'
 
 const suggestedItems = ref<TableMetaData[]>([])
@@ -89,7 +90,25 @@ const elementColor = computed((): string[] => {
                   <div class="flex flex-row items-center space-x-2">
                     <InputSwitch
                       :default-value="element.enabled"
-                      @change="useStatusMessage().newStatusMessage('Implement Me', 'warn')"
+                      @change="()=> {
+                        element.enabled = !element.enabled
+                        updateOrCreateJob(element).then(() => {
+                          useStatusMessage().newStatusMessage(
+                            `Job ${element.name} was ${
+                              element.enabled ? 'enabled' : 'disabled'
+                            } successfully!`,
+                            'success',
+                          )
+                        }).catch(() => {
+                          useStatusMessage().newStatusMessage(
+                            `Job ${element.name} could not be ${
+                              element.enabled ? 'enabled' : 'disabled'
+                            }!`,
+                            'danger',
+                          )
+                          element.enabled = !element.enabled
+                        })
+                      }"
                     />
                     <label v-if="element.enabled" class="text-success rounded-lg">Enabeld</label>
                     <label v-else class="text-error rounded-lg">Disabled</label>
