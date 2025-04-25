@@ -325,6 +325,12 @@ class MariaDbHandler:
                     ))
         return composed_jobs
 
+    async def get_cron_job(self, job_id: int) -> tuple[str, str, bool]:
+        self.__cursor.execute("SELECT cron_time,executed_last,enabled FROM cron_list WHERE job_id = ?", (job_id,))
+        db_corn = self.__cursor.fetchone()
+        if db_corn is None:
+            raise ValueError("No cron job found for this job")
+        return db_corn[0], db_corn[1], db_corn[2]
 
 
     async def get_sessions_for_user(self, username: str) -> list[DbSession]:
