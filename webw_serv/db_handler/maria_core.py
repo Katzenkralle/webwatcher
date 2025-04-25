@@ -311,18 +311,22 @@ class MariaDbHandler:
                 except Exception as e:
                     logger.warning(f"MARIA: Failed to parse job schema for {job[2]}: {e}")
 
-            job_metadata.append(
-                DbJobMetaData(
-                        id= job[1],
-                        name= job[2],
-                        script= job[0],
-                        description= job[3],
-                        enabled= db_corn[2],
-                        execute_timer= db_corn[0],
-                        executed_last= db_corn[1],
-                        forbid_dynamic_schema= not job[4],
-                        expected_return_schema= expected_return_schema,
-                    ))
+            try:
+                job_metadata.append(
+                    DbJobMetaData(
+                            id= job[1],
+                            name= job[2],
+                            script= job[0],
+                            description= job[3],
+                            enabled= db_corn[2],
+                            execute_timer= db_corn[0],
+                            executed_last= db_corn[1],
+                            forbid_dynamic_schema= not job[4],
+                            expected_return_schema= expected_return_schema,
+                        ))
+            except Exception as e:
+                logger.error(f"MARIA: Failed to parse job metadata for {job[1]}: {e}")
+                continue
             self.__cursor.execute("SELECT keyword,value FROM job_input_settings WHERE job_id = ?", (job[1],))
             job_settings.append(list(map(lambda x: DbParameter(x[0], x[1]), self.__cursor.fetchall())))
 
@@ -396,7 +400,7 @@ class MariaDbHandler:
     async def edit_job_list(self, script_name: str, job_name: str, description: str, dynamic_schema: bool, job_id: int, expected_schema: dict[str, str]) -> bool:
         self.__cursor.execute("SELECT expected_return_schema, dynamic_schema FROM job_list WHERE job_id = ?", (job_id,))
         [old_expected_layout, old_dynamic_schema] = self.__cursor.fetchone()
-        if not old_dynamic_schema:
+        if not old_dynamic_schema and old_expected_layout:
             new_keys = set(map(lambda x: x.key, expected_schema))
             if old_dynamic_schema != dynamic_schema:
                 raise ValueError("You cannot disallow static schema after job creation") 
