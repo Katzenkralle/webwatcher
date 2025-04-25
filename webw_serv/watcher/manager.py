@@ -4,7 +4,7 @@ import threading
 import sys
 import asyncio
 
-from typing_extensions import Dict, Any
+from typing_extensions import Dict, Any, Optional
 
 from .errors import ScriptException
 from webw_serv import CONFIG
@@ -43,12 +43,12 @@ class DbManager:
 
 
 class MainThread(threading.Thread):
-    def __init__(self, module_name, config: dict[str, Any] = {}):
+    def __init__(self, module_name, config: Optional[dict[str, Any]] = None):
         threading.Thread.__init__(self)
         self.module_name = CONFIG.MODULE_PREFIX + module_name
         self.result = None
         self.package = CONFIG.PACKAGE_NAME
-        self.config = config
+        self.config = config if config else {}
 
     def run(self):
         try:
