@@ -286,7 +286,7 @@ class MariaDbHandler:
             self.__cursor.execute("SELECT cron_time,executed_last,enabled FROM cron_list WHERE job_id = ?", (job[1],))    
             db_corn  = self.__cursor.fetchone()
 
-            expected_return_schema = None
+            expected_return_schema = []
             if job[5]:
                 try:
                     loaded_schema = json.loads(job[5])
