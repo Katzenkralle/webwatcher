@@ -4,10 +4,12 @@ import asyncio
 import random
 import string
 import os
+import glob
 import time
 import json
 from typing import Optional, TypedDict
 
+from webw_serv import CONFIG  
 from webw_serv.db_handler.misc import libroot, read_sql_blocks
 from .maria_schemas import DbUser, DbSession, DbUserDisplayConfig, DbScriptInfo, DbParameter, DbJobMetaData
 
@@ -136,11 +138,13 @@ class MariaDbHandler:
     async def remove_temp_scripts(self) -> bool:
         self.__cursor.execute("SELECT fs_path FROM script_list WHERE temporary = 1")
         paths = self.__cursor.fetchall()
+        paths = [*paths, *glob.glob(f"{CONFIG.SCRIPTS_TEMP_PATH}/*")]
         for path in paths:
             try:
-                os.remove(path[0])
+                os.remove(path)
             except Exception as e:
                 logger.warning(f"MARIA: Failed to delete script file {path[0]}: {e}")
+        
         self.__cursor.execute("DELETE FROM script_list WHERE temporary = 1")
         self.__conn.commit()
         return True
@@ -453,13 +457,8 @@ class MariaDbHandler:
         self.__conn.commit()
         return True
 
-    async def set_cron_timestamp(self, job_id: int, timestamp: datetime):
-        """
-        This function is not meant to be used  by the API, but by the scheduler
-        Thus it is not async
-        """
-
-        self.__cursor.execute("UPDATE cron_list SET executed_last = ? WHERE job_id = ?", (timestamp, job_id))
+    async def set_cron_timestamp(self, job_id: int, timestamp: float):
+        self.__cursor.execute("UPDATE cron_list SET executed_last = ? WHERE job_id = ?", (unix_to_mariadb_timestamp(timestamp), job_id))
         self.__conn.commit()
         return True
 

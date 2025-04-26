@@ -8,7 +8,7 @@ import {
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import AutoComplete from 'primevue/autocomplete'
-import InputSwitch from 'primevue/inputswitch'
+import InputSwitch from 'primevue/toggleswitch'
 import router from '@/router'
 import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue'
 
@@ -73,7 +73,7 @@ const elementColor = computed((): string[] => {
 
       <div class="flex flex-wrap justify-center">
         <template v-for="(element, index) in suggestedItems.sort((a, b) => a.id - b.id)" :key="element.id">
-          <Card class="w-83 min-h-95 m-4 border-2 border-info hover:border-app color-change-trans">
+          <Card class="w-83 min-h-120 m-4 border-2 border-info hover:border-app color-change-trans">
             <h3 class="underline">{{ element.name }}</h3>
             <template #header>
               <div class="h-30 content flex flex-col items-center">
@@ -91,9 +91,9 @@ const elementColor = computed((): string[] => {
             </template>
 
             <template #content>
-              <div class="flex flex-col w-full">
-                <div class="w-full flex flex-wrap justify-between items-end">
-                  <div class="flex flex-row items-center space-x-2">
+              <div class="flex flex-col w-full h-full">
+                <div class="w-full flex flex-wrap justify-between items-end space-y-2">
+                  <div class="flex flex-row items-center space-x-2 h-8 m-0">
                     <InputSwitch
                       :default-value="element.enabled"
                       @change="()=> {
@@ -119,12 +119,14 @@ const elementColor = computed((): string[] => {
                     <label v-if="element.enabled" class="text-success rounded-lg">Enabeld</label>
                     <label v-else class="text-error rounded-lg">Disabled</label>
                   </div>
-                  <a class="text-info">Last Run: {{ element.executedLast ?? 'never' }}</a>
+                  <div class="flex h-8">
+                    <a class="text-info my-auto">Last Run: {{ element.executedLast ?? 'never' }}</a>
+                  </div>
                 </div>
-                <p class="h-40 truncate bg-panel p-2 rounded-lg mt-3 whitespace-pre-wrap">
+                <p class="h-40 flex-grow truncate bg-panel p-2 rounded-lg my-2 whitespace-pre-wrap">
                   {{ element.description }}
                 </p>
-                <SmallSeperator class="card-seperator" />
+                <SmallSeperator style="margin-top:  auto;" class="card-seperator" />
               </div>
             </template>
             <template #footer>
@@ -168,6 +170,10 @@ const elementColor = computed((): string[] => {
 
 .card-seperator {
   @apply mx-auto mt-3;
+}
+
+:deep(.p-card-body), :deep(.p-card-content) {
+  @apply flex-grow!
 }
 
 .content {

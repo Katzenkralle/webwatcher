@@ -98,6 +98,9 @@ const TestSelectionVnode = defineComponent({
               class: 'number-condition',
               modelValue: valueTestX.const.value,
               size: 'small',
+              mode: 'decimal',
+              placeholder: 'Enter Constant',
+              minFractionDigits: 2,
               invalid: valueTestX.const.value === null,
               'onUpdate:modelValue': (value: number | null) => {
                 valueTestX.const.value = value

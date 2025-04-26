@@ -105,7 +105,7 @@ async def watch_runner(script_name: str, fs_path: str, config: dict, job_id: int
     context = script_thread.result
 
     result = {
-        "timestamp": datetime.datetime.now() if not unix_timestamps else int(datetime.datetime.now().timestamp()),
+        "timestamp": str(datetime.datetime.now()) if not unix_timestamps else int(datetime.datetime.now().timestamp()),
         "runtime": (end_time - start_time).total_seconds(),
         "error_msg": "",
         "script_failure": False,
@@ -123,11 +123,10 @@ async def watch_runner(script_name: str, fs_path: str, config: dict, job_id: int
         result["context"] = context
      # Establish database connections
     mongo, maria = establish_db_connections()
-    await maria.set_cron_timestamp(job_id=job_id, timestamp=datetime.datetime.now())
-
+    await maria.set_cron_timestamp(job_id=job_id, timestamp=datetime.datetime.now().timestamp())
     await mongo.create_or_modify_job_entry(job_id=job_id, entry_id=None, data=result)
     # Clean up
-    delete_script(script_name)
+    delete_script(base_module_name)
 
 def watch_runner_warper(*args, **kwargs):
     """

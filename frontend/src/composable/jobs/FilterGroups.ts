@@ -134,7 +134,7 @@ const evaluateType = (
     case 'boolean':
       return typeof entry[condition.col] === 'boolean'
     case 'empty':
-      return !(entry[condition.col] === null 
+      return (entry[condition.col] === null 
         || entry[condition.col] === undefined 
         || entry[condition.col] === '')
     default:

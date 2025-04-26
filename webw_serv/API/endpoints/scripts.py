@@ -41,9 +41,9 @@ class Mutation:
             return ScriptValidationResult(valid=False, available_parameters=[], supports_static_schema=False, validation_msg="Script upload is disabled")
         maria: MariaDbHandler = info.context["request"].state.maria
         uuid = uuid4().hex
-        path = CONFIG.SCRIPTS_TEMP_PATH + info.context["user"].username + uuid + CONFIG.SCRIPTS_TEMP_SUFFIX
+        path = CONFIG.SCRIPTS_TEMP_PATH + uuid + CONFIG.SCRIPTS_TEMP_SUFFIX
         b64_to_file(file, path)
-        module_path = CONFIG.MODULE_TEMP_PREFIX + info.context["user"].username + uuid + CONFIG.MODULE_TEMP_SUFFIX
+        module_path = CONFIG.MODULE_TEMP_PREFIX + uuid + CONFIG.MODULE_TEMP_SUFFIX
         script_check_result = script_checker(module_path)
         if isinstance(script_check_result, tuple) and name is not None:
             try:

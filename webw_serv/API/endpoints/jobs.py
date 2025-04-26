@@ -159,8 +159,6 @@ class Mutation:
                 status=MessageType.DANGER,
             )
 
-
-
         # We need to ron edit even on a new job, because we need to
         # save the expected schema
         try:
@@ -170,8 +168,6 @@ class Mutation:
                 message=f"Failed to edit job: {str(e)}",
                 status=MessageType.DANGER,
             )
-
-
 
         if execute_timer is not None:
             try:

@@ -184,7 +184,7 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
         <a v-if="serverJobState?.forbidDynamicSchema" class="text-warning">
           Warning: This job is using a static schema. Script selection will be limeted to scripts
           supporting static schemas.
-          A Error will be thrown if the selected script does not match the static schema.
+          A Error will be thrown if the selected script does not match the current static schema of the script.
         </a>
       </div>
 
@@ -239,6 +239,10 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
             <label :for="`param-${name}`">{{ type }}</label>
           </FloatLabel>
         </div>
+        <a v-if="isEdit && serverJobState?.forbidDynamicSchema" class="text-warning">
+          Warning: When a change in the parameters results in a change of the static schema,
+          an error will be thrown.
+        </a>
       </div>
 
       <div class="input-box">
