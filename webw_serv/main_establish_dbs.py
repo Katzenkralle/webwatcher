@@ -11,7 +11,7 @@ def establish_db_connections():
     maria = MariaDbHandler(Config().maria, Config().app)
 
     async def registerSession():
-        jobs = await maria.get_job_metadata()
+        jobs = await maria.get_all_job_info()
         await mongo.register_all_sql_jobs([job.id for job in jobs])
 
     try:
