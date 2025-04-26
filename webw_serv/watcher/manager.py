@@ -72,14 +72,13 @@ def delete_script(module_name):
             print(f"Module {module_name} is not in cache.")
 
 
-def watch_runner(script_name: str, fs_path: str, config: dict, job_id: int) -> Any:
+def watch_runner(script_name: str, fs_path: str, config: dict, job_id: int):
     """
     Run the script in a separate thread and return the result.
     :param script_name: Name of the script to run.
     :param fs_path: File system path of the script.
     :param config: Configuration for the script.
     :param job_id: Job ID for the script.
-    :return: Result of the script execution.
     """
     # Establish database connections
     mongo, maria = establish_db_connections()
@@ -98,8 +97,12 @@ def watch_runner(script_name: str, fs_path: str, config: dict, job_id: int) -> A
     script_thread.join()
     result = script_thread.result
 
+    if isinstance(result, Exception):
+        # Handle the exception
+        result = {
+            "error": str(result),
+        }
+
     mongo.create_or_modify_job_entry(job_id=job_id, entry_id=None, data=result)
     # Clean up
     delete_script(script_name)
-
-    return result
