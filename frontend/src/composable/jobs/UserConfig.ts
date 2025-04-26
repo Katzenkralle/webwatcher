@@ -2,7 +2,7 @@ import { computed, ref } from 'vue'
 import { queryGql, reportError } from '../api/QueryHandler'
 
 import { type Group as FilterGroup } from '@/composable/jobs/FilterGroups'
-import { type GraphDataSeries } from '@/composable/jobs/GraphDataHandler'
+import { type GraphDataSeries } from '@/composable/graphs/GraphDataHandler'
 
 export interface GraphConfig {
   name: string

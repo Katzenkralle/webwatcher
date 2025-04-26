@@ -18,7 +18,7 @@ import { ref, onMounted, onUnmounted, computed, type Reactive, watch } from 'vue
 import type { MenuItem } from 'primevue/menuitem'
 
 import EditEntryPopup from './EditEntryPopup.vue'
-import { type GraphInput } from '@/composable/jobs/GraphDataHandler'
+import { type GraphInput } from '@/composable/graphs/GraphDataHandler'
 import type { jobEntryInput } from '@/composable/api/JobAPI'
 
 const props = defineProps<{

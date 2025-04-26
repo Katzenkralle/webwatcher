@@ -14,7 +14,7 @@ import SmallSeperator from '../reusables/SmallSeperator.vue'
 import PopupImageSlideshow from '../reusables/PopupImageSlideshow.vue'
 import { computed, ref, type Reactive } from 'vue'
 
-import { useGraphConstructor, type GraphInput } from '@/composable/jobs/GraphDataHandler'
+import { useGraphConstructor, type GraphInput } from '@/composable/graphs/GraphDataHandler'
 import { useJobDataHandler } from '@/composable/jobs/JobDataHandler'
 import { jobUserDisplayConfig } from '@/composable/jobs/UserConfig'
 import { scrollToElement } from '@/composable/core/helpers'

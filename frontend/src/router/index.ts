@@ -14,7 +14,7 @@ const router = createRouter({
     {
       path: '/jobs',
       name: 'tables',
-      component: () => import('../views/jobs/TableOverview.vue'),
+      component: () => import('../views/jobs/JobOverview.vue'),
       meta: {
         requiresAuth: true,
       },
@@ -22,7 +22,7 @@ const router = createRouter({
     {
       path: '/jobs/table/:id(\\d+)',
       name: 'table',
-      component: () => import('@/views/jobs/TableView.vue'),
+      component: () => import('@/views/jobs/JobView.vue'),
       meta: {
         requiresAuth: true,
       },
@@ -54,7 +54,7 @@ const router = createRouter({
     {
       path: '/script/upload/:name([^/]+)?',
       name: 'scriptUpload',
-      component: () => import('@/views/scripts/UploadScript.vue'),
+      component: () => import('@/views/scripts/CreateScript.vue'),
       meta: {
         requiresAuth: true,
       },

@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import Chart from 'primevue/chart'
-import { type GraphDataSeries } from '@/composable/jobs/GraphDataHandler'
+import { type GraphDataSeries } from '@/composable/graphs/GraphDataHandler'
 import { computed, ref, watch, type ComputedRef } from 'vue'
 import { type flattendJobEnty, useJobDataHandler } from '@/composable/jobs/JobDataHandler'
 import { useStatusMessage } from '@/composable/core/AppState'
