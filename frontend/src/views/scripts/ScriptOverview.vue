@@ -41,11 +41,10 @@ const formattedGlobalScriptData = computed(() =>
       <h1>Script Overview</h1>
       <div class="subsection flex flex-col">
         <p>
-          Here, you can upload new Watcher-Scripts, which can then be converted into Jobs.
-          Additionally, the description and script of already uploaded ones may be edited.
+          Here, you can create new Watcher by uploading a valid script. additionally, you can edit or delete existing once.
           <br />
-          <a class="font-bold">Note:</a> The available parameters that the script receives, as well
-          as its name, must not be changed!
+          <a class="font-bold">Note:</a> The parameters a script recives when running them as a job
+          may be altered by replacing the script but once existing parameters must never be removed. 
         </p>
         <ScriptInterfaceDocs class="mx-auto mt-4" />
       </div>
@@ -70,6 +69,7 @@ const formattedGlobalScriptData = computed(() =>
         :global-filter-fields="['fsPath', 'name', 'lastModified']"
         :filters="scriptFilter"
         paginator
+        size="small"
         :rows="5"
         :rows-per-page-options="[5, 10, 20, 50]"
         table-style="min-width: 50rem"
@@ -87,7 +87,7 @@ const formattedGlobalScriptData = computed(() =>
         <Column field="lastModified" header="Last Modyfied"></Column>
         <Column header="Edit/Delete">
           <template #body="slotProps">
-            <div class="space-x-2">
+            <div class="flex flex-wrap lg:w-max gap-2">
               <router-link :to="`/script/upload/${encodeURIComponent(slotProps.data.name)}`">
                 <Button icon="pi pi-pencil" />
               </router-link>

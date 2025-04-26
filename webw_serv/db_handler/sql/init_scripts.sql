@@ -1,9 +1,9 @@
 
 INSERT INTO script_list (fs_path, name, description, temporary, supports_static_schema)
 VALUES (
-    './webw_serv_scripts_store/scripts/http_return.py',
-    'HTTP-Status Watcher',
-    'This watcher checks the HTTP status of a given URL and returns the status code.\nArguments:\n- url: The URL to check (string).',
+    './webw_serv_scripts_store/scripts/basic_http.py',
+    'Basic HTTP Watcher',
+    'This watcher checks the HTTP status of a given URL and returns the status code.\nArguments:\n- url: The URL to check (string).\n- include_body: Whether to include the body of the response (True|False).',
     FALSE,
     TRUE
 );
@@ -11,9 +11,15 @@ VALUES (
 
 INSERT INTO script_input_info (script_name, keyword, datatype)
 VALUES (
-    'HTTP-Status Watcher',
+    'Basic HTTP Watcher',
     'url',
     'str'
+);
+INSERT INTO script_input_info (script_name, keyword, datatype)
+VALUES (
+    'Basic HTTP Watcher',
+    'include_body',
+    'bool'
 );
 
 

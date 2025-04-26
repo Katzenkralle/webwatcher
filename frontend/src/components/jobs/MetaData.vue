@@ -44,7 +44,7 @@ const aData = defineComponent({
               Last Executed at: <aData>{{ props.metaData.executedLast }}</aData>
             </li>
             <li>
-              Execute Every: <aData>{{ props.metaData.executeTimer }}s</aData>
+              Corn: <aData>{{ props.metaData.executeTimer }}</aData>
             </li>
             <template v-if="props.metaData.forbidDynamicSchema">
               <li>
