@@ -15,6 +15,7 @@ from ..gql_types import job_entry_result, job_entrys_result, DEFAULT_JOB_ENTRY, 
 
 from webw_serv.db_handler.mongo_core import JobEntrySearchModeOptionsNewest, JobEntrySearchModeOptionsRange, JobEntrySearchModeOptionsSpecific
 from webw_serv.watcher.script_checker import run_once_get_schema
+from webw_serv.watcher.utils import enforce_types   
 from webw_serv.watcher.errors import ScriptFormatException, ScriptException
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -147,7 +148,8 @@ class Mutation:
         try:
             # script must be resolved first
             script_check_result = (await maria.get_script_info(script, True))
-            classedReturnSchema = run_once_get_schema(script_check_result[0].fs_path, json_data)
+            type_enforced_input = enforce_types(json_data, script_check_result[0].input_schema)   
+            classedReturnSchema = run_once_get_schema(script_check_result[0].fs_path, type_enforced_input)
             if isinstance(classedReturnSchema, Exception):
                 raise classedReturnSchema
             return_schema = None

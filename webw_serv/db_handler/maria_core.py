@@ -15,7 +15,7 @@ from .maria_schemas import DbUser, DbSession, DbUserDisplayConfig, DbScriptInfo,
 
 from webw_serv.utility import DEFAULT_LOGGER as logger
 from webw_serv.configurator import Config
-from webw_serv.watcher.mover import move_script_file
+from webw_serv.watcher.utils import move_script_file
 from datetime import datetime
 
 
@@ -26,14 +26,6 @@ def unix_to_mariadb_timestamp(unix_time: float|None =None) -> str:
 
 class MariaDbHandler:
     SQL_DIR = f"{libroot}/sql/"
-    EXPECTED_TABLES = [ 'cron_list',
-                        'job_input_settings',
-                        'job_display_user_config',
-                        'job_list',
-                        'script_input_info',
-                        'script_list',
-                        'web_users',
-                        'web_user_sessions']
 
     def __init__(self, maria_config, app_config):
         logger.debug("MARIA: Initializing MariaDbHandler")
@@ -44,9 +36,6 @@ class MariaDbHandler:
             maria_config.password,
             maria_config.database
         )
-        self.check_and_build_schema()
-    
-
 
     async def try_create_default_user(self, username, hash):
         if username and hash:
@@ -93,11 +82,11 @@ class MariaDbHandler:
     def check_and_build_schema(self):
         self.__cursor.execute("SHOW TABLES")
         existing_tables = list(map(lambda x: x[0], self.__cursor.fetchall()))
-        missing_tables = list(filter(lambda x: x not in existing_tables, self.EXPECTED_TABLES))
-        if len(missing_tables) == 0:
+        expected_blocks = list(read_sql_blocks(f"{self.SQL_DIR}/create.sql"))
+        if len(expected_blocks) <= len(existing_tables):
             return
-        logger.warning(f"MARIA: Missing tables: {missing_tables}, creating them")
-        for block in read_sql_blocks(f"{self.SQL_DIR}/create.sql"):
+        logger.warning(f"MARIA: Missing tables, creating them")
+        for block in expected_blocks:
                 self.__cursor.execute(block)
         if "script_list" not in existing_tables or "script_input_info" not in existing_tables:
             logger.warning("MARIA: Registering default script list")

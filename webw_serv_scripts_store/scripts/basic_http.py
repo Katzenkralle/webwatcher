@@ -20,7 +20,8 @@ class ScriptMain(Watcher):
             "http_version": response.raw.version,
             "encoding": response.encoding,
             "status_code": response.status_code,
-            "description": HTTPStatus(response.status_code).phrase if response.status_code in HTTPStatus._value2member_map_ else "Unknown Status"
+            "description": HTTPStatus(response.status_code).phrase 
+                if response.status_code in HTTPStatus._value2member_map_ else "Unknown Status"
         }
         if self.include_body:
             data["body"] = response.text

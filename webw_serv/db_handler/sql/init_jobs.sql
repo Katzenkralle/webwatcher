@@ -17,16 +17,30 @@ VALUES (
 INSERT INTO job_list (script_name, job_name, description, dynamic_schema)
 VALUES (
     'Weather Watcher',
-    'Weather Belin',
-    'This watcher retrieves the current weather in Berlin.',
+    'Weather Bremen',
+    'This watcher retrieves the current weather in Bremen.',
     TRUE
 );
 INSERT INTO cron_list (job_id, cron_time, executed_last, enabled)
 VALUES (
     2,
-    '0 */2 * * *',
+    '5,35 * * * *',
     0,
     TRUE
+);
+
+INSERT INTO job_input_settings (job_id, keyword, value)
+VALUES (
+    2,
+    'lon',
+    '53.44'   
+);
+
+INSERT INTO job_input_settings (job_id, keyword, value)
+VALUES (
+    2,
+    'lat',
+    '8.48'   
 );
 
 INSERT INTO job_list (script_name, job_name, description, dynamic_schema, expected_return_schema)

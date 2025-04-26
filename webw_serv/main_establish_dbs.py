@@ -13,6 +13,7 @@ def establish_db_connections():
     return [mongo, maria]
 
 async def setup(maria: MariaDbHandler, mongo: MongoDbHandler):
+    maria.check_and_build_schema()
     [jobs, _] = (await maria.get_all_job_info()).values()
     await mongo.register_all_sql_jobs([job.id for job in jobs])
 
