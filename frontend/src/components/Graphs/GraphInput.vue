@@ -100,7 +100,7 @@ const lastSavedTitle = ref<string | undefined>(undefined)
               }
             "
           />
-          <label>Amount of Rows</label>
+          <label>Amount of newest rows</label>
         </FloatLabel>
         <div>
           <Checkbox

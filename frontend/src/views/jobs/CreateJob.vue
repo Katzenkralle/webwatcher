@@ -195,7 +195,7 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
           id="forbidDynamicSchema" 
           v-model="jobMetaData.forbidDynamicSchema"
           :disabled="serverJobState?.forbidDynamicSchema" />
-          <a class="text-md text-info ml-2">Will I be restricted?</a>
+          <a :class="`text-md ml-2 ${serverJobState?.forbidDynamicSchema ? 'text-h-panel-h' : 'text-info'}`">Will I be restricted?</a>
         </div>
         <a v-if="jobMetaData.forbidDynamicSchema && !serverJobState?.forbidDynamicSchema " class="text-warning">
           Warning: Enableing this option will restrict all futher entries to the layout of the new script.

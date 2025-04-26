@@ -6,6 +6,7 @@ import { ref, computed, onMounted } from 'vue'
 
 import InputText from 'primevue/inputtext'
 import ScriptInterfaceDocs from '@/components/scripts/ScriptInterfaceDocs.vue'
+import FloatLabel from 'primevue/floatlabel'
 
 import SmallSeperator from '@/components/reusables/SmallSeperator.vue'
 import { globalTableMetaData } from '@/composable/jobs/JobMetaAPI'
@@ -57,11 +58,14 @@ const formattedGlobalScriptData = computed(() =>
         </router-link>
       </div>
 
-      <InputText
-        v-model="scriptFilter.global.value"
-        class="w-full mt-4"
-        placeholder="Search for a script"
-      />
+      <FloatLabel variant="in" class="mt-4">
+        <InputText
+          v-model="scriptFilter.global.value"
+          class="w-full"
+          size="small"
+        />
+        <label>Search for a script</label>
+      </FloatLabel>
 
       <DataTable
         class="w-full"

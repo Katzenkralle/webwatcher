@@ -10,7 +10,7 @@ import hljs from 'highlight.js/lib/core' // for syntax highliting
 import python from 'highlight.js/lib/languages/python'
 import '@catppuccin/highlightjs/css/catppuccin-frappe.css' // for syntax highliting
 import WatcherInterfacePy from '@/assets/static/watcher_interface.py?raw'
-import HttpReturnPy from '@/assets/static/http_return_example.py?raw'
+import HttpReturnPy from '@/assets/static/basic_http.py?raw'
 
 const props = defineProps<{
   class: string

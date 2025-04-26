@@ -10,6 +10,7 @@ import Card from 'primevue/card'
 import Button from 'primevue/button'
 import AutoComplete from 'primevue/autocomplete'
 import InputSwitch from 'primevue/toggleswitch'
+import FloatLabel from 'primevue/floatlabel'
 import router from '@/router'
 import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue'
 
@@ -63,13 +64,16 @@ const elementColor = computed((): string[] => {
         <h3 class="self-end">Added Jobs:</h3>
         <Button label="Create Job" icon="pi pi-plus" @click="() => router.push('/jobs/create/')" />
       </div>
-      <AutoComplete
-        :suggestions="Object.values(suggestedItems).map((entry) => entry.name)"
-        placeholder="Search for a table"
-        class="w-full"
-        input-class="w-full"
-        @update:model-value="(e) => recomputeSugestions(e)"
-      />
+      <FloatLabel variant="in">
+        <AutoComplete
+          :suggestions="Object.values(suggestedItems).map((entry) => entry.name)"
+          class="w-full"
+          size="small"
+          input-class="w-full"
+          @update:model-value="(e) => recomputeSugestions(e)"
+        />
+        <label>Search for a table</label>
+      </FloatLabel>
 
       <div class="flex flex-wrap justify-center">
         <template v-for="(element, index) in suggestedItems.sort((a, b) => a.id - b.id)" :key="element.id">
