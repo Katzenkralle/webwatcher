@@ -1,8 +1,8 @@
 from typing_extensions import Any, Type
 
 from webw_serv import Watcher
-import aiohttp
-from http.client import responses
+import requests
+from http import HTTPStatus
 
 class ScriptMain(Watcher):
     supports_static_schema = True
@@ -12,18 +12,21 @@ class ScriptMain(Watcher):
             raise ValueError("Config must contain a 'url' key")
         self.url = config["url"]
 
-    async def run(self):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(self.url) as response:
-                return {
-                    "url": self.url,
-                    "status_code": response.status,
-                    "description": responses.get(response.status, "Unknown Status")
-                }
+    def run(self):
+        response = requests.get(self.url)
+        return {
+            "url": self.url,
+            "http_version": response.raw.version,
+            "encoding": response.encoding,
+            "status_code": response.status_code,
+            "description": HTTPStatus(response.status_code).phrase if response.status_code in HTTPStatus._value2member_map_ else "Unknown Status"
+        }
 
     def get_return_schema(self) -> dict[str, Type[str | int | bool]] | None:
         return {
             "url": str,
+            "http_version": int,
+            "encoding": str,
             "status_code": int,
             "description": str
         }

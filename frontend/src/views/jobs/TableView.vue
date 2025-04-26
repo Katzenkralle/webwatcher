@@ -216,7 +216,7 @@ const graphCoardinator = ref()
             button-icon="pi pi-refresh"
             confirm-message="Are you sure you want to fetch all data? This may take a while."
             confirm-icon="pi pi-exclamation-triangle text-warning"
-            @confirm="() => jobHandler?.jobDataHandler.lazyFetch(0, true)"
+            @confirm="() => jobHandler?.jobDataHandler.lazyFetch(0, true, true)"
           />
 
           <SplitButton

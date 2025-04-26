@@ -43,15 +43,10 @@ class MariaDbHandler:
             maria_config.database
         )
         self.check_and_build_schema()
-        # We currently dont react to the return, so no need to await
-
-        try_create_user = self.__try_create_default_user(
-                app_config.default_admin_username,
-                app_config.default_admin_hash)
-        asyncio.run(try_create_user)
+    
 
 
-    async def __try_create_default_user(self, username, hash):
+    async def try_create_default_user(self, username, hash):
         if username and hash:
             if await self.get_user(username):
                 logger.warning("Default admin user already exists! Skipping creation..")
@@ -459,6 +454,11 @@ class MariaDbHandler:
         return True
 
     async def set_cron_timestamp(self, job_id: int, timestamp: datetime):
+        """
+        This function is not meant to be used  by the API, but by the scheduler
+        Thus it is not async
+        """
+
         self.__cursor.execute("UPDATE cron_list SET executed_last = ? WHERE job_id = ?", (timestamp, job_id))
         self.__conn.commit()
         return True

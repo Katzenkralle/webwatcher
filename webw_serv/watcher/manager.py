@@ -13,6 +13,8 @@ from .errors import ScriptException
 from webw_serv import CONFIG
 from webw_serv.main_establish_dbs import establish_db_connections
 
+from webw_serv.configurator.config import Config as Configurator
+
 
 # Proposed DB Managert for  to let Watchers add Rows to mongo db
 class DbManager:
@@ -72,7 +74,7 @@ def delete_script(module_name):
             print(f"Module {module_name} is not in cache.")
 
 
-def watch_runner(script_name: str, fs_path: str, config: dict, job_id: int):
+async def watch_runner(script_name: str, fs_path: str, config: dict, job_id: int):
     """
     Run the script in a separate thread and return the result.
     :param script_name: Name of the script to run.
@@ -80,29 +82,60 @@ def watch_runner(script_name: str, fs_path: str, config: dict, job_id: int):
     :param config: Configuration for the script.
     :param job_id: Job ID for the script.
     """
-    # Establish database connections
-    mongo, maria = establish_db_connections()
-    maria.set_cron_timestamp(job_id=job_id, timestamp=datetime.datetime.now())
+    unix_timestamps = Configurator().app.unixtime_for_timestamps
+    dont_pass_none = Configurator().app.dont_pass_none_to_script
 
-    match = re.search(r'/([^/]+?)\.py$', script_name)
+    match = re.search(CONFIG.PY_MODULE_FROM_UNIX_PATH, fs_path)
     if match:
         base_module_name = match.group(1)
     else:
         # Fall back to just using the provided module name
         base_module_name = script_name
 
+    if dont_pass_none:
+        # Remove None values from the config
+        config = {k: v for k, v in config.items() if v is not None}
+
     # Run the main thread
+    start_time = datetime.datetime.now()
     script_thread = ScriptThread(base_module_name, config)
     script_thread.start()
     script_thread.join()
-    result = script_thread.result
+    end_time = datetime.datetime.now()
+    context = script_thread.result
 
-    if isinstance(result, Exception):
+    result = {
+        "timestamp": datetime.datetime.now() if not unix_timestamps else int(datetime.datetime.now().timestamp()),
+        "runtime": (end_time - start_time).total_seconds(),
+        "error_msg": "",
+        "script_failure": False,
+    }
+
+    if not isinstance(context, dict):
         # Handle the exception
-        result = {
-            "error": str(result),
-        }
+        try:
+            result["error_msg"] = str(context)
+        except Exception as e:
+            result["error_msg"] = str("Error! An unexpected object was returned by the script!")
+        result["script_failure"] = True
+    else:
+        # Handle the result
+        result["context"] = context
+     # Establish database connections
+    mongo, maria = establish_db_connections()
+    await maria.set_cron_timestamp(job_id=job_id, timestamp=datetime.datetime.now())
 
-    mongo.create_or_modify_job_entry(job_id=job_id, entry_id=None, data=result)
+    await mongo.create_or_modify_job_entry(job_id=job_id, entry_id=None, data=result)
     # Clean up
     delete_script(script_name)
+
+def watch_runner_warper(*args, **kwargs):
+    """
+    Wrapper function to run the watch_runner function in an asyncio event loop.
+    :param args: Positional arguments for the watch_runner function.
+    :param kwargs: Keyword arguments for the watch_runner function.
+    """
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(watch_runner(*args, **kwargs))
+    loop.close()

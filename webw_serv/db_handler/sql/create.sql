@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS job_display_user_config
 CREATE TABLE IF NOT EXISTS cron_list
 (
     job_id        INT,
-    cron_time     VARCHAR(64)     NOT NULL,
+    cron_time     VARCHAR(256)     NOT NULL,
     executed_last TIMESTAMP,
     enabled       BOOLEAN NOT NULL DEFAULT TRUE,
     FOREIGN KEY (job_id) REFERENCES job_list (job_id) ON DELETE CASCADE ON UPDATE CASCADE,

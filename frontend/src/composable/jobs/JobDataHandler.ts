@@ -98,11 +98,10 @@ export const useJobDataHandler = (
   const allFetched = ref(false)
   const highlightSubstring = ref<Record<number, Record<string, HighlightSubstring[]>>>({})
 
-  const lazyFetch = async (startAt: number | undefined = undefined, all: boolean = false) => {
+  const lazyFetch = async (startAt: number | undefined = undefined, all: boolean = false, force: boolean = false) => {
     useLoadingAnimation().setState(true)
     startAt = startAt || Object.keys(localJobData.value).length
-    if (Object.keys(localJobData.value).length < startAt + fetchAmount.value && !allFetched.value) {
-      console.log('Lazy fetching data from ' + startAt + ' to ' + (startAt + fetchAmount.value))
+    if (force || Object.keys(localJobData.value).length < startAt + fetchAmount.value && !allFetched.value) {
       localJobData.value = {
         ...localJobData.value,
         ...(await apiHandler
@@ -238,7 +237,7 @@ export const useJobDataHandler = (
       .filter(
         (col) =>
           type === undefined ||
-          (type === 'type' && col.type.includes('|')) ||
+          (type === 'type') ||
           col.type.split('|').includes(type),
       )
       .map((col) => col.key)

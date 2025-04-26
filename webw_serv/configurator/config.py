@@ -11,6 +11,8 @@ class App:
     default_admin_username: str = ""
     default_admin_hash: str = ""
     disable_script_upload: bool = False   
+    unixtime_for_timestamps: bool = False
+    dont_pass_none_to_script: bool = True
 
 @dataclass
 class SqlConnection:

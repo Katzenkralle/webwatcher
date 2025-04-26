@@ -29,7 +29,7 @@ export interface StringCondition {
 export interface TypeCondition {
   type: 'type'
   col: string
-  testFor: 'string' | 'number' | 'boolean' | 'any'
+  testFor: 'string' | 'number' | 'boolean' | 'any' |  'empty'
 }
 
 export interface AbstractCondition {
@@ -133,6 +133,10 @@ const evaluateType = (
       return typeof entry[condition.col] === 'number'
     case 'boolean':
       return typeof entry[condition.col] === 'boolean'
+    case 'empty':
+      return !(entry[condition.col] === null 
+        || entry[condition.col] === undefined 
+        || entry[condition.col] === '')
     default:
       return [true, new Error('Invalid column in Condition')]
   }

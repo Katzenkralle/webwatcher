@@ -77,8 +77,7 @@ const getAvailableScripts = computed(() => {
   if (!allScripts.value) {
     return []
   }
-  jobMetaData.value.parameters = newParameterKvLayout(jobMetaData.value.script)
-  console.log(!isEdit.value, !serverJobState.value?.forbidDynamicSchema, allScripts.value)
+  jobMetaData.value.parameters = newParameterKvLayout(jobMetaData.value.script, serverJobState.value?.parameters)
   return Object.keys(allScripts.value)
     .filter((entry)  => !isEdit.value  
       || !serverJobState.value?.forbidDynamicSchema 
@@ -99,7 +98,7 @@ const refreshJobMetaData = (id: string | string[] | undefined) => {
 
        jobMetaData.value = { 
         ...data,
-        parameters: await newParameterKvLayout(data.script, data.parameters),
+        parameters: await newParameterKvLayout(data.script, serverJobState.value),
       }
       isEdit.value = true
     })
@@ -110,8 +109,8 @@ const refreshJobMetaData = (id: string | string[] | undefined) => {
 }
 
 onMounted(async() => {
-  refreshJobMetaData(router.currentRoute.value.params.id)
   allScripts.value = await getAllScripts()
+  refreshJobMetaData(router.currentRoute.value.params.id)
 })
 
 watch(ref(router.currentRoute.value.params.id), (newJobId) => {

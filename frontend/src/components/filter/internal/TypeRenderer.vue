@@ -33,7 +33,7 @@ watchEffect(() => {
       <Select
         :default-value="props.cond.testFor"
         size="small"
-        :options="['string', 'number', 'boolean', 'any']"
+        :options="['string', 'number', 'boolean', 'any', 'empty']"
         @value-change="(e) => (props.cond.testFor = e)"
       />
     </div>

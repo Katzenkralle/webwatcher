@@ -4,6 +4,7 @@ from typing_extensions import Type
 
 from webw_serv import Watcher, CONFIG
 from webw_serv.watcher.errors import ScriptFormatException, ScriptException
+from  webw_serv.CONFIG import PY_MODULE_FROM_UNIX_PATH
 import re
 
 def script_checker(module_name: str)  -> tuple[str, dict[str, Type[str | int | bool]] | None, bool] | ScriptFormatException | ScriptException:
@@ -36,7 +37,7 @@ def script_checker(module_name: str)  -> tuple[str, dict[str, Type[str | int | b
         return ScriptFormatException(e)
 
 def run_once_get_schema(module_name: str, config: dict[str, str]) ->  dict[str, Type[str | int | bool | float]] | ScriptFormatException | ScriptException:
-    match = re.search(r'/([^/]+?)\.py$', module_name)
+    match = re.search(PY_MODULE_FROM_UNIX_PATH, module_name)
     if match:
         base_module_name = match.group(1)
     else:

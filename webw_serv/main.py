@@ -5,17 +5,17 @@ from apscheduler.triggers.cron import CronTrigger
 from contextlib import asynccontextmanager
 
 from webw_serv import CONFIG
-from webw_serv.main_establish_dbs import establish_db_connections
+from webw_serv.main_establish_dbs import establish_db_connections, setup as setup_dbs
 from webw_serv.utility.oven_cleaner import cleanup_folder
 from webw_serv.API.core import get_routes
 from webw_serv.configurator import Config
-from webw_serv.watcher.manager import watch_runner
+from webw_serv.watcher.manager import watch_runner_warper
 
 from webw_serv.utility.custom_logging import CustomLogger
 from webw_serv.utility import DEFAULT_LOGGER
 
 
-from webw_serv.db_handler import MongoDbHandler, MariaDbHandler
+from webw_serv.db_handler import MariaDbHandler
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
@@ -28,15 +28,38 @@ def generate_scheduler():
         job_defaults={
             'coalesce': False,
             'max_instances': 1
-        }
+        },
+        
     )
     return scheduler
 
+async def load_cron_jobs(maria: MariaDbHandler, scheduler: BackgroundScheduler):
+    # Load cron jobs from the database
+    [jobs, _] = (await maria.get_all_job_info()).values()
+    for job in jobs:
+        if not job.enabled:
+            continue
+        script_name = job.script
+        script_info = (await maria.get_script_info(script_name))[0]
+        fs_path = script_info.fs_path
+        id_ = job.id
+        cron_time = job.execute_timer
+        config = await maria.get_job_input_settings(job_id=id_)
+        scheduler.add_job(
+            func=watch_runner_warper,
+            trigger=CronTrigger.from_crontab(cron_time),
+            args=(),
+            kwargs={"config": config, "fs_path": fs_path, "script_name": script_name, "job_id": id_},
+            id=str(id_),
+            name=job.name,
+            replace_existing=True
+        )
 
-def create_app():
+async def create_app():
     [mongo, maria] = establish_db_connections()
+    await setup_dbs(maria, mongo)
     scheduler = generate_scheduler()
-
+    await load_cron_jobs(maria, scheduler)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -79,38 +102,21 @@ def create_app():
 def self_cleanup_cycle():
     cleanup_folder(CONFIG.SCRIPTS_TEMP_PATH)
 
-def load_cron_jobs(maria: MariaDbHandler, scheduler: BackgroundScheduler):
-    # Load cron jobs from the database
-    jobs = asyncio.run(maria.get_job_metadata())
-    for job in jobs:
-        script_name = job.script
-        script_info = asyncio.run(maria.get_script_info(script_name))[0]
-        fs_path = script_info.fs_path
-        id_ = job.id
-        cron_time = job.execute_timer
-        config = asyncio.run(maria.get_job_input_settings(job_id=id_))
-        scheduler.add_job(
-            func=watch_runner,
-            trigger=CronTrigger.from_crontab(cron_time),
-            args=(),
-            kwargs={"config": config, "fs_path": fs_path, "script_name": script_name, "job_id": id_},
-            id=str(id_),
-            name=job.name,
-            replace_existing=True
-        )
 
-def main():
+async def main():
     CustomLogger.set_default_log_opperation(level=Config().app.log_level, dev=Config().app.dev_mode)
     self_cleanup_cycle()
-    app = create_app()
+    app = await create_app()
     DEFAULT_LOGGER.info(f"Starting server at {Config().app.host}:{Config().app.port}")
-    uvicorn.run(app,
+    connfig = uvicorn.Config(app,
                 host=Config().app.host,
                 port=Config().app.port,
                 lifespan="on",
                 log_level=Config().app.log_level,
                 log_config=CustomLogger.get_uvicorn_logging_config())
+    server = uvicorn.Server(config=connfig)
+    await server.serve()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

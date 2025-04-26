@@ -21,7 +21,7 @@ class ScriptMain(Watcher):
         self.options = config
 
     @staticmethod
-    async def __get_weather(query_url):
+    def get_weather(query_url):
         response = requests.get(query_url)
         if response.status_code == 200:
             return response.json()
@@ -29,7 +29,7 @@ class ScriptMain(Watcher):
             raise ValueError(f"Error fetching weather data: {response.status_code}")
 
     @staticmethod
-    def __base_quety_constructor(lat, lon, timezone, api_key):
+    def base_quety_constructor(lat, lon, timezone, api_key):
         timezone = timezone.replace(" ", "%20").replace("/", "%2F")
         query = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&timezone={timezone}"
         if api_key:
@@ -37,7 +37,7 @@ class ScriptMain(Watcher):
         return query
 
     @staticmethod 
-    def __get_dict_for_time(time, data):
+    def get_dict_for_time(time, data):
         valuable_data = {}
         if isinstance(data["time"], list):
             closest_index = data["time"].index(sorted(data["time"], key=lambda x: abs(x - time))[0])
@@ -52,7 +52,7 @@ class ScriptMain(Watcher):
 
 
 
-    async def run(self) -> dict[str, Any]:
+    def run(self) -> dict[str, Any]:
         options = self.options
         if not options:
             options = {} 

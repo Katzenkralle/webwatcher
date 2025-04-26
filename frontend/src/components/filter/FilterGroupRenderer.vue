@@ -196,14 +196,6 @@ const handleDragStart = (origin: AbstractCondition | Group) => {
                   IF{{ evaluatable.thisElement.value.negated ? ' NOT' : '' }}
                 </p>
               </div>
-              <div class="self-end">
-                <button
-                  class="cursor-pointer"
-                  @click="groupIterator.thisElement.value.evaluatable.splice(index, 1)"
-                >
-                  <i class="pi pi-arrows-v"></i>
-                </button>
-              </div>
             </div>
             <div
               :class="{

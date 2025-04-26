@@ -96,8 +96,8 @@ class JobFullInfo(JobMetaData, JobSettings):
 @strawberry.type
 class JobEntry:
     call_id: int
-    timestamp: int
-    runtime: int
+    timestamp: str
+    runtime: float
     error_msg: str
     script_failure: bool
     context: Optional[JsonStr] = None

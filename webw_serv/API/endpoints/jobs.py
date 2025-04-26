@@ -3,7 +3,7 @@ import json
 import strawberry
 
 from typing import Optional
-from dataclasses import asdict
+from dataclasses import asdict, fields
 from random import choice
 
 from webw_serv import CONFIG
@@ -11,11 +11,17 @@ from webw_serv.db_handler import MariaDbHandler, MongoDbHandler
 from ..endpoints.auth import admin_guard, user_guard
 from ..gql_base_types import JobEntyInput, Message, MessageType, JobEntry, PaginationInput, JsonStr, JobFullInfo, \
     Parameter
-from ..gql_types import job_entry_result, job_entrys_result, JobEntryList, JobsMetaDataList, JobFullInfoList, job_full_info_list_result, JobMetaData
+from ..gql_types import job_entry_result, job_entrys_result, DEFAULT_JOB_ENTRY, JobEntryList, JobsMetaDataList, JobFullInfoList, job_full_info_list_result, JobMetaData
 
 from webw_serv.db_handler.mongo_core import JobEntrySearchModeOptionsNewest, JobEntrySearchModeOptionsRange, JobEntrySearchModeOptionsSpecific
 from webw_serv.watcher.script_checker import run_once_get_schema
 from webw_serv.watcher.errors import ScriptFormatException, ScriptException
+
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.jobstores.base import JobLookupError
+from apscheduler.triggers.cron import CronTrigger
+from webw_serv.watcher.manager import watch_runner_warper
+
 
 @strawberry.type
 class Mutation:
@@ -108,6 +114,7 @@ class Mutation:
         """
         maria: MariaDbHandler = info.context["request"].state.maria
         mongo: MongoDbHandler = info.context["request"].state.mongo
+        scheduler: BackgroundScheduler = info.context["request"].state.scheduler
         if description is None:
             description = choice(CONFIG.DEFAULT_JOB_DESCRIPTIONS)
 
@@ -170,7 +177,22 @@ class Mutation:
             try:
                 await maria.delete_cron_job(job_id=id_)
                 await maria.add_cron_job(job_id=id_, cron_time=execute_timer, enabled=enabled)
-                # TODO: register cron job
+                if enabled:
+                    scheduler.add_job(
+                        func=watch_runner_warper,
+                        trigger=CronTrigger.from_crontab(execute_timer),
+                        args=(),
+                        kwargs={"config": json_data, "fs_path": script_check_result[0].fs_path, "script_name": script, "job_id": id_},
+                        id=str(id_),
+                        name=name,
+                        replace_existing=True
+                    )
+                else:
+                    try:
+                        scheduler.remove_job(str(id_))
+                    except JobLookupError:
+                        pass
+
             except Exception as e:
                 return Message(
                     message=f"Failed to add cron job: {str(e)}",
@@ -253,8 +275,20 @@ class Query:
                 options = None
             
             data = await mongo.get_job_entries(job_id, options)
+            jobs = []
+            for entry in data:
+                fileds = fields(JobEntry)
+                jobs.append(
+                    JobEntry(
+                        **{
+                            field.name: entry.get(field.name, DEFAULT_JOB_ENTRY.__getattribute__(field.name))
+                            for field in fileds
+                        }
+                    )
+                )
+                
             return JobEntryList(
-                jobs=[JobEntry(**entry) for entry in data],
+                jobs=jobs,
             )
 
         except Exception as e:

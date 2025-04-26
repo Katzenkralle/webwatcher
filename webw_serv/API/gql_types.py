@@ -29,6 +29,15 @@ job_full_info_list_result = Annotated[Union[JobFullInfoList, Message], strawberr
 class JobEntryList:
     jobs: list[JobEntry]
 
+DEFAULT_JOB_ENTRY = JobEntry(
+    call_id=-1,
+    timestamp=-1,
+    error_msg='',
+    script_failure=False,
+    context=None,
+    runtime=-1,
+)
+
 job_entrys_result = JobEntryList | Message
 job_entry_result = JobEntry | Message
 user_job_config_result = UserDisplayConfig | Message
