@@ -81,7 +81,7 @@ ${HttpReturnPy}
   >
     <template #default>
       <!-- eslint-disable-next-line vue/no-v-html -->
-      <div class="prose prose-lg dark:prose-invert" v-html="md.render(RENDERD_DOC)" />
+      <div class="prose prose-lg dark:prose-invert w-fit" v-html="md.render(RENDERD_DOC)" />
     </template>
   </PopupDialog>
   <Button

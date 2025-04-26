@@ -98,7 +98,7 @@ const graphCoardinator = ref()
       <div class="small-box">
         <div class="flex flex-wrap justify-between mb-2 mt-5">
           <NavButtons />
-          <h1 class="self-center">Job Data & Managment</h1>
+          <h1 class="self-center m-0! w-min sm:w-auto">Job Data & Managment</h1>
           <p></p>
         </div>
         <Accordion

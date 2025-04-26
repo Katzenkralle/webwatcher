@@ -177,7 +177,7 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
         />
         <div v-if="globalScriptData[jobMetaData.script]?.description">
           <a class="text-lg">Discription:</a>
-          <p class="bg-crust-d rounded-lg p-3 whitespace-pre">
+          <p class="bg-crust-d rounded-lg p-3 whitespace-pre-line">
             {{ globalScriptData[jobMetaData.script].description }}
           </p>
         </div>

@@ -137,9 +137,10 @@ const computedScriptParamTable = computed(() => {
 <template>
   <main>
     <div>
-      <div class="grid grid-cols-3 items-center">
+      <div class="flex flex-row items-center justify-between">
         <NavButtons />
         <h1>{{ currentScriptName ? 'Edit Script' : 'Upload Script' }}</h1>
+        <a></a>
       </div>
 
       <div class="input-box">

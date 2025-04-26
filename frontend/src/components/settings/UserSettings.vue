@@ -265,6 +265,7 @@ const getLoginUrl = (token: string, type: string) => {
             confirm-message="Are you sure you want to terminate this session?"
             confirm-icon="pi pi-exclamation-triangle"
             button-icon="pi pi-times"
+            button-class="p-button-danger flex-wrap"
             button-label="Terminate"
             @confirm="
               () =>

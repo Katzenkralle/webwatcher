@@ -162,7 +162,7 @@ watch(
                       <i class="pi pi-times-circle"></i>
                     </template>
                     <span class="flex flex-col">
-                      <p>{{ msg.msg }}</p>
+                      <p class="break-all">{{ msg.msg }}</p>
                       <p class="text-xs">{{ msg.time }}</p>
                     </span>
                   </Message>

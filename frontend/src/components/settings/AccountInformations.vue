@@ -30,7 +30,7 @@ onMounted(() => {
     </div>
     <div class="input-box">
       <label>Actions</label>
-      <div class="flex flex-wrap space-x-2">
+      <div class="flex flex-wrap space-x-2 [&>*]:mb-2">
         <Button
           label="Logout"
           icon="pi pi-sign-out"
