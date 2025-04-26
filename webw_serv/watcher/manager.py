@@ -1,5 +1,6 @@
 # Idea for watcher call
 import importlib
+import re
 import threading
 
 import datetime
@@ -84,9 +85,15 @@ def watch_runner(script_name: str, fs_path: str, config: dict, job_id: int) -> A
     mongo, maria = establish_db_connections()
     maria.set_cron_timestamp(job_id=job_id, timestamp=datetime.datetime.now())
 
+    match = re.search(r'/([^/]+?)\.py$', script_name)
+    if match:
+        base_module_name = match.group(1)
+    else:
+        # Fall back to just using the provided module name
+        base_module_name = script_name
+
     # Run the main thread
-    # TODO: fix script import
-    script_thread = ScriptThread(script_name, config)
+    script_thread = ScriptThread(base_module_name, config)
     script_thread.start()
     script_thread.join()
     result = script_thread.result
