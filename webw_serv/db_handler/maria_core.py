@@ -70,6 +70,8 @@ class MariaDbHandler:
                     password=password,
                     database=db if db != "" and None else None
                 )
+                cur = conn.cursor()
+                cur.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
                 break
             except mariadb.Error as e:
                 logger.warning(f"MARIA: Failed to connect to MariaDB: {e} - {retry} retries left")

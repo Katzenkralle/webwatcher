@@ -148,6 +148,8 @@ class Mutation:
             # script must be resolved first
             script_check_result = (await maria.get_script_info(script, True))
             classedReturnSchema = run_once_get_schema(script_check_result[0].fs_path, json_data)
+            if isinstance(classedReturnSchema, Exception):
+                raise classedReturnSchema
             return_schema = None
             if classedReturnSchema:
                 return_schema = []
