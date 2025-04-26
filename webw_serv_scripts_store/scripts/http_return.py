@@ -5,6 +5,8 @@ import aiohttp
 from http.client import responses
 
 class ScriptMain(Watcher):
+    supports_static_schema = True
+
     def __init__(self, config: dict[str, Any]):
         if "url" not in config:
             raise ValueError("Config must contain a 'url' key")
@@ -19,13 +21,13 @@ class ScriptMain(Watcher):
                     "description": responses.get(response.status, "Unknown Status")
                 }
 
-    @staticmethod
-    def get_config_schema() -> dict[str, Type[str | int | bool]] | None:
-        return {"url": str}
-
     def get_return_schema(self) -> dict[str, Type[str | int | bool]] | None:
         return {
             "url": str,
             "status_code": int,
             "description": str
         }
+
+    @staticmethod
+    def get_config_schema() -> dict[str, Type[str | int | bool]] | None:
+        return {"url": str}

@@ -26,7 +26,7 @@ const nameStatus = reactive<{
   severity: string
   summary: string
   blacklist: string[]
-}>({ field: '', severity: 'warn', summary: 'Should be provided.', blacklist: [] })
+}>({ field: '', severity: 'warn', summary: '', blacklist: [] })
 const discription = ref('')
 const fileStatus = ref<ScriptValidationResult & { severity: string; validationMsg: string }>({
   severity: 'warn',
@@ -107,15 +107,15 @@ const onSubmit = () => {
 }
 
 watch(nameStatus, (newVal) => {
-  if (newVal.field.length > 0) {
-    nameStatus.severity = 'success'
-    nameStatus.summary = ''
-  } else if (nameStatus.blacklist.includes(newVal.field)) {
+  if (nameStatus.blacklist.includes(newVal.field) && currentScriptName.value !== newVal.field) {
     nameStatus.severity = 'error'
     nameStatus.summary = 'Name not allowed or already in use.'
+  } else if (newVal.field.length > 0) {
+    nameStatus.severity = 'success'
+    nameStatus.summary = ''
   } else {
     nameStatus.severity = 'warn'
-    nameStatus.summary = 'Should be provided.'
+    nameStatus.summary = 'Must be provided.'
   }
 })
 

@@ -15,6 +15,7 @@ import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue'
 import SmallSeperator from '@/components/reusables/SmallSeperator.vue'
 
 import { onMounted, ref, computed } from 'vue'
+import { updateOrCreateJob } from '@/composable/api/JobAPI'
 import { useStatusMessage } from '@/composable/core/AppState'
 
 const suggestedItems = ref<TableMetaData[]>([])
@@ -71,7 +72,7 @@ const elementColor = computed((): string[] => {
       />
 
       <div class="flex flex-wrap justify-center">
-        <template v-for="(element, index) in suggestedItems" :key="element.id">
+        <template v-for="(element, index) in suggestedItems.sort((a, b) => a.id - b.id)" :key="element.id">
           <Card class="w-83 min-h-95 m-4 border-2 border-info hover:border-app color-change-trans">
             <h3 class="underline">{{ element.name }}</h3>
             <template #header>
@@ -83,20 +84,44 @@ const elementColor = computed((): string[] => {
               </div>
             </template>
 
+            <template #title>
+              <div class="flex flex-row items-center justify-center"> 
+                <h3 class="text-2xl">{{ element.name }}</h3>
+              </div>
+            </template>
+
             <template #content>
               <div class="flex flex-col w-full">
                 <div class="w-full flex flex-wrap justify-between items-end">
                   <div class="flex flex-row items-center space-x-2">
                     <InputSwitch
                       :default-value="element.enabled"
-                      @change="useStatusMessage().newStatusMessage('Implement Me', 'warn')"
+                      @change="()=> {
+                        element.enabled = !element.enabled
+                        updateOrCreateJob(element).then(() => {
+                          useStatusMessage().newStatusMessage(
+                            `Job ${element.name} was ${
+                              element.enabled ? 'enabled' : 'disabled'
+                            } successfully!`,
+                            'success',
+                          )
+                        }).catch(() => {
+                          useStatusMessage().newStatusMessage(
+                            `Job ${element.name} could not be ${
+                              element.enabled ? 'enabled' : 'disabled'
+                            }!`,
+                            'danger',
+                          )
+                          element.enabled = !element.enabled
+                        })
+                      }"
                     />
                     <label v-if="element.enabled" class="text-success rounded-lg">Enabeld</label>
                     <label v-else class="text-error rounded-lg">Disabled</label>
                   </div>
-                  <a class="text-info">Last Run: {{ element.executedLast }}</a>
+                  <a class="text-info">Last Run: {{ element.executedLast ?? 'never' }}</a>
                 </div>
-                <p class="h-40 truncate bg-panel p-2 rounded-lg mt-3 whitespace-normal">
+                <p class="h-40 truncate bg-panel p-2 rounded-lg mt-3 whitespace-pre-wrap">
                   {{ element.description }}
                 </p>
                 <SmallSeperator class="card-seperator" />

@@ -51,9 +51,22 @@ class MongoDbHandler:
         }
 
     def __establish_connection(self, mongo_con_string) -> pymongo.MongoClient:
-        client = pymongo.MongoClient(mongo_con_string)["webwatcher_data"]
-        return client
-    
+        retries = 3
+        while retries > 0:
+            try:
+                client = pymongo.MongoClient(mongo_con_string, connect=True)
+                client.server_info()  # Force connection on a request
+                break
+            except pymongo.errors.ServerSelectionTimeoutError as err:
+                logger.warning(f"MONGO: Connection failed: {err} - {retries} retries left...")
+                retries -= 1
+                client = None
+        if client is None:
+            logger.error("MONGO: Connection failed, exiting")
+            exit(1)
+        logger.info("MONGO: Connected to MongoDB")
+        return client["webwatcher_data"]
+
     def check_or_create_collection(self, collection_name):
         if collection_name not in self.__db.list_collection_names():
             logger.warning(f"MONGO: Collection {collection_name} not found, creating it")
@@ -94,7 +107,7 @@ class MongoDbHandler:
         logger.debug(f"MONGO: Creating job {job_id}")
         self.__db.job_regestry.insert_one({"job_id": job_id})
         return
-    
+
     async def delete_job(self, job_id: int):
         """
         Delete a job from the database
@@ -108,8 +121,8 @@ class MongoDbHandler:
         self.__db.job_data.delete_many({"job_id": job_id})
         self.__db.job_regestry.delete_one({"job_id": job_id})
         return
-        
-    
+
+
     async def create_or_modify_job_entry(self, job_id: int, entry_id:  int|None, data: dict) -> dict:
         """
         Note: We need to use a structure like this
@@ -162,7 +175,7 @@ class MongoDbHandler:
             "call_id": {"$in": entry_ids}
         })
         return result.deleted_count
-    
+
     async def __get_job_entries_specific(self, job_id: int, options: JobEntrySearchModeOptionsSpecific):
         # Get the job entries
         entrys = self.__db.job_data.find({"job_id": job_id, "call_id": {"$in": options.specific}}, {"_id": 0, "job_id": 0})
@@ -172,12 +185,12 @@ class MongoDbHandler:
         # Get the job entries
         entrys = self.__db.job_data.find({"job_id": job_id}, {"_id": 0, "job_id": 0}).skip(options.start).limit(options.n_elements)
         return list(entrys)
-        
+
     async def __get_job_entries_newest(self, job_id: int, options: JobEntrySearchModeOptionsNewest):
         # Get the job entries
         entrys = self.__db.job_data.find({"job_id": job_id}, {"_id": 0, "job_id": 0}).sort("call_id", pymongo.DESCENDING).limit(options.newest)
         return list(entrys)
-        
+
     async def get_job_entries(self, job_id: int, options: job_entry_search_mode_options = None) -> list[dict]:
         """
         Get job entries from the database.
@@ -185,20 +198,20 @@ class MongoDbHandler:
         # Check if the jobId exists
         if not await self.check_if_job_exists(job_id):
             raise ValueError(f"Job {job_id} not registered")
-            
+
         if options is None:
             # Return all entries if no options are provided
 
             data = list(self.__db.job_data.find({"job_id": job_id}, {"_id": 0, "job_id": 0}))
             return data
-            
+
         # Use the dispatcher to call the appropriate method
         option_type = type(options)
         if option_type in self.__search_dispatcher:
             return await self.__search_dispatcher[option_type](job_id, options)
         else:
             raise ValueError(f"Invalid options type: {option_type}")
-            
+
 
     def close(self):
         self.__db.client.close()

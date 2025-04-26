@@ -15,6 +15,8 @@ CURRENT_QUERY_PART = '&timeformat=unixtime&current=temperature_2m,relative_humid
 
 
 class ScriptMain(Watcher):
+    supports_static_schema = False
+
     def __init__(self, config: dict[str, Any]):
         self.options = config
 
@@ -83,6 +85,10 @@ class ScriptMain(Watcher):
                 data
             )
 
+    def get_return_schema(self) -> dict[str, str] | None:
+        return None
+
+
     @staticmethod
     def get_config_schema() -> dict[str, str] | None:
         """
@@ -107,8 +113,6 @@ class ScriptMain(Watcher):
         "past_range": "int"
     }
 
-    def get_return_schema(self) -> dict[str, str] | None:
-        return None
 
 
 

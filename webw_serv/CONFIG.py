@@ -1,5 +1,5 @@
 PACKAGE_NAME: str = 'webw_serv'  # Used for importing scripts
-MODULE_PREFIX: str = "scripts."
+MODULE_PREFIX: str = "webw_serv_scripts_store.scripts."
 SCRIPTS_PATH: str = "./webw_serv_scripts_store/scripts/"
 STORE_PATH: str = "./webw_serv_scripts_store/"
 MODULE_TEMP_PREFIX: str = "webw_serv_scripts_store.temp_scripts."

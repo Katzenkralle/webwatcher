@@ -63,6 +63,26 @@ function longestCommonSubstring(
   return matches
 }
 
+function convertPyTypes(type: string): string {
+  // Converts python types to js types
+  switch (type) {
+    case 'int':
+      return 'number'
+    case 'float':
+      return 'number'
+    case 'str':
+      return 'string'
+    case 'bool':
+      return 'boolean'
+    case 'list':
+      return 'array'
+    case 'dict':
+      return 'object'
+    default:
+      return type
+  }
+}
+
 export const useJobDataHandler = (
   jobId: number,
   fetchAmount: Ref<number> | ComputedRef<number>,
@@ -242,7 +262,7 @@ export const useJobDataHandler = (
         Object.entries(row.context ?? {}).map(([key, value]) => ({ key, type: typeof value })),
       ),
       ...(staticContextSchema.value
-        ? Object.entries(staticContextSchema.value).map(([key, value]) => ({ key, type: value }))
+        ? Object.entries(staticContextSchema.value).map(([key, value]) => ({ key, type: convertPyTypes(value) }))
         : []),
     ].reduce((acc: TableLayout[], curr: TableLayout) => {
       const existing = acc.find((layout) => layout.key === curr.key)

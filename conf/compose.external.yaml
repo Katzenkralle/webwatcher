@@ -1,0 +1,20 @@
+services:
+  mongo:
+    image: mongodb/mongodb-community-server:latest
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=root
+      - MONGODB_INITDB_ROOT_PASSWORD=webwatcher
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - internal
+
+  maria:
+    image: mariadb:latest
+    environment:
+      - MARIADB_USER=root
+      - MARIADB_ROOT_PASSWORD=webwatcher
+    volumes:
+      - maria_data:/var/lib/mysql
+    networks:
+      - internal

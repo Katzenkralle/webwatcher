@@ -6,7 +6,7 @@ import string
 import os
 import time
 import json
-from typing import Optional
+from typing import Optional, TypedDict
 
 from webw_serv.db_handler.misc import libroot, read_sql_blocks
 from .maria_schemas import DbUser, DbSession, DbUserDisplayConfig, DbScriptInfo, DbParameter, DbJobMetaData
@@ -20,7 +20,7 @@ from datetime import datetime
 def unix_to_mariadb_timestamp(unix_time: float|None =None) -> str:
     if unix_time is None:
         unix_time = time.time()
-    return datetime.fromtimestamp(unix_time).strftime('%Y-%m-%d %H:%M:%S') 
+    return datetime.fromtimestamp(unix_time).strftime('%Y-%m-%d %H:%M:%S')
 
 class MariaDbHandler:
     SQL_DIR = f"{libroot}/sql/"
@@ -44,13 +44,13 @@ class MariaDbHandler:
         )
         self.check_and_build_schema()
         # We currently dont react to the return, so no need to await
-        
+
         try_create_user = self.__try_create_default_user(
                 app_config.default_admin_username,
                 app_config.default_admin_hash)
         asyncio.run(try_create_user)
-        
-    
+
+
     async def __try_create_default_user(self, username, hash):
         if username and hash:
             if await self.get_user(username):
@@ -63,19 +63,34 @@ class MariaDbHandler:
         return None
 
     def __establish_connection(self, host, port, user, password, db):
-        conn = mariadb.connect(
-            host=host,
-            user=user,
-            port=port,
-            password=password,
-            database=db if db != "" and None else None
-        )
+        retry = 3
+        while retry > 0:
+            try:
+                conn = mariadb.connect(
+                    host=host,
+                    user=user,
+                    port=port,
+                    password=password,
+                    database=db if db != "" and None else None
+                )
+                break
+            except mariadb.Error as e:
+                logger.warning(f"MARIA: Failed to connect to MariaDB: {e} - {retry} retries left")
+                time.sleep(30)
+                retry -= 1
+                conn = None
+        if conn is None:
+            logger.error("MARIA: Failed to connect to MariaDB, exiting")
+            exit(1)
+
+        conn.auto_reconnect = True
         cursor = conn.cursor()
-        if not conn.database: 
+        if not conn.database:
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db}")
             cursor.execute(f"USE {db}")
+        logger.info("MARIA: Connected to MariaDB")
         return [conn, cursor]
-    
+
     def check_and_build_schema(self):
         self.__cursor.execute("SHOW TABLES")
         existing_tables = list(map(lambda x: x[0], self.__cursor.fetchall()))
@@ -92,14 +107,14 @@ class MariaDbHandler:
         if "job_list" not in existing_tables:
             logger.warning("MARIA: Registering default job list")
             for block in read_sql_blocks(f"{self.SQL_DIR}/init_jobs.sql"):
-                self.__cursor.execute(block)    
+                self.__cursor.execute(block)
         self.__conn.commit()
-    
+
     async def create_user(self, username: str, password: str, is_admin: bool):
         self.__cursor.execute("INSERT INTO web_users (username, password, is_admin) VALUES (?, ?, ?)", (username, password, is_admin))
         self.__conn.commit()
         return DbUser(username, password, is_admin)
-    
+
     async def delete_user(self, username: str) -> bool:
         self.__cursor.execute("DELETE FROM web_users WHERE username = ?", (username,))
         self.__conn.commit()
@@ -122,7 +137,7 @@ class MariaDbHandler:
             return DbUser(*user)
         except Exception as e:
             return None
-    
+
     async def remove_temp_scripts(self) -> bool:
         self.__cursor.execute("SELECT fs_path FROM script_list WHERE temporary = 1")
         paths = self.__cursor.fetchall()
@@ -151,7 +166,7 @@ class MariaDbHandler:
             result = self.__cursor.fetchone()
             if result:
                 registered_scripts.append(result)
-        
+
         found_scripts: list[DbScriptInfo] = []
         for script in registered_scripts:
             self.__cursor.execute("SELECT keyword,datatype FROM script_input_info WHERE script_name = ?", (script[1],))
@@ -162,23 +177,18 @@ class MariaDbHandler:
             found_scripts.append(
                 DbScriptInfo(script[0], script[1], script[2], script[3], input_schema, script[4]))
         return found_scripts
-          
+
 
     async def add_temp_script(self, fs_path: str, name: str, expected_input: dict, supports_static_schema: bool) -> bool:
         self.__cursor.execute("""INSERT INTO script_list (fs_path, name, description, supports_static_schema, temporary) 
-        VALUES (?, ?, ?, ?, ?)""",
-                              (fs_path, name, None, supports_static_schema, True))
-        
+            VALUES (?, ?, ?, ?, ?)""",
+            (fs_path, name, None, supports_static_schema, True))
+
         for key, value in expected_input.items():
-            if value == str:
-                value = "str"
-            elif value == int:
-                value = "int"
-            elif value == bool:
-                value = "bool"
+            strType = getattr(value, "__name__", None)
             self.__cursor.execute("""INSERT INTO script_input_info (script_name, keyword, datatype) 
             VALUES (?, ?, ?)""",
-                (name, key, value))
+                (name, key, strType))
 
         self.__conn.commit()
         return True
@@ -195,7 +205,7 @@ class MariaDbHandler:
             os.remove(path[0])
         except Exception as e:
             logger.warning(f"MARIA: Failed to delete script file {path[0]}: {e}")
-        
+
         self.__cursor.execute("""DELETE FROM script_list WHERE name = ?""", (name,))
         self.__conn.commit()
         return True
@@ -223,8 +233,8 @@ class MariaDbHandler:
             # Replace script
             self.__cursor.execute("DELETE FROM script_list WHERE name = ?", (id_,))
             try:
-                os.remove(existing_script[0])   
-            except Exception as e:  
+                os.remove(existing_script[0])
+            except Exception as e:
                 logger.warning(f"MARIA: Failed to delete script file {existing_script[0]}: {e}")
             id_ = name
 
@@ -270,7 +280,11 @@ class MariaDbHandler:
         self.__conn.commit()
         return new_session
 
-    async def get_job_metadata(self, job_id: int|None = None) -> list[DbJobMetaData]:
+    class JobInfoReturn(TypedDict):
+        metadata: list[list[DbJobMetaData]]
+        settings: list[list]
+
+    async def get_all_job_info(self, job_id: int|None = None) -> JobInfoReturn:
         jobs = []
         if job_id is None:
             self.__cursor.execute("SELECT * FROM job_list")
@@ -280,10 +294,11 @@ class MariaDbHandler:
             job = self.__cursor.fetchone()
             if job:
                 jobs.append(job)
-        
-        composed_jobs = []
+
+        job_metadata = []
+        job_settings = []
         for job in jobs:
-            self.__cursor.execute("SELECT cron_time,executed_last,enabled FROM cron_list WHERE job_id = ?", (job[1],))    
+            self.__cursor.execute("SELECT cron_time,executed_last,enabled FROM cron_list WHERE job_id = ?", (job[1],))
             db_corn  = self.__cursor.fetchone()
 
             expected_return_schema = []
@@ -296,19 +311,26 @@ class MariaDbHandler:
                 except Exception as e:
                     logger.warning(f"MARIA: Failed to parse job schema for {job[2]}: {e}")
 
-            composed_jobs.append(
-                DbJobMetaData(
-                        id= job[1],
-                        name= job[2],
-                        script= job[0],
-                        description= job[3],
-                        enabled= db_corn[2],
-                        execute_timer= db_corn[0],
-                        executed_last= db_corn[1],
-                        forbid_dynamic_schema= not job[4],
-                        expected_return_schema= expected_return_schema,
-                    ))
-        return composed_jobs
+            try:
+                job_metadata.append(
+                    DbJobMetaData(
+                            id= job[1],
+                            name= job[2],
+                            script= job[0],
+                            description= job[3],
+                            enabled= db_corn[2],
+                            execute_timer= db_corn[0],
+                            executed_last= db_corn[1],
+                            forbid_dynamic_schema= not job[4],
+                            expected_return_schema= expected_return_schema,
+                        ))
+            except Exception as e:
+                logger.error(f"MARIA: Failed to parse job metadata for {job[1]}: {e}")
+                continue
+            self.__cursor.execute("SELECT keyword,value FROM job_input_settings WHERE job_id = ?", (job[1],))
+            job_settings.append(list(map(lambda x: DbParameter(x[0], x[1]), self.__cursor.fetchall())))
+
+        return {"metadata": job_metadata, "settings": job_settings}
 
     async def get_cron_job(self, job_id: int) -> tuple[str, str, bool]:
         self.__cursor.execute("SELECT cron_time,executed_last,enabled FROM cron_list WHERE job_id = ?", (job_id,))
@@ -375,21 +397,27 @@ class MariaDbHandler:
         self.__conn.commit()
         return self.__cursor.lastrowid
 
-    async def edit_job_list(self, script_name: str, job_name: str, description: str, dynamic_schema: bool, job_id: int) -> bool:
-        if not dynamic_schema:
-            self.__cursor.execute("SELECT script_name FROM job_list WHERE id = ?", (job_id,))
-            old_script_name = self.__cursor.fetchone()
-            self.__cursor.execute("SELECT expected_return_schema FROM script_list WHERE name = ?", (old_script_name[0],))
-            old_return_schema = self.__cursor.fetchone()
+    async def edit_job_list(self, script_name: str, job_name: str, description: str, dynamic_schema: bool, job_id: int, expected_schema: dict[str, str]) -> bool:
+        self.__cursor.execute("SELECT expected_return_schema, dynamic_schema FROM job_list WHERE job_id = ?", (job_id,))
+        [old_expected_layout, old_dynamic_schema] = self.__cursor.fetchone()
+        if not old_dynamic_schema and old_expected_layout:
+            new_keys = set(map(lambda x: x.key, expected_schema))
+            if old_dynamic_schema != dynamic_schema:
+                raise ValueError("You cannot disallow static schema after job creation")
 
-            self.__cursor.execute("SELECT expected_return_schema FROM script_list WHERE name = ?", (script_name,))
-            return_schema = self.__cursor.fetchone()
-
-            if not old_return_schema == return_schema:
+            old_return_schema = json.loads(old_expected_layout)
+            if new_keys != set(old_return_schema.keys()):
                 raise ValueError("The expected return schema of the new and old script do not match")
 
-        self.__cursor.execute("UPDATE job_list SET script_name = ?, job_name = ?, description = ?, dynamic_schema = ? WHERE id = ?",
-                              (script_name, job_name, description, dynamic_schema, job_id))
+        if expected_schema:
+            try:
+                expected_schema = json.dumps({entry.key: entry.value for entry in expected_schema})
+            except Exception as e:
+                logger.warning(f"MARIA: Failed to parse job schema for {job_name}: {e}")
+                expected_schema = None
+
+        self.__cursor.execute("UPDATE job_list SET script_name = ?, job_name = ?, description = ?, dynamic_schema = ?, expected_return_schema = ? WHERE job_id = ?",
+                              (script_name, job_name, description, dynamic_schema, expected_schema, job_id))
         self.__conn.commit()
         return True
 
