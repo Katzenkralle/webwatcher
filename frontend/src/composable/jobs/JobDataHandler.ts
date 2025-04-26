@@ -1,17 +1,21 @@
 import { ref, computed, type Ref, type ComputedRef } from 'vue'
 import {
   useJobData,
-  type jobEnty,
-  type TableLayout,
-  type jobEntryInput,
   DUMMY_JOB_ENTRY,
-  type TableMetaData,
+  type jobEnty,
+  type jobEntryInput,
+} from '@/composable/jobs/JobAPI'
+
+import {
   getJobMetaData,
-} from '../api/JobAPI'
+  type TableLayout,
+  type JobMeta
+} from '@/composable/jobs/JobMetaAPI'
+
 import { reportError } from '@/composable/api/QueryHandler'
-import type { IterationContext } from './FilterGroups'
+import type { IterationContext } from '../filter/FilterGroups'
 import { useLoadingAnimation, useStatusMessage } from '../core/AppState'
-import { useFilterIterationContext } from '@/composable/jobs/FilterGroups'
+import { useFilterIterationContext } from '@/composable/filter/FilterGroups'
 
 /*
 global: refers to local data accessible from all components
@@ -439,7 +443,7 @@ export const useJobUiCreator = (jobId: number) => {
   const mainDataTable = ref<any>(null)
   const filterContext = useFilterIterationContext()
 
-  const metaData = ref<TableMetaData | undefined>(undefined)
+  const metaData = ref<JobMeta | undefined>(undefined)
 
   getJobMetaData(jobId).then((data) => {
     metaData.value = data

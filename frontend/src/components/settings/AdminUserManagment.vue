@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { allUsers, deleteUser, getUser, createUser, type User } from '@/composable/api/User'
+import { allUsers, deleteUser, getUser, createUser, type User } from '@/composable/core/User'
 import { onMounted, ref } from 'vue'
 
 import Button from 'primevue/button'

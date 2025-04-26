@@ -12,7 +12,7 @@ import {
   onUnmounted,
 } from 'vue'
 import { useLoadingAnimation } from '@/composable/core/AppState'
-import { getAllJobMetaData, globalTableMetaData, type TableMetaData } from '@/composable/api/JobAPI'
+import { getAllJobMetaData, globalTableMetaData, type JobMeta } from '@/composable/jobs/JobMetaAPI'
 import router from '@/router'
 import NotificationCenter from './NotificationCenter.vue'
 
@@ -59,7 +59,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateMobileState)
 })
 
-const tableMetaData = ref<TableMetaData[]>([])
+const tableMetaData = ref<JobMeta[]>([])
 
 const extendedOptions = computed((): BarItem[] => {
   const isSlimMode = router.currentRoute.value.path === '/login'

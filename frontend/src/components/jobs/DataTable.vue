@@ -19,7 +19,7 @@ import type { MenuItem } from 'primevue/menuitem'
 
 import EditEntryPopup from './EditEntryPopup.vue'
 import { type GraphInput } from '@/composable/graphs/GraphDataHandler'
-import type { jobEntryInput } from '@/composable/api/JobAPI'
+import type { jobEntryInput } from '@/composable/jobs/JobAPI'
 
 const props = defineProps<{
   jobHandler: ReturnType<typeof useJobUiCreator>

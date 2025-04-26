@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { FloatLabel, InputGroup, InputText, Button, MultiSelect, Popover, Checkbox } from 'primevue'
 import SmallSeperator from '../reusables/SmallSeperator.vue'
 
-import { type TableLayout } from '@/composable/api/JobAPI'
+import { type TableLayout } from '@/composable/jobs/JobMetaAPI'
 import {} from 'vue'
 
 const emit = defineEmits(['update:key', 'update:ignoreColumns', 'update:caseInsensitive'])

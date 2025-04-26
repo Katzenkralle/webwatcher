@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DataTable, Column, Button } from 'primevue'
-import { getAllScripts, globalScriptData, deleteScript } from '@/composable/api/ScriptAPI'
+import { getAllScripts, globalScriptData, deleteScript } from '@/composable/scripts/ScriptAPI'
 
 import { ref, computed, onMounted } from 'vue'
 
@@ -8,10 +8,10 @@ import InputText from 'primevue/inputtext'
 import ScriptInterfaceDocs from '@/components/scripts/ScriptInterfaceDocs.vue'
 
 import SmallSeperator from '@/components/reusables/SmallSeperator.vue'
-import { globalTableMetaData } from '@/composable/api/JobAPI'
+import { globalTableMetaData } from '@/composable/jobs/JobMetaAPI'
 import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue'
 import { FilterMatchMode } from '@primevue/core/api'
-import { getUser } from '@/composable/api/User'
+import { getUser } from '@/composable/core/User'
 
 const scriptFilter = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },

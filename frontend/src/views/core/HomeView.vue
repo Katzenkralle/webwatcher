@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { getAllJobMetaData } from '@/composable/api/JobAPI'
-import { getAllScripts } from '@/composable/api/ScriptAPI'
+import { getAllJobMetaData } from '@/composable/jobs/JobMetaAPI'
+import { getAllScripts } from '@/composable/scripts/ScriptAPI'
 import Card from 'primevue/card'
 
 import SmallSeperator from '@/components/reusables/SmallSeperator.vue'

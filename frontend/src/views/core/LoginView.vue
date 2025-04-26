@@ -7,7 +7,7 @@ import Button from 'primevue/button'
 import InlineMessage from 'primevue/inlinemessage'
 
 import { useLoadingAnimation, useQueryRouting } from '@/composable/core/AppState'
-import { getUser } from '@/composable/api/User'
+import { getUser } from '@/composable/core/User'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()

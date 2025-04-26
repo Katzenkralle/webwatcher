@@ -4,9 +4,9 @@ import { onMounted, ref } from 'vue'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import ConfirmableButton from '../reusables/ConfirmableButton.vue'
-import { getUser } from '@/composable/api/User'
+import { getUser } from '@/composable/core/User'
 import { logout } from '@/composable/api/Auth'
-import { removeTemporaryScripts } from '@/composable/api/ScriptAPI'
+import { removeTemporaryScripts } from '@/composable/scripts/ScriptAPI'
 
 const user = ref()
 

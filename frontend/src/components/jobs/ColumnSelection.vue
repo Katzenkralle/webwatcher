@@ -3,7 +3,7 @@ import { computed } from 'vue'
 
 import { FloatLabel, MultiSelect, ToggleSwitch } from 'primevue'
 import SmallSeperator from '../reusables/SmallSeperator.vue'
-import { type TableLayout } from '@/composable/api/JobAPI'
+import { type TableLayout } from '@/composable/jobs/JobMetaAPI'
 
 const emit = defineEmits(['update:hiddenColumns'])
 const props = defineProps<{

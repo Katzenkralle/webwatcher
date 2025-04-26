@@ -1,5 +1,5 @@
 import { ref, computed, type Ref, type ComputedRef } from 'vue'
-import { type flattendJobEnty } from './JobDataHandler'
+import { type flattendJobEnty } from '../jobs/JobDataHandler'
 
 export interface BooleanCondition {
   type: 'boolean'

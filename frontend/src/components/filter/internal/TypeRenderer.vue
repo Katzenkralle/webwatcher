@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { type TypeCondition } from '@/composable/jobs/FilterGroups'
+import { type TypeCondition } from '@/composable/filter/FilterGroups'
 import Select from 'primevue/select'
 import { watchEffect } from 'vue'
 

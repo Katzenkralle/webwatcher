@@ -1,6 +1,6 @@
 import { queryGql, reportError, type GQLResponse } from '@/composable/api/QueryHandler'
 import { ref } from 'vue'
-import { useLoadingAnimation, useStatusMessage } from '../core/AppState'
+import { useLoadingAnimation, useStatusMessage } from './AppState'
 
 export interface User {
   username: string

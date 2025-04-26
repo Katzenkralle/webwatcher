@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import type { IterationContext, AbstractCondition, Group } from '@/composable/jobs/FilterGroups'
+import type { IterationContext, AbstractCondition, Group } from '@/composable/filter/FilterGroups'
 import BooleanRenderer from './internal/BooleanRenderer.vue'
 import NumberRenderer from './internal/NumberRenderer.vue'
 import StringRenderer from './internal/StringRenderer.vue'

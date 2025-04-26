@@ -4,9 +4,9 @@ import router from '@/router'
 
 import { CronPrime } from '@vue-js-cron/prime'
 
-import { getJobMetaData, updateOrCreateJob, type TableMetaData } from '@/composable/api/JobAPI'
+import { getAllScripts, globalScriptData,type ScriptMeta } from '@/composable/scripts/ScriptAPI'
+import { getJobMetaData, updateOrCreateJob, type JobMeta } from '@/composable/jobs/JobMetaAPI'
 import { useStatusMessage } from '@/composable/core/AppState'
-import { getAllScripts, globalScriptData,type ScriptMeta } from '@/composable/api/ScriptAPI'
 
 import InlineMessage from 'primevue/inlinemessage'
 import Select from 'primevue/select'
@@ -20,7 +20,7 @@ import NavButtons from '@/components/reusables/NavButtons.vue'
 
 const isEdit = ref<boolean>(false)
 const jobMetaData = ref<
-  Omit<TableMetaData, 'parameters'> & { parameters: Record<string, [string, any]> }
+  Omit<JobMeta, 'parameters'> & { parameters: Record<string, [string, any]> }
 >({
   id: -1,
   name: '',
@@ -34,7 +34,7 @@ const jobMetaData = ref<
   parameters: {},
 })
 
-const serverJobState = ref<TableMetaData|undefined>()
+const serverJobState = ref<JobMeta|undefined>()
 
 
 const nameStatus = computed((): { severity: string; summary: string } => {
@@ -93,7 +93,7 @@ const refreshJobMetaData = (id: string | string[] | undefined) => {
     return
   }
   getJobMetaData(Number(id))
-    .then(async (data: TableMetaData) => {
+    .then(async (data: JobMeta) => {
       serverJobState.value = JSON.parse(JSON.stringify(data))
 
        jobMetaData.value = { 

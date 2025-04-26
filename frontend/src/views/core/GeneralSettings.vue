@@ -11,7 +11,7 @@ import AccordionContent from 'primevue/accordioncontent'
 import SmallSeperator from '@/components/reusables/SmallSeperator.vue'
 
 import { onMounted, ref, markRaw } from 'vue'
-import { getUser } from '@/composable/api/User'
+import { getUser } from '@/composable/core/User'
 
 interface SettingComponent {
   name: string

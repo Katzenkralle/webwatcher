@@ -1,10 +1,10 @@
 <script setup lang="tsx">
-import { type TableMetaData } from '@/composable/api/JobAPI'
+import { type JobMeta } from '@/composable/jobs/JobMetaAPI'
 import SmallSeperator from '../reusables/SmallSeperator.vue'
 import { defineProps, defineComponent, h } from 'vue'
 
 const props = defineProps<{
-  metaData: TableMetaData
+  metaData: JobMeta
 }>()
 
 const aData = defineComponent({

@@ -3,8 +3,9 @@ import {
   globalTableMetaData,
   getAllJobMetaData,
   deleteJob,
-  type TableMetaData,
-} from '@/composable/api/JobAPI'
+  updateOrCreateJob,
+  type JobMeta,
+} from '@/composable/jobs/JobMetaAPI'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import AutoComplete from 'primevue/autocomplete'
@@ -15,10 +16,9 @@ import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue'
 import SmallSeperator from '@/components/reusables/SmallSeperator.vue'
 
 import { onMounted, ref, computed } from 'vue'
-import { updateOrCreateJob } from '@/composable/api/JobAPI'
 import { useStatusMessage } from '@/composable/core/AppState'
 
-const suggestedItems = ref<TableMetaData[]>([])
+const suggestedItems = ref<JobMeta[]>([])
 
 onMounted(async () => {
   suggestedItems.value = await getAllJobMetaData()

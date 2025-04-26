@@ -8,16 +8,16 @@ import Button from 'primevue/button'
 import Textarea from 'primevue/textarea'
 
 import { ref, watch, reactive, computed, onMounted } from 'vue'
-import { getAllScripts } from '@/composable/api/ScriptAPI'
 import router from '@/router'
 
 import { useLoadingAnimation, useStatusMessage } from '@/composable/core/AppState'
 import {
   validateFile,
+  getAllScripts,
   submitScript,
   type ScriptValidationResult,
   type ScriptMeta,
-} from '@/composable/api/ScriptAPI'
+} from '@/composable/scripts/ScriptAPI'
 import NavButtons from '@/components/reusables/NavButtons.vue'
 
 // Input field value

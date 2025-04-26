@@ -5,7 +5,7 @@ import Select from 'primevue/select'
 import Button from 'primevue/button'
 
 import { jobUserDisplayConfig } from '@/composable/jobs/UserConfig'
-import { type Group, type IterationContext } from '@/composable/jobs/FilterGroups'
+import { type Group, type IterationContext } from '@/composable/filter/FilterGroups'
 import { ref, watch } from 'vue'
 import { useStatusMessage } from '@/composable/core/AppState'
 

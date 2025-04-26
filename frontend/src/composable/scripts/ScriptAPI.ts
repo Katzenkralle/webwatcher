@@ -1,5 +1,5 @@
-import { queryGql, reportError, recordListToRecord } from './QueryHandler'
-import { useLoadingAnimation, useStatusMessage } from '../core/AppState'
+import { queryGql, reportError, recordListToRecord } from '@/composable/api/QueryHandler'
+import { useLoadingAnimation, useStatusMessage } from '@/composable/core/AppState'
 import { ref } from 'vue'
 
 export const globalScriptData = ref<Record<string, ScriptMeta>>({})

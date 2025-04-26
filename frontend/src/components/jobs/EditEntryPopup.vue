@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import PopupDialog from '../reusables/PopupDialog.vue'
 import { onMounted, ref, defineComponent, h, computed, watchEffect } from 'vue'
-import type { jobEntryInput } from '@/composable/api/JobAPI'
+import type { jobEntryInput } from '@/composable/jobs/JobAPI'
 import SmallSeperator from '../reusables/SmallSeperator.vue'
 
 import Textarea from 'primevue/textarea'
