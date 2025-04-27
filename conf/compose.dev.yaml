@@ -23,6 +23,8 @@ services:
       - maria_data:/mounted_maria
       - mongo_data:/mounted_mongo
       - webwatcher_data:/webwatcher/webw_serv_scripts_store
+      - "/etc/timezone:/etc/timezone:ro" # to get the correct timezone
+      - "/etc/localtime:/etc/localtime:ro"
     cap_add:
       - SYS_TIME
 
