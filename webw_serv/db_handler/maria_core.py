@@ -280,7 +280,7 @@ class MariaDbHandler:
             self.__cursor.execute("SELECT * FROM job_list")
             jobs = self.__cursor.fetchall()
         else:
-            self.__cursor.execute("SELECT * FROM job_list WHERE id = ?", (job_id,))
+            self.__cursor.execute("SELECT * FROM job_list WHERE job_id = ?", (job_id,))
             job = self.__cursor.fetchone()
             if job:
                 jobs.append(job)
@@ -399,7 +399,7 @@ class MariaDbHandler:
             if new_keys != set(old_return_schema.keys()):
                 raise ValueError("The expected return schema of the new and old script do not match")
 
-        if expected_schema:
+        if expected_schema is not None:
             try:
                 expected_schema = json.dumps({entry.key: entry.value for entry in expected_schema})
             except Exception as e:

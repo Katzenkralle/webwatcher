@@ -116,47 +116,33 @@ class Mutation:
         maria: MariaDbHandler = info.context["request"].state.maria
         mongo: MongoDbHandler = info.context["request"].state.mongo
         scheduler: BackgroundScheduler = info.context["request"].state.scheduler
+
+        error_msg_prefix = "Failed to add job"
+        current_job = None
+
         if description is None:
             description = choice(CONFIG.DEFAULT_JOB_DESCRIPTIONS)
         
-        if (execute_timer is not None) and len(execute_timer) > 256:
-            return Message(
-                message="Cron time is too long",
-                status=MessageType.DANGER,
-            )
-        
-        rollback = lambda: None
         #  Add job to get id if it does not exist
-        if id_ is None:
-            try:
+        try:
+            if id_ is None:
                 id_ = await maria.add_job_list(script_name=script, job_name=name, description=description, dynamic_schema=not forbid_dynamic_schema)
                 await mongo.register_job(id_)
-                rollback = lambda: [mongo.delete_job(id_), maria.delete_job(id_)]
+            else:
+                current_job = await maria.get_all_job_info(id_)
 
-            except Exception as e:
-                rollback()
-                return Message(
-                    message=f"Failed to add job: {str(e)}",
-                    status=MessageType.DANGER,
-                )
-
-        # Get job input parameters
-        json_data = None
-        if paramerter_kv is not None:
-            try:
+            # Get job input parameters
+            error_msg_prefix = "Failed to get job input parameters"
+            json_data = None
+            if paramerter_kv is not None:
                 json_data = json.loads(paramerter_kv)
-            except Exception as e:
-                rollback()
-                return Message(
-                    message=f"Failed to get job input parameters: {str(e)}",
-                    status=MessageType.DANGER,
-                )
-        if not json_data:
-            json_data = {}
+            
+            if json_data is None:
+                json_data = {}
 
-        # run the script to get the expected schema
-        try:
-            # script must be resolved first
+            # run the script to get the expected schema
+            error_msg_prefix = "Failed to get expected schema"
+        
             script_check_result = (await maria.get_script_info(script, True))
             type_enforced_input = enforce_types(json_data, script_check_result[0].input_schema)   
             classedReturnSchema = run_once_get_schema(script_check_result[0].fs_path, type_enforced_input)
@@ -167,34 +153,21 @@ class Mutation:
                 return_schema = []
                 for key, value in classedReturnSchema.items():
                     return_schema.append(Parameter(key=key, value=getattr(value, "__name__", None)))
-        except Exception as e:
-            rollback()
-            return Message(
-                message=f"Failed to get return schema: {str(e)}",
-                status=MessageType.DANGER)
         
-        # Save the new input parameters
-        try:
+        
+            # Save the new input parameters
+            error_msg_prefix = "Failed to save job input parameters"
             if json_data is not None:
                 await maria.set_job_input_settings(job_id=id_, settings=json_data)
-        except Exception as e:
-            rollback()
-            return Message(
-                message=str(e),
-                status=MessageType.DANGER)
 
-        # Edit the job with the now known expected schema
-        try:
+
+            # Edit the job with the now known expected schema
+            error_msg_prefix = "Failed to edit job: "
             await maria.edit_job_list(script_name=script, job_name=name, description=description, dynamic_schema=not forbid_dynamic_schema, job_id=id_, expected_schema=return_schema)
-        except Exception as e:
-            rollback()
-            return Message(
-                message=f"Failed to edit job: {str(e)}",
-                status=MessageType.DANGER,
-            )
 
-        if execute_timer is not None:
-            try:
+
+            if execute_timer is not None:
+                error_msg_prefix = "Failed to add cron job"
                 await maria.add_or_update_cron_job(job_id=id_, cron_time=execute_timer, enabled=enabled)
                 if enabled:
                     scheduler.add_job(
@@ -211,13 +184,31 @@ class Mutation:
                         scheduler.remove_job(str(id_))
                     except JobLookupError:
                         pass
-
-            except Exception as e:
-                rollback()
-                return Message(
-                    message=f"Failed to add cron job: {str(e)}",
-                    status=MessageType.DANGER,
-                )
+        except Exception as e:
+            if current_job is None:
+                await maria.delete_job(id_)
+                await mongo.delete_job(id_)
+            else:
+                [job_metadata, job_settings] = current_job.values()
+                job_metadata = job_metadata[0]
+                job_settings = job_settings[0]
+                await maria.edit_job_list(script_name=job_metadata.script, 
+                                            job_name=job_metadata.name, 
+                                            description=job_metadata.description, 
+                                            dynamic_schema=not job_metadata.forbid_dynamic_schema, 
+                                            job_id=id_, 
+                                            expected_schema=job_metadata.expected_return_schema)
+                params = {param.key: param.value for param in job_settings}
+                await maria.set_job_input_settings(job_id=id_, 
+                                                   settings=params)
+                await maria.add_or_update_cron_job(
+                    job_id=id_,
+                    cron_time=job_metadata.execute_timer,
+                    enabled=job_metadata.enabled)
+            return Message(
+                message=f"{error_msg_prefix}: {str(e)}",
+                status=MessageType.DANGER,
+            )
 
         try:
             _, executed_last, enabled = await maria.get_cron_job(id_)
