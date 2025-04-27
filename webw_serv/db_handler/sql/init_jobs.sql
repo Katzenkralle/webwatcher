@@ -11,7 +11,7 @@ VALUES (
     1,
     '0 * * * *',
     0,
-    TRUE
+    FALSE
 );
 
 INSERT INTO job_list (script_name, job_name, description, dynamic_schema)
@@ -94,4 +94,33 @@ VALUES (
     4,
     'include_body',
     'True'   
+);
+
+INSERT INTO job_list (script_name, job_name, description, dynamic_schema)
+VALUES (
+    'Weather Watcher',
+    'Forecast Berlin',
+    'This watcher retrieves the forecasted Weather 3 days from time of execution.',
+    TRUE
+);
+INSERT INTO cron_list (job_id, cron_time, executed_last, enabled)
+VALUES (
+    5,
+    '30 19 * * *',
+    0,
+    TRUE
+);
+
+INSERT INTO job_input_settings (job_id, keyword, value)
+VALUES (
+    5,
+    'future',
+    '2'   
+);
+
+INSERT INTO job_input_settings (job_id, keyword, value)
+VALUES (
+    5,
+    'mode',
+    'daily'   
 );
