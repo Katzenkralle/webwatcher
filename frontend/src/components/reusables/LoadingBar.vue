@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, type Ref } from 'vue'
+import { ref, computed, watch, type Ref, onMounted } from 'vue'
 
 const loadingAnimationCounter = ref(-1)
 const DEFAULT_DURATION = 2
@@ -9,14 +9,20 @@ const props = defineProps<{
 }>()
 
 const duration = computed(() => props.duration ?? DEFAULT_DURATION)
-const loadingState = ref(false)
+const loadingState = ref(true)
+const statusBar = ref<HTMLElement | null>(null)
 let lastChangeAt = Infinity
 let timeoutIdTrue: number | null = null
+
+watch(() => statusBar.value, (bar) => {
+  if (bar) {
+    bar.style.setProperty('--loading-bar-duration', `${duration.value}s`)
+  }
+})
 
 watch(
   () => props.isLoading.value,
   (newValue) => {
-    // Clear any existing timer
     const diff = lastChangeAt + duration.value * 0.8 * 1000 - Date.now()
     if (diff > 0 || !newValue) {
       if (timeoutIdTrue === null) {
@@ -38,7 +44,7 @@ watch(
 )
 </script>
 <template>
-  <div id="appStatusBar" class="w-full h-1 bg-panel-d">
+  <div id="appStatusBar" ref="statusBar" class="w-full h-1 bg-panel-d">
     <Transition name="loading">
       <div v-if="loadingState" class="relative w-screen h-1 overflow-hidden">
         <div
@@ -65,8 +71,8 @@ watch(
 @reference "@/assets/global.css";
 
 .animation-bar {
-  @apply w-[100px] h-1 bg-info absolute z-10 [transform:translateX(-100%)];
-  animation: l-to-r v-bind(duration + 's') cubic-bezier(0.46, 0.03, 0.52, 0.96) forwards infinite;
+  @apply w-[100px] h-1 bg-info absolute z-5 [transform:translateX(-100%)];
+  animation: l-to-r var(--loading-bar-duration) cubic-bezier(0.46, 0.03, 0.52, 0.96) forwards infinite;
 }
 @keyframes l-to-r {
   0% {
@@ -81,7 +87,7 @@ watch(
 .loading-leave-active .animation-bar,
 .loading-leave-active {
   /* transistion needet to delay removal from DOM, .loading-leave-active serves as trigger */
-  transition: linear v-bind(duration + 's');
+  transition: linear var(--loading-bar-duration);
   opacity: 0;
   animation-iteration-count: v-bind(loadingAnimationCounter + 1) !important;
 }

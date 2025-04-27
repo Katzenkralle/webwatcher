@@ -38,26 +38,6 @@ interface BarItem {
   passThroughComponent?: () => VNode
 }
 
-// Check if screen width is smaller than --breakpoint-sm
-const isMobile = ref(false)
-const breakpointSm = parseInt(
-  getComputedStyle(document.documentElement).getPropertyValue('--breakpoint-sm').replace('px', ''),
-)
-
-const updateMobileState = () => {
-  isMobile.value = window.innerWidth < breakpointSm
-}
-
-onMounted(() => {
-  updateMobileState()
-
-  window.addEventListener('resize', updateMobileState)
-})
-
-onUnmounted(() => {
-  // Clean up resize listener
-  window.removeEventListener('resize', updateMobileState)
-})
 
 const tableMetaData = ref<JobMeta[]>([])
 const isSlim = computed(() => {
@@ -116,7 +96,7 @@ const computeOptions = computed((): BarItem[] => {
 })
 
 watch(
-  globalTableMetaData,
+  [globalTableMetaData, isSlim],
   () => {
     // this aproach is needed, for async cannot be directly comuputed
     if (isSlim.value) return
