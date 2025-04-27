@@ -18,14 +18,15 @@ import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue'
 
 import SmallSeperator from '@/components/reusables/SmallSeperator.vue'
 
-import { onMounted, ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useStatusMessage } from '@/composable/core/AppState'
 
 const suggestedItems = ref<JobMeta[]>([])
 
-onMounted(async () => {
+watch(() => globalTableMetaData.value, async () => {
   suggestedItems.value = await getAllJobMetaData()
-})
+}, { immediate: true })
+
 
 const recomputeSugestions = (search: string) => {
   if (search === '') {
@@ -53,38 +54,40 @@ const elementColor = computed((): string[] => {
 
 <template>
   <main>
-    <div>
-      <h1>Job Overview</h1>
-      <p class="subsection">
-        Here, you can see all the jobs that have been created. And create new once!
-        <br />
-        Inspect the jobs the jobs to get a detailed overview over all data the Script has fetched.
-        Click on edit to change the configuration of the job.
-      </p>
-      <SmallSeperator :is-dashed="true" class="mb-10" />
-      <div class="w-full flex flex-wrap justify-between items-end">
-        <h3 class="self-end">Added Jobs:</h3>
-        <div>
-        <InputGroup>
-          <Button label="Create Job" icon="pi pi-plus" @click="() => router.push('/jobs/create/')" />
-          <Button
-            icon="pi pi-refresh"
-            @click=" () => refreshMeta()"/>
-        </InputGroup>
+    <div class="w-full flex flex-col items-center max-w-full!"> 
+      <div class="main-content-box">
+        <h1>Job Overview</h1>
+        <p class="subsection">
+          Here, you can see all the jobs that have been created. And create new once!
+          <br />
+          Inspect the jobs the jobs to get a detailed overview over all data the Script has fetched.
+          Click on edit to change the configuration of the job.
+        </p>
+        <SmallSeperator :is-dashed="true" class="mb-10" />
+        <div class="w-full flex flex-wrap justify-between items-end">
+          <h3 class="self-end">Added Jobs:</h3>
+          <div>
+          <InputGroup>
+            <Button label="Create Job" icon="pi pi-plus" @click="() => router.push('/jobs/create/')" />
+            <Button
+              icon="pi pi-refresh"
+              @click=" () => refreshMeta()"/>
+          </InputGroup>
+          </div>
         </div>
+        <FloatLabel variant="in">
+          <AutoComplete
+            :suggestions="Object.values(suggestedItems).map((entry) => entry.name)"
+            class="w-full"
+            size="small"
+            input-class="w-full"
+            @update:model-value="(e) => recomputeSugestions(e)"
+          />
+          <label>Search for a table</label>
+        </FloatLabel>
       </div>
-      <FloatLabel variant="in">
-        <AutoComplete
-          :suggestions="Object.values(suggestedItems).map((entry) => entry.name)"
-          class="w-full"
-          size="small"
-          input-class="w-full"
-          @update:model-value="(e) => recomputeSugestions(e)"
-        />
-        <label>Search for a table</label>
-      </FloatLabel>
 
-      <div class="flex flex-wrap justify-center">
+      <div class="flex flex-wrap justify-center max-w-300">
         <template
           v-for="(element, index) in suggestedItems.sort((a, b) => a.id - b.id)"
           :key="element.id"

@@ -51,7 +51,7 @@ INSERT INTO script_list (fs_path, name, description, temporary)
 VALUES (
     './webw_serv_scripts_store/scripts/weather.py',
     'Weather Watcher',
-    'This watcher retrieves the current weather information for a given location (default Berlin).\nArguments:    \n- lat: "float" # Latitude of the location, default is Berlin\n- lon: "float" # Longitude of the location, default is Berlin\n- timezone: "str" # Timezone of the location, default is Europe/Berlin\n- mode: "str" # Mode of the query, can be "hourly", "daily" or "current", default is "current"\n- future: "int" # Future time, unit depends on the mode, either hours or days, default is 1\n\n- api_key: "str" # API key for the Open Meteo API, default is None\n- custom_query: "str" # Allows to use a custom query string, see: https://open-meteo.com/en/docs',
+    'This watcher retrieves the current weather information for a given location (default Berlin).\nArguments:    \n- lat: "float" # Latitude of the location, default is Berlin\n- lon: "float" # Longitude of the location, default is Berlin\n- timezone: "str" # Timezone of the location, default is Europe/Berlin\n- mode: "str" # Mode of the query, can be "hourly", "daily" or "current", default is "current"\n- future: "int" # Future time +1, unit depends on the mode, either hours or days, default is 1\n\n- api_key: "str" # API key for the Open Meteo API, default is None\n- custom_query: "str" # Allows to use a custom query string, see: https://open-meteo.com/en/docs',
     FALSE
 );
 
