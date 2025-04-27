@@ -76,7 +76,10 @@ const elementColor = computed((): string[] => {
       </FloatLabel>
 
       <div class="flex flex-wrap justify-center">
-        <template v-for="(element, index) in suggestedItems.sort((a, b) => a.id - b.id)" :key="element.id">
+        <template
+          v-for="(element, index) in suggestedItems.sort((a, b) => a.id - b.id)"
+          :key="element.id"
+        >
           <Card class="w-83 min-h-120 m-4 border-2 border-info hover:border-app color-change-trans">
             <h3 class="underline">{{ element.name }}</h3>
             <template #header>
@@ -89,7 +92,7 @@ const elementColor = computed((): string[] => {
             </template>
 
             <template #title>
-              <div class="flex flex-row items-center justify-center"> 
+              <div class="flex flex-row items-center justify-center">
                 <h3 class="text-2xl">{{ element.name }}</h3>
               </div>
             </template>
@@ -100,25 +103,29 @@ const elementColor = computed((): string[] => {
                   <div class="flex flex-row items-center space-x-2 h-8 m-0">
                     <InputSwitch
                       :default-value="element.enabled"
-                      @change="()=> {
-                        element.enabled = !element.enabled
-                        updateOrCreateJob(element).then(() => {
-                          useStatusMessage().newStatusMessage(
-                            `Job ${element.name} was ${
-                              element.enabled ? 'enabled' : 'disabled'
-                            } successfully!`,
-                            'success',
-                          )
-                        }).catch(() => {
-                          useStatusMessage().newStatusMessage(
-                            `Job ${element.name} could not be ${
-                              element.enabled ? 'enabled' : 'disabled'
-                            }!`,
-                            'danger',
-                          )
+                      @change="
+                        () => {
                           element.enabled = !element.enabled
-                        })
-                      }"
+                          updateOrCreateJob(element)
+                            .then(() => {
+                              useStatusMessage().newStatusMessage(
+                                `Job ${element.name} was ${
+                                  element.enabled ? 'enabled' : 'disabled'
+                                } successfully!`,
+                                'success',
+                              )
+                            })
+                            .catch(() => {
+                              useStatusMessage().newStatusMessage(
+                                `Job ${element.name} could not be ${
+                                  element.enabled ? 'enabled' : 'disabled'
+                                }!`,
+                                'danger',
+                              )
+                              element.enabled = !element.enabled
+                            })
+                        }
+                      "
                     />
                     <label v-if="element.enabled" class="text-success rounded-lg">Enabeld</label>
                     <label v-else class="text-error rounded-lg">Disabled</label>
@@ -130,7 +137,7 @@ const elementColor = computed((): string[] => {
                 <p class="h-40 flex-grow truncate bg-panel p-2 rounded-lg my-2 whitespace-pre-wrap">
                   {{ element.description }}
                 </p>
-                <SmallSeperator style="margin-top:  auto;" class="card-seperator" />
+                <SmallSeperator style="margin-top: auto" class="card-seperator" />
               </div>
             </template>
             <template #footer>
@@ -176,8 +183,9 @@ const elementColor = computed((): string[] => {
   @apply mx-auto mt-3;
 }
 
-:deep(.p-card-body), :deep(.p-card-content) {
-  @apply flex-grow!
+:deep(.p-card-body),
+:deep(.p-card-content) {
+  @apply flex-grow!;
 }
 
 .content {

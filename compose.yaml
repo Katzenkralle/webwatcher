@@ -11,8 +11,8 @@ services:
     environment:
        # Note: use $$ to escape $ used for enviorment variables.
        # Refere to: https://docs.docker.com/reference/compose-file/interpolation/
-       - APP_DEFAULT_ADMIN_USERNAME=admin
-       - APP_DEFAULT_ADMIN_HASH=$$2b$$12$$SNsRVcWKAEB/h5x0tUXqQeoBwc8MY3seQFD3mPmu9Z4I6NUvQgHQS
+       - APP_DEFAULT_ADMIN_USERNAME=Admin
+       - APP_DEFAULT_ADMIN_HASH=$$2b$$12$$LjyvJ6DZyBTQIGhX3VSvM.CZUNh4U24IGuLB.L5Rm8crZNVqeylDa
        - CRYPTO_SECRET_KEY=51bc0c1562e265a67af236137d6b17f14e5e1c5c580c066dff775b2d53f05d04
     networks:
       - internal

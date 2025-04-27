@@ -432,16 +432,18 @@ class MariaDbHandler:
             settings[entry[0]] = entry[1]
         return settings
 
-    async def add_cron_job(self, job_id: int, cron_time: str, enabled: bool) -> bool:
-        self.__cursor.execute("INSERT INTO cron_list (job_id, cron_time, enabled) VALUES (?, ?, ?)",
-                              (job_id, cron_time, enabled))
+    async def add_or_update_cron_job(self, job_id: int, cron_time: str, enabled: bool) -> bool:
+        self.__cursor.execute("SELECT * FROM cron_list WHERE job_id = ?", (job_id,))
+        db_cron = self.__cursor.fetchone()
+        if db_cron:
+            self.__cursor.execute("UPDATE cron_list SET cron_time = ?, enabled = ? WHERE job_id = ?",
+                                  (cron_time, enabled, job_id))
+        else:
+            self.__cursor.execute("INSERT INTO cron_list (job_id, cron_time, enabled) VALUES (?, ?, ?)",
+                                (job_id, cron_time, enabled))
         self.__conn.commit()
         return True
 
-    async def delete_cron_job(self, job_id: int) -> bool:
-        self.__cursor.execute("DELETE FROM cron_list WHERE job_id = ?", (job_id,))
-        self.__conn.commit()
-        return True
 
     async def set_cron_enabled(self, job_id: int, enabled: bool) -> bool:
         self.__cursor.execute("UPDATE cron_list SET enabled = ? WHERE job_id = ?", (enabled, job_id))

@@ -16,39 +16,6 @@ from webw_serv.main_establish_dbs import establish_db_connections
 from webw_serv.configurator.config import Config as Configurator
 
 
-# Proposed DB Managert for  to let Watchers add Rows to mongo db
-class DbManager:
-    def __init__(self, tareget: int, schema: Dict[str, str]):
-        self.__schema: Dict[str, str] = schema
-        self.__target: int = tareget
-        self.__data: Dict[str, Any] = {}
-        self.__db = None
-
-    def __check_datatype(self, k, v):
-        if k not in self.__schema:
-            raise ValueError(f'Key {k} not in schema')
-        if self.__schema[k] != type(v):
-            raise ValueError(f'Key {k} has wrong datatype')
-
-    @property
-    def data(self):
-        return self.__data
-
-    @data.setter
-    def data(self, row: Dict[str, Any]):
-        for k, v in row.items():
-            self.__check_datatype(k, v)
-        self.__data.update(row)
-
-    def __enter__(self):
-        # open connection to db
-        pass
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        # close connection to db, execute transaction
-        pass
-
-
 class ScriptThread(threading.Thread):
     def __init__(self, module_name, config: Optional[dict[str, Any]] = None):
         threading.Thread.__init__(self)

@@ -1,5 +1,5 @@
 import { requireLogin } from './Auth'
-import { useStatusMessage,  loadingBarIsLoading } from '../core/AppState'
+import { useStatusMessage, loadingBarIsLoading } from '../core/AppState'
 
 export interface GQLResponse {
   data: { [key: string]: any }

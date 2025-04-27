@@ -15,7 +15,7 @@ The following configurations can be set using environment variables for the Webw
 ### Crypto
 
 Ensures that no malicious third party can alter the content of a web token:
-- `CRYPTO_ALGORITHM=<STRING>` The algorithm that should be used to sign the JWT. Defaults to `HS256`.
+- `CRYPTO_ALGORITHM=<HS256|HS384|HS512>` The algorithm that should be used to sign the JWT. Defaults to `HS256`.
 - `CRYPTO_SECRET_KEY=<STRING>` The secret key used for signing all JWTs. **Must be provided and kept secret.**  
   **Recommendation:** A string at least 6 characters long, containing both numbers and letters.
 
@@ -23,10 +23,12 @@ Ensures that no malicious third party can alter the content of a web token:
 
 - `APP_DEFAULT_ADMIN_USERNAME=<STRING>` The name of the user created at server start.
 - `APP_DEFAULT_ADMIN_HASH=<STRING>` The hashed value of the password, in accordance with the selected `CRYPTO_ALGORITHM`, for the user.
-- `APP_HOST=<IPv4>` The IPv4 address the web API should listen to. Defaults to `0.0.0.0` (all interfaces).
+- `APP_HOST=<IPv4>` The IPv4 address the web API should listen to. Defaults to `0.0.0.0` (all Address).
 - `APP_PORT=<0-49151>` The port the web API should listen to. Defaults to `7000`.
-- `APP_DEV_MODE=<True|False>` Whether the web app should be started in dev mode, enabling HTML sites at `/docs` and `/gql`.
-- `APP_LOG_LEVEL=<debug|info|warning|error|critical|None>` The log level of the web API.
+- `APP_DEV_MODE=<True|False>` Whether the web app should be started in dev mode, enabling API Documentation Sites at `/docs`, `/redoc` and `/gql`. Defaults to `False`
+- `APP_LOG_LEVEL=<debug|info|warning|error|critical|None>` The log level of the web API. Defaults to `info`.
+- `APP_UNIXTIME_FOR_TIMESTAMPS=<True|False>` Whether the Timestamps for each fetched Entry of a job should be saved as human-readable ISO Strings or as Unixtime. Defaults to `False`.
+- `APP_DONT_PASS_NONE_TO_SCRIPT=<True|False>` Whether unset parameters should be included in the config dictionary received by a script or not. WARNING: Changing this might break some scripts!. Defaults to `True`.
 
 ### MongoDB Connection
 

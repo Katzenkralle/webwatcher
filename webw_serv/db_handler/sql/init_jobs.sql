@@ -32,15 +32,15 @@ VALUES (
 INSERT INTO job_input_settings (job_id, keyword, value)
 VALUES (
     2,
-    'lon',
-    '53.44'   
+    'lat',
+    '53.07'   
 );
 
 INSERT INTO job_input_settings (job_id, keyword, value)
 VALUES (
     2,
-    'lat',
-    '8.48'   
+    'lon',
+    '8.80'   
 );
 
 INSERT INTO job_list (script_name, job_name, description, dynamic_schema, expected_return_schema)

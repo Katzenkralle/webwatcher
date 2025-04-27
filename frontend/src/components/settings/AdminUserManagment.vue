@@ -30,7 +30,7 @@ onMounted(async () => {
     <div class="input-box">
       <label>Create User</label>
       <FloatLabel variant="in">
-        <InputText id="username" v-model="newUser.currentPassword" />
+        <Passowrd id="username" v-model="newUser.currentPassword" :feedback="false" />
         <label for="username">Your Password</label>
       </FloatLabel>
       <FloatLabel variant="in">

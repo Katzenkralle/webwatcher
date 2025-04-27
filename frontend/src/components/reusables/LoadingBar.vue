@@ -11,33 +11,31 @@ const props = defineProps<{
 const duration = computed(() => props.duration ?? DEFAULT_DURATION)
 const loadingState = ref(false)
 let lastChangeAt = Infinity
-let timeoutIdTrue: number|null = null
+let timeoutIdTrue: number | null = null
 
 watch(
   () => props.isLoading.value,
   (newValue) => {
     // Clear any existing timer
-    const diff = lastChangeAt + (duration.value * 0.8 * 1000) - Date.now()
-    if (diff > 0 || !newValue ) {
+    const diff = lastChangeAt + duration.value * 0.8 * 1000 - Date.now()
+    if (diff > 0 || !newValue) {
       if (timeoutIdTrue === null) {
-          timeoutIdTrue = setTimeout(() => {
-            loadingState.value = true
-            lastChangeAt = Date.now()
-            timeoutIdTrue = null
-            setTimeout(() => {
-              loadingState.value = false
-            }, 10)
-        }, diff )
+        timeoutIdTrue = setTimeout(() => {
+          loadingState.value = true
+          lastChangeAt = Date.now()
+          timeoutIdTrue = null
+          setTimeout(() => {
+            loadingState.value = false
+          }, 10)
+        }, diff)
       }
-    }
-    else {
+    } else {
       loadingState.value = newValue
       lastChangeAt = Date.now()
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
-
 </script>
 <template>
   <div id="appStatusBar" class="w-full h-1 bg-panel-d">

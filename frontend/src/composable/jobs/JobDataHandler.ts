@@ -6,11 +6,7 @@ import {
   type jobEntryInput,
 } from '@/composable/jobs/JobAPI'
 
-import {
-  getJobMetaData,
-  type TableLayout,
-  type JobMeta
-} from '@/composable/jobs/JobMetaAPI'
+import { getJobMetaData, type TableLayout, type JobMeta } from '@/composable/jobs/JobMetaAPI'
 
 import { reportError } from '@/composable/api/QueryHandler'
 import type { IterationContext } from '../filter/FilterGroups'
@@ -102,9 +98,16 @@ export const useJobDataHandler = (
   const allFetched = ref(false)
   const highlightSubstring = ref<Record<number, Record<string, HighlightSubstring[]>>>({})
 
-  const lazyFetch = async (startAt: number | undefined = undefined, all: boolean = false, force: boolean = false) => {
+  const lazyFetch = async (
+    startAt: number | undefined = undefined,
+    all: boolean = false,
+    force: boolean = false,
+  ) => {
     startAt = startAt || Object.keys(localJobData.value).length
-    if (force || Object.keys(localJobData.value).length < startAt + fetchAmount.value && !allFetched.value) {
+    if (
+      force ||
+      (Object.keys(localJobData.value).length < startAt + fetchAmount.value && !allFetched.value)
+    ) {
       localJobData.value = {
         ...localJobData.value,
         ...(await apiHandler
@@ -236,12 +239,7 @@ export const useJobDataHandler = (
         */
 
     return (includeHiddenColumns ? computeLayoutUnfiltered : computeLayout).value
-      .filter(
-        (col) =>
-          type === undefined ||
-          (type === 'type') ||
-          col.type.split('|').includes(type),
-      )
+      .filter((col) => type === undefined || type === 'type' || col.type.split('|').includes(type))
       .map((col) => col.key)
   }
 
@@ -263,7 +261,10 @@ export const useJobDataHandler = (
         Object.entries(row.context ?? {}).map(([key, value]) => ({ key, type: typeof value })),
       ),
       ...(staticContextSchema.value
-        ? Object.entries(staticContextSchema.value).map(([key, value]) => ({ key, type: convertPyTypes(value) }))
+        ? Object.entries(staticContextSchema.value).map(([key, value]) => ({
+            key,
+            type: convertPyTypes(value),
+          }))
         : []),
     ].reduce((acc: TableLayout[], curr: TableLayout) => {
       const existing = acc.find((layout) => layout.key === curr.key)

@@ -53,6 +53,16 @@ class Config:
                     logger.error(f"Default values are forbidden for '{dataclass.__name__}.{field.name}'")
                     raise ValueError(f"Default value for '{dataclass.__name__}.{field.name}' not found")
             try:
+                if field.type == bool and type(value) == str:
+                    match value.lower():
+                        case "true":
+                            value = True
+                        case "false":
+                            value = False
+                        case _:
+                            error = f"Failed to convert '{dataclass.__name__}.{field.name}' to {field.type}"
+                            logger.error(error)
+                            raise ValueError(error)
                 result[field.name] = field.type(value)
             except ValueError as e:
                 logger.error(f"Failed to convert '{dataclass.__name__}.{field.name}' to {field.type}")

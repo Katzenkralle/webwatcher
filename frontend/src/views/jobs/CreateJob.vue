@@ -4,7 +4,7 @@ import router from '@/router'
 
 import { CronPrime } from '@vue-js-cron/prime'
 
-import { getAllScripts, globalScriptData,type ScriptMeta } from '@/composable/scripts/ScriptAPI'
+import { getAllScripts, globalScriptData, type ScriptMeta } from '@/composable/scripts/ScriptAPI'
 import { getJobMetaData, updateOrCreateJob, type JobMeta } from '@/composable/jobs/JobMetaAPI'
 import { useStatusMessage } from '@/composable/core/AppState'
 
@@ -28,14 +28,13 @@ const jobMetaData = ref<
   description: '',
   enabled: true,
   executeTimer: '0 0 * * *',
-  executedLast: 0,
+  executedLast: 'never',
   forbidDynamicSchema: false,
   expectedReturnSchema: {},
   parameters: {},
 })
 
-const serverJobState = ref<JobMeta|undefined>()
-
+const serverJobState = ref<JobMeta | undefined>()
 
 const nameStatus = computed((): { severity: string; summary: string } => {
   if (jobMetaData.value.name === '') {
@@ -46,7 +45,10 @@ const nameStatus = computed((): { severity: string; summary: string } => {
 
 const allScripts = ref<Record<string, ScriptMeta>>()
 
-const newParameterKvLayout = (scriptName: string, jobParams: Record<string, any>|undefined = undefined): Record<string, [string, any]> => {
+const newParameterKvLayout = (
+  scriptName: string,
+  jobParams: Record<string, any> | undefined = undefined,
+): Record<string, [string, any]> => {
   if (!allScripts.value) {
     return {}
   }
@@ -62,29 +64,34 @@ const newParameterKvLayout = (scriptName: string, jobParams: Record<string, any>
     : {}
   if (jobParams) {
     Object.entries(jobParams).forEach(([key, value]) => {
-        if (scriptParam[key]) {
-          scriptParam[key][1] = value
-        } else {
-          scriptParam[key] = ['string', value]
-        }
-      })
+      if (scriptParam[key]) {
+        scriptParam[key][1] = value
+      } else {
+        scriptParam[key] = ['string', value]
+      }
+    })
   }
   return scriptParam
 }
-
 
 const getAvailableScripts = computed(() => {
   if (!allScripts.value) {
     return []
   }
-  jobMetaData.value.parameters = newParameterKvLayout(jobMetaData.value.script, serverJobState.value?.parameters)
+  jobMetaData.value.parameters = newParameterKvLayout(
+    jobMetaData.value.script,
+    serverJobState.value?.parameters,
+  )
   return Object.keys(allScripts.value)
-    .filter((entry)  => !isEdit.value  
-      || !serverJobState.value?.forbidDynamicSchema 
-      || allScripts.value![entry].supportsStaticSchema)
+    .filter(
+      (entry) =>
+        !isEdit.value ||
+        !serverJobState.value?.forbidDynamicSchema ||
+        allScripts.value![entry].supportsStaticSchema,
+    )
     .map((entry) => {
-    return { name: entry, description: allScripts.value![entry].description }
-  })
+      return { name: entry, description: allScripts.value![entry].description }
+    })
 })
 
 const refreshJobMetaData = (id: string | string[] | undefined) => {
@@ -96,7 +103,7 @@ const refreshJobMetaData = (id: string | string[] | undefined) => {
     .then(async (data: JobMeta) => {
       serverJobState.value = JSON.parse(JSON.stringify(data))
 
-       jobMetaData.value = { 
+      jobMetaData.value = {
         ...data,
         parameters: await newParameterKvLayout(data.script, serverJobState.value),
       }
@@ -108,7 +115,7 @@ const refreshJobMetaData = (id: string | string[] | undefined) => {
     })
 }
 
-onMounted(async() => {
+onMounted(async () => {
   allScripts.value = await getAllScripts()
   refreshJobMetaData(router.currentRoute.value.params.id)
 })
@@ -168,9 +175,8 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
           @change="
             async (newVal) => {
               jobMetaData.forbidDynamicSchema = serverJobState?.forbidDynamicSchema || false
-              const knownParams = serverJobState?.script === newVal.value
-                ? serverJobState?.parameters
-                : {}
+              const knownParams =
+                serverJobState?.script === newVal.value ? serverJobState?.parameters : {}
               jobMetaData.parameters = await newParameterKvLayout(newVal.value, knownParams)
             }
           "
@@ -183,24 +189,35 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
         </div>
         <a v-if="serverJobState?.forbidDynamicSchema" class="text-warning">
           Warning: This job is using a static schema. Script selection will be limeted to scripts
-          supporting static schemas.
-          A Error will be thrown if the selected script does not match the current static schema of the script.
+          supporting static schemas. A Error will be thrown if the selected script does not match
+          the current static schema of the script.
         </a>
       </div>
 
       <div v-if="globalScriptData[jobMetaData.script]?.supportsStaticSchema" class="input-box">
         <label for="forbidDynamicSchema">Forbid Dynamic Schema</label>
         <div class="flex flex-row items-center">
-          <InputSwitch 
-          id="forbidDynamicSchema" 
-          v-model="jobMetaData.forbidDynamicSchema"
-          :disabled="serverJobState?.forbidDynamicSchema" />
-          <a :class="`text-md ml-2 ${serverJobState?.forbidDynamicSchema ? 'text-h-panel-h' : 'text-info'}`">Will I be restricted?</a>
+          <InputSwitch
+            id="forbidDynamicSchema"
+            v-model="jobMetaData.forbidDynamicSchema"
+            :disabled="serverJobState?.forbidDynamicSchema"
+          />
+          <a
+            :class="`text-md ml-2 ${serverJobState?.forbidDynamicSchema ? 'text-h-panel-h' : 'text-info'}`"
+            >Will I be restricted?</a
+          >
         </div>
-        <a v-if="jobMetaData.forbidDynamicSchema && !serverJobState?.forbidDynamicSchema " class="text-warning">
-          Warning: Enableing this option will restrict all futher entries to the layout of the new script.
+        <a
+          v-if="jobMetaData.forbidDynamicSchema && !serverJobState?.forbidDynamicSchema"
+          class="text-warning"
+        >
+          Warning: Enableing this option will restrict all futher entries to the layout of the new
+          script.
         </a>
-        <a v-if="jobMetaData.forbidDynamicSchema && !serverJobState?.forbidDynamicSchema" class="text-warning">
+        <a
+          v-if="jobMetaData.forbidDynamicSchema && !serverJobState?.forbidDynamicSchema"
+          class="text-warning"
+        >
           Warning: Static schemas cannot be disabled once set!
         </a>
       </div>
@@ -240,8 +257,8 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
           </FloatLabel>
         </div>
         <a v-if="isEdit && serverJobState?.forbidDynamicSchema" class="text-warning">
-          Warning: When a change in the parameters results in a change of the static schema,
-          an error will be thrown.
+          Warning: When a change in the parameters results in a change of the static schema, an
+          error will be thrown.
         </a>
       </div>
 

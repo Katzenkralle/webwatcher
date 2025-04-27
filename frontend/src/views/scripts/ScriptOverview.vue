@@ -42,10 +42,11 @@ const formattedGlobalScriptData = computed(() =>
       <h1>Script Overview</h1>
       <div class="subsection flex flex-col">
         <p>
-          Here, you can create new Watcher by uploading a valid script. additionally, you can edit or delete existing once.
+          Here, you can create new Watcher by uploading a valid script. additionally, you can edit
+          or delete existing once.
           <br />
           <a class="font-bold">Note:</a> The parameters a script recives when running them as a job
-          may be altered by replacing the script but once existing parameters must never be removed. 
+          may be altered by replacing the script but once existing parameters must never be removed.
         </p>
         <ScriptInterfaceDocs class="mx-auto mt-4" />
       </div>
@@ -59,11 +60,7 @@ const formattedGlobalScriptData = computed(() =>
       </div>
 
       <FloatLabel variant="in" class="mt-4">
-        <InputText
-          v-model="scriptFilter.global.value"
-          class="w-full"
-          size="small"
-        />
+        <InputText v-model="scriptFilter.global.value" class="w-full" size="small" />
         <label>Search for a script</label>
       </FloatLabel>
 
@@ -102,11 +99,14 @@ const formattedGlobalScriptData = computed(() =>
                 button-icon="pi pi-trash"
                 button-class="p-button-danger"
                 button-label=""
-                @confirm="() => deleteScript(slotProps.data.name).then(() => {
-                  globalTableMetaData = globalTableMetaData.filter(
-                    (entry) => entry.script !== slotProps.data.name,
-                  )
-                })"
+                @confirm="
+                  () =>
+                    deleteScript(slotProps.data.name).then(() => {
+                      globalTableMetaData = globalTableMetaData.filter(
+                        (entry) => entry.script !== slotProps.data.name,
+                      )
+                    })
+                "
               />
             </div>
           </template>

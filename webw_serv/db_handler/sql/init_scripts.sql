@@ -29,7 +29,7 @@ INSERT INTO script_list (fs_path, name, description, temporary)
 VALUES (
     './webw_serv_scripts_store/scripts/device_sensors.py',
     'Sensor Watcher',
-    'This watcher retrieves the status of sensors on the device.\nArguments:\n- ignore_chips: A list of chips to ignore (list of strings). E.g.: acpitz,x86_pkg_temp\n- ignore_sensors: A list of sensors to ignore (list of strings). E.g.: cpu0,cpu1',
+    'This watcher retrieves the status of sensors on the device.\nArguments:\n- ignore_chips: A list of chips to ignore (list of strings). E.g.: acpitz,x86_pkg_temp\n- ignore_sensors: A list of sensors to ignore (list of strings). E.g.: cpu0,cpu1\NOTE: Whether this script works as expected highly depends on your host system and Docker privileges. If no sensors are found, you could try elevating the containers privileges or installing appropriate drivers on your host machine!',
     FALSE
 );
 

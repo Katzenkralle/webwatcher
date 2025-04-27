@@ -175,8 +175,7 @@ class Mutation:
 
         if execute_timer is not None:
             try:
-                await maria.delete_cron_job(job_id=id_)
-                await maria.add_cron_job(job_id=id_, cron_time=execute_timer, enabled=enabled)
+                await maria.add_or_update_cron_job(job_id=id_, cron_time=execute_timer, enabled=enabled)
                 if enabled:
                     scheduler.add_job(
                         func=watch_runner_warper,

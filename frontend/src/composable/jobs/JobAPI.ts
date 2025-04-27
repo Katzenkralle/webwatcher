@@ -13,7 +13,7 @@ export interface jobEntryInput extends jobEnty {
 }
 
 export const DUMMY_JOB_ENTRY: jobEnty = {
-  timestamp: "sometime",
+  timestamp: 'sometime',
   runtime: 0,
   errorMsg: 'CATS_AND_DOGS',
   scriptFailure: false,

@@ -15,3 +15,4 @@ DEFAULT_JOB_DESCRIPTIONS: list[str] = [
     "There is no job description",
     "Please write a job description",
     ]
+API_VERSION: str = "1.0.0"

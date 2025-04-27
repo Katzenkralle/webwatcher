@@ -39,7 +39,9 @@ const aData = defineComponent({
         <div class="flex flex-col">
           <aData class="text-lg">Discription</aData>
           <p class="[word-wrap:break-word]">{{ props.metaData.description }}</p>
-          <p class="mt-auto">Using: <aData>{{ props.metaData.script }}</aData></p> 
+          <p class="mt-auto">
+            Using: <aData>{{ props.metaData.script }}</aData>
+          </p>
         </div>
         <div>
           <ul class="list-disc list-inside">
@@ -57,7 +59,7 @@ const aData = defineComponent({
             </template>
             <template v-else>
               <li>
-                Dynamic Schema:
+                Static Schema:
                 <a class="text-success">Disabled</a>
               </li>
             </template>
