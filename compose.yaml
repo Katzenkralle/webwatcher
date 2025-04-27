@@ -21,6 +21,8 @@ services:
       - "80:8080"
     volumes:
       - webwatcher_data:/webwatcher/webw_serv_scripts_store
+    cap_add:
+      - SYS_TIME
 
 networks:
   internal:
