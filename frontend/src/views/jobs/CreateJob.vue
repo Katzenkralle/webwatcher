@@ -15,8 +15,13 @@ import Textarea from 'primevue/textarea'
 import InputText from 'primevue/inputtext'
 import InputSwitch from 'primevue/inputswitch'
 import FloatLabel from 'primevue/floatlabel'
+import PopupImageSlideshow from '@/components/reusables/PopupImageSlideshow.vue'
 
 import NavButtons from '@/components/reusables/NavButtons.vue'
+
+const schemaHelpSlides = [
+  new URL('@/assets/img/help_slides/schema_help.webp', import.meta.url).href,
+]
 
 const isEdit = ref<boolean>(false)
 const jobMetaData = ref<
@@ -195,7 +200,10 @@ watch(ref(router.currentRoute.value.params.id), (newJobId) => {
       </div>
 
       <div v-if="globalScriptData[jobMetaData.script]?.supportsStaticSchema" class="input-box">
-        <label for="forbidDynamicSchema">Forbid Dynamic Schema</label>
+        <span class="flex flex-wrap justify-between items-centers">
+          <label class="input-box-label" for="forbidDynamicSchema">Forbid Dynamic Schema</label>
+          <PopupImageSlideshow :images="schemaHelpSlides" title="Static Schema: Help" />
+        </span>
         <div class="flex flex-row items-center">
           <InputSwitch
             id="forbidDynamicSchema"

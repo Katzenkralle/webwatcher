@@ -33,10 +33,10 @@ watch(
 )
 
 const helpImages = [
-  new URL('@/assets/img/filters/help_filters1.webp', import.meta.url).href,
-  new URL('@/assets/img/filters/help_filters2.webp', import.meta.url).href,
-  new URL('@/assets/img/filters/help_filters3.webp', import.meta.url).href,
-  new URL('@/assets/img/filters/help_filters4.webp', import.meta.url).href,
+  new URL('@/assets/img/help_slides/filters/help_filters1.webp', import.meta.url).href,
+  new URL('@/assets/img/help_slides/filters/help_filters2.webp', import.meta.url).href,
+  new URL('@/assets/img/help_slides/filters/help_filters3.webp', import.meta.url).href,
+  new URL('@/assets/img/help_slides/filters/help_filters4.webp', import.meta.url).href,
 ]
 </script>
 

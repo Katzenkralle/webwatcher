@@ -23,10 +23,13 @@ import { useStatusMessage } from '@/composable/core/AppState'
 
 const suggestedItems = ref<JobMeta[]>([])
 
-watch(() => globalTableMetaData.value, async () => {
-  suggestedItems.value = await getAllJobMetaData()
-}, { immediate: true })
-
+watch(
+  () => globalTableMetaData.value,
+  async () => {
+    suggestedItems.value = await getAllJobMetaData()
+  },
+  { immediate: true },
+)
 
 const recomputeSugestions = (search: string) => {
   if (search === '') {
@@ -54,7 +57,7 @@ const elementColor = computed((): string[] => {
 
 <template>
   <main>
-    <div class="w-full flex flex-col items-center max-w-full!"> 
+    <div class="w-full flex flex-col items-center max-w-full!">
       <div class="main-content-box">
         <h1>Job Overview</h1>
         <p class="subsection">
@@ -67,12 +70,14 @@ const elementColor = computed((): string[] => {
         <div class="w-full flex flex-wrap justify-between items-end">
           <h3 class="self-end">Added Jobs:</h3>
           <div>
-          <InputGroup>
-            <Button label="Create Job" icon="pi pi-plus" @click="() => router.push('/jobs/create/')" />
-            <Button
-              icon="pi pi-refresh"
-              @click=" () => refreshMeta()"/>
-          </InputGroup>
+            <InputGroup>
+              <Button
+                label="Create Job"
+                icon="pi pi-plus"
+                @click="() => router.push('/jobs/create/')"
+              />
+              <Button icon="pi pi-refresh" @click="() => refreshMeta()" />
+            </InputGroup>
           </div>
         </div>
         <FloatLabel variant="in">

@@ -37,7 +37,7 @@ defineExpose<{ tableInputForGraph: Reactive<GraphInput>; resetInput: () => void 
   resetInput,
 })
 
-const helpImages = [new URL('@/assets/img/placeholder.png', import.meta.url).href]
+const helpImages = [new URL('@/assets/img/help_slides/graph_help.webp', import.meta.url).href]
 
 const title = ref('')
 const lastSavedTitle = ref<string | undefined>(undefined)

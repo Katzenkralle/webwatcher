@@ -59,10 +59,13 @@ const formattedGlobalScriptData = computed(() =>
         <h3 class="self-end">Added Scripts:</h3>
         <div>
           <InputGroup>
-            <Button label="Add Script" icon="pi pi-plus" :disabled="!user || !user.isAdmin" @click="router.push('/script/upload/')" />
             <Button
-                icon="pi pi-refresh"
-                @click=" () => refreshMeta()"/>
+              label="Add Script"
+              icon="pi pi-plus"
+              :disabled="!user || !user.isAdmin"
+              @click="router.push('/script/upload/')"
+            />
+            <Button icon="pi pi-refresh" @click="() => refreshMeta()" />
           </InputGroup>
         </div>
       </div>
