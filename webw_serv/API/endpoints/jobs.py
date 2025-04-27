@@ -118,33 +118,43 @@ class Mutation:
         scheduler: BackgroundScheduler = info.context["request"].state.scheduler
         if description is None:
             description = choice(CONFIG.DEFAULT_JOB_DESCRIPTIONS)
-
+        
+        if (execute_timer is not None) and len(execute_timer) > 256:
+            return Message(
+                message="Cron time is too long",
+                status=MessageType.DANGER,
+            )
+        
+        rollback = lambda: None
+        #  Add job to get id if it does not exist
         if id_ is None:
             try:
                 id_ = await maria.add_job_list(script_name=script, job_name=name, description=description, dynamic_schema=not forbid_dynamic_schema)
                 await mongo.register_job(id_)
+                rollback = lambda: [mongo.delete_job(id_), maria.delete_job(id_)]
+
             except Exception as e:
+                rollback()
                 return Message(
                     message=f"Failed to add job: {str(e)}",
                     status=MessageType.DANGER,
                 )
 
-
+        # Get job input parameters
         json_data = None
         if paramerter_kv is not None:
             try:
                 json_data = json.loads(paramerter_kv)
-                if json_data is not None:
-                    await maria.set_job_input_settings(job_id=id_, settings=json_data)
             except Exception as e:
+                rollback()
                 return Message(
-                    message=f"Failed to set job input settings: {str(e)}",
+                    message=f"Failed to get job input parameters: {str(e)}",
                     status=MessageType.DANGER,
                 )
         if not json_data:
             json_data = {}
 
-
+        # run the script to get the expected schema
         try:
             # script must be resolved first
             script_check_result = (await maria.get_script_info(script, True))
@@ -158,16 +168,26 @@ class Mutation:
                 for key, value in classedReturnSchema.items():
                     return_schema.append(Parameter(key=key, value=getattr(value, "__name__", None)))
         except Exception as e:
+            rollback()
             return Message(
                 message=f"Failed to get return schema: {str(e)}",
-                status=MessageType.DANGER,
-            )
+                status=MessageType.DANGER)
+        
+        # Save the new input parameters
+        try:
+            if json_data is not None:
+                await maria.set_job_input_settings(job_id=id_, settings=json_data)
+        except Exception as e:
+            rollback()
+            return Message(
+                message=str(e),
+                status=MessageType.DANGER)
 
-        # We need to ron edit even on a new job, because we need to
-        # save the expected schema
+        # Edit the job with the now known expected schema
         try:
             await maria.edit_job_list(script_name=script, job_name=name, description=description, dynamic_schema=not forbid_dynamic_schema, job_id=id_, expected_schema=return_schema)
         except Exception as e:
+            rollback()
             return Message(
                 message=f"Failed to edit job: {str(e)}",
                 status=MessageType.DANGER,
@@ -193,6 +213,7 @@ class Mutation:
                         pass
 
             except Exception as e:
+                rollback()
                 return Message(
                     message=f"Failed to add cron job: {str(e)}",
                     status=MessageType.DANGER,

@@ -85,7 +85,7 @@ const getLoginUrl = (token: string, type: string) => {
   <div>
     <PupupDialog
       ref="infoDialog"
-      passthrou-classes="max-w-300"
+      passthrou-classes="max-w-300!"
       :title="infoDilogData.title"
       @cancel="
         () => {

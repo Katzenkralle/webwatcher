@@ -6,10 +6,12 @@ import {
   updateOrCreateJob,
   type JobMeta,
 } from '@/composable/jobs/JobMetaAPI'
+import { refreshMeta } from '@/composable/core/helpers'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import AutoComplete from 'primevue/autocomplete'
 import InputSwitch from 'primevue/toggleswitch'
+import InputGroup from 'primevue/inputgroup'
 import FloatLabel from 'primevue/floatlabel'
 import router from '@/router'
 import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue'
@@ -62,7 +64,14 @@ const elementColor = computed((): string[] => {
       <SmallSeperator :is-dashed="true" class="mb-10" />
       <div class="w-full flex flex-wrap justify-between items-end">
         <h3 class="self-end">Added Jobs:</h3>
-        <Button label="Create Job" icon="pi pi-plus" @click="() => router.push('/jobs/create/')" />
+        <div>
+        <InputGroup>
+          <Button label="Create Job" icon="pi pi-plus" @click="() => router.push('/jobs/create/')" />
+          <Button
+            icon="pi pi-refresh"
+            @click=" () => refreshMeta()"/>
+        </InputGroup>
+        </div>
       </div>
       <FloatLabel variant="in">
         <AutoComplete

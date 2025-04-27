@@ -417,10 +417,15 @@ class MariaDbHandler:
         return True
 
     async def set_job_input_settings(self, job_id: int, settings: dict) -> bool:
+        old_settings = await self.get_job_input_settings(job_id)
         self.__cursor.execute("DELETE FROM job_input_settings WHERE job_id = ?", (job_id,))
         for key, value in settings.items():
-            self.__cursor.execute("INSERT INTO job_input_settings (job_id, keyword, value) VALUES (?, ?, ?)",
+            try:
+                self.__cursor.execute("INSERT INTO job_input_settings (job_id, keyword, value) VALUES (?, ?, ?)",
                                   (job_id, key, value))
+            except Exception as e:
+                self.set_job_input_settings(job_id, old_settings)
+                raise(f"MARIA: Failed to save parameter {key}: {e}")
         self.__conn.commit()
         return True
 

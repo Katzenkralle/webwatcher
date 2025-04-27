@@ -7,12 +7,15 @@ import { ref, computed, onMounted } from 'vue'
 import InputText from 'primevue/inputtext'
 import ScriptInterfaceDocs from '@/components/scripts/ScriptInterfaceDocs.vue'
 import FloatLabel from 'primevue/floatlabel'
+import InputGroup from 'primevue/inputgroup'
+import { refreshMeta } from '@/composable/core/helpers'
 
 import SmallSeperator from '@/components/reusables/SmallSeperator.vue'
 import { globalTableMetaData } from '@/composable/jobs/JobMetaAPI'
 import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue'
 import { FilterMatchMode } from '@primevue/core/api'
 import { getUser } from '@/composable/core/User'
+import router from '@/router'
 
 const scriptFilter = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -54,9 +57,14 @@ const formattedGlobalScriptData = computed(() =>
 
       <div class="w-full flex flex-wrap justify-between items-end">
         <h3 class="self-end">Added Scripts:</h3>
-        <router-link to="/script/upload/">
-          <Button label="Add Script" icon="pi pi-plus" :disabled="!user || !user.isAdmin" />
-        </router-link>
+        <div>
+          <InputGroup>
+            <Button label="Add Script" icon="pi pi-plus" :disabled="!user || !user.isAdmin" @click="router.push('/script/upload/')" />
+            <Button
+                icon="pi pi-refresh"
+                @click=" () => refreshMeta()"/>
+          </InputGroup>
+        </div>
       </div>
 
       <FloatLabel variant="in" class="mt-4">

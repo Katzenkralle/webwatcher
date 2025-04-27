@@ -1,3 +1,6 @@
+import { getAllJobMetaData } from '@/composable/jobs/JobMetaAPI'
+import { fetchScripts } from '@/composable/scripts/ScriptAPI'
+
 export function getCssColors(): {
   app: string
   panel: string
@@ -20,4 +23,9 @@ export const scrollToElement = (id: string) => {
   if (element) {
     element.scrollIntoView({ behavior: 'smooth' })
   }
+}
+
+export const refreshMeta = () => {
+  getAllJobMetaData(true)
+  fetchScripts()
 }

@@ -36,10 +36,11 @@ def enforce_types(params: dict[str, str] | list[DbParameter],
     types = db_parameter_to_dict(expected_types)
     
     result_dict = {}
+    
     for key, value in values.items():
         if strict and key not in types:
             raise ValueError(f"Key '{key}' not found in expected types.")
-        if not strict and value is None:
+        if not strict and value is None or value == "":
             result_dict[key] = None
             continue
         expected_type = types.get(key, type(value))
@@ -52,26 +53,29 @@ def enforce_types(params: dict[str, str] | list[DbParameter],
         else:
             expected_type_name = str(expected_type).lower()
 
-        match expected_type_name:
-            case "str":
-                result_dict[key] = str(value)
-            case "int":
-                result_dict[key] = int(value)
-            case "bool":
-                if isinstance(value, str):
-                    match value.lower():
-                        case "true" | "1":
-                            result_dict[key] = True
-                        case "false" | "0":
-                            result_dict[key] = False
-                        case _:
-                            raise ValueError(f"Invalid boolean value: {value}")
-                else:
-                    result_dict[key] = bool(value)
-            case "float":
-                result_dict[key] = float(value)
-            case _:
-                result_dict[key] = str(value)
+        try:
+            match expected_type_name:
+                case "str":
+                    result_dict[key] = str(value)
+                case "int":
+                    result_dict[key] = int(value)
+                case "bool":
+                    if isinstance(value, str):
+                        match value.lower():
+                            case "true" | "1":
+                                result_dict[key] = True
+                            case "false" | "0":
+                                result_dict[key] = False
+                            case _:
+                                raise ValueError(f"Invalid boolean value: {value}")
+                    else:
+                        result_dict[key] = bool(value)
+                case "float":
+                    result_dict[key] = float(value)
+                case _:
+                    result_dict[key] = str(value)
+        except Exception as e:
+            raise ValueError(f"Could not verify type of {key}, expected: {expected_type_name}. Error: {e}")
 
     if isinstance(params, DbParameter):
         return dict_to_db_parameter(result_dict)
