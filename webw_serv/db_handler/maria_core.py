@@ -64,7 +64,7 @@ class MariaDbHandler:
                 break
             except mariadb.Error as e:
                 logger.warning(f"MARIA: Failed to connect to MariaDB: {e} - {retry} retries left")
-                time.sleep(30)
+                time.sleep(45)
                 retry -= 1
                 conn = None
         if conn is None:

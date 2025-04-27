@@ -60,11 +60,14 @@ onUnmounted(() => {
 })
 
 const tableMetaData = ref<JobMeta[]>([])
+const isSlim = computed(() => {
+  return router.currentRoute.value.path === '/login' || router.currentRoute.value.name === undefined
+}
+)
+
 
 const extendedOptions = computed((): BarItem[] => {
-  const isSlimMode = router.currentRoute.value.path === '/login'
-
-  return isSlimMode
+  return isSlim.value
     ? []
     : [
         {
@@ -116,16 +119,11 @@ const computeOptions = computed((): BarItem[] => {
 
 watch(globalTableMetaData, () => {
   // this aproach is needed, for async cannot be directly comuputed
+  if (isSlim.value) return
   getAllJobMetaData().then((metadata) => {
     tableMetaData.value = metadata
   })
-})
-
-onMounted(() => {
-  getAllJobMetaData().then((metadata) => {
-    tableMetaData.value = metadata
-  })
-})
+}, { immediate: true })
 
 // Shared itemRenderer component
 const ItemRenderer = defineComponent({

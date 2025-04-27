@@ -55,6 +55,8 @@ services:
     networks:
       - internal
       - global
+    ports:
+      - 80:8080
     volumes:
       - webwatcher_data:/webwatcher/webw_serv_scripts_store
       - /etc/timezone:/etc/timezone:ro # to get the correct timezone
@@ -65,7 +67,6 @@ networks:
     driver: bridge
     internal: true
   global:
-    name: nginx-proxy_default
     external: false
 
 volumes:

@@ -36,7 +36,7 @@ const fetchSessions = () => {
       sessions.value = response
     })
     .catch((error: Error) => {
-      console.debug(error)
+      console.error(error)
     })
 }
 onMounted(() => {
