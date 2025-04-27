@@ -200,7 +200,6 @@ export interface JobMeta {
     return new Promise((resolve, reject) => {
       queryGql(query, variables)
         .then(async(response) => {
-          console.log(response)
           const key = response.providedTypes[0].type
           switch (key) {
             case 'JobFullInfoList':

@@ -1,6 +1,6 @@
 import { queryGql, reportError, type GQLResponse } from '@/composable/api/QueryHandler'
 import { ref } from 'vue'
-import { useLoadingAnimation, useStatusMessage } from './AppState'
+import { useStatusMessage } from './AppState'
 
 export interface User {
   username: string
@@ -82,7 +82,6 @@ export const allUsers = async (): Promise<User[]> => {
 export const createUser = async (
   newUser: User & { password: string; currentPassword: string },
 ): Promise<User> => {
-  useLoadingAnimation().setState(true)
   const mutation = `
     mutation createNewUser ($password: String!, $username: String!, $currentPassword: String!, $isAdmin: Boolean) {
         createUser(
@@ -117,13 +116,9 @@ export const createUser = async (
       reportError(error)
       throw error
     })
-    .finally(() => {
-      useLoadingAnimation().setState(false)
-    })
 }
 
 export const deleteUser = async (username: string): Promise<void> => {
-  useLoadingAnimation().setState(true)
   const mutation = `
     mutation {
         deleteUser(username: "${username}") {
@@ -149,8 +144,5 @@ export const deleteUser = async (username: string): Promise<void> => {
     .catch((error: GQLResponse | Error) => {
       reportError(error)
       throw error
-    })
-    .finally(() => {
-      useLoadingAnimation().setState(false)
     })
 }

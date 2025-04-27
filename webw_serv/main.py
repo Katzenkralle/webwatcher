@@ -9,6 +9,7 @@ from webw_serv.main_establish_dbs import establish_db_connections, setup as setu
 from webw_serv.utility.oven_cleaner import cleanup_folder
 from webw_serv.API.core import get_routes
 from webw_serv.configurator import Config
+from webw_serv.watcher.utils import enforce_types
 from webw_serv.watcher.manager import watch_runner_warper
 
 from webw_serv.utility.custom_logging import CustomLogger
@@ -49,7 +50,7 @@ async def load_cron_jobs(maria: MariaDbHandler, scheduler: BackgroundScheduler):
             func=watch_runner_warper,
             trigger=CronTrigger.from_crontab(cron_time),
             args=(),
-            kwargs={"config": config, "fs_path": fs_path, "script_name": script_name, "job_id": id_},
+            kwargs={"config": enforce_types(config, script_info.input_schema), "fs_path": fs_path, "script_name": script_name, "job_id": id_},
             id=str(id_),
             name=job.name,
             replace_existing=True

@@ -8,17 +8,7 @@ export interface StatusMessage {
   icon: string
 }
 
-const isLoading: Ref<boolean> = ref(false)
-
-export const useLoadingAnimation = () => {
-  const setState = (value: boolean) => {
-    isLoading.value = value
-  }
-  return {
-    isLoading,
-    setState,
-  }
-}
+export const loadingBarIsLoading: Ref<boolean> = ref(false)
 
 const statusMsg: Ref<Record<number, StatusMessage>> = ref({})
 const msgCounter: Ref<number> = ref(-1)

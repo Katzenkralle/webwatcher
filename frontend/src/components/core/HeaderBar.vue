@@ -11,7 +11,7 @@ import {
   Transition,
   onUnmounted,
 } from 'vue'
-import { useLoadingAnimation } from '@/composable/core/AppState'
+import { loadingBarIsLoading } from '@/composable/core/AppState'
 import { getAllJobMetaData, globalTableMetaData, type JobMeta } from '@/composable/jobs/JobMetaAPI'
 import router from '@/router'
 import NotificationCenter from './NotificationCenter.vue'
@@ -321,6 +321,6 @@ const ItemContainerVertical = defineComponent({
 <template>
   <header class="w-full flex flex-col z-10 sticky" :style="{ top: `calc(var(--spacing) * -13)` }">
     <ItemContainerHorizontal class="bg-panel w-full" :items="computeOptions" />
-    <LoadingBar :is-loading="useLoadingAnimation().isLoading" />
+    <LoadingBar :is-loading="ref(loadingBarIsLoading)" />
   </header>
 </template>

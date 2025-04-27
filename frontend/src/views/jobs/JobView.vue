@@ -67,7 +67,6 @@ watch(
     newHandler
       .getRemoteStateHiddenCols()
       .then((res) => {
-        console.log('Hidden columns from remote state', res)
         if (res) {
           jobHandler.jobDataHandler.hiddenColumns.value = res
         }
@@ -81,7 +80,6 @@ watch(
 watch(
   () => jobHandler.jobDataHandler.hiddenColumns.value,
   (newVal) => {
-    console.log('Hidden columns changed', hiddenColsRemoteState)
     if (!hiddenColsRemoteState) return
     userConfig.value.comitConfig({
       hiddenCols: JSON.stringify(newVal),

@@ -182,7 +182,7 @@ class Mutation:
                         func=watch_runner_warper,
                         trigger=CronTrigger.from_crontab(execute_timer),
                         args=(),
-                        kwargs={"config": json_data, "fs_path": script_check_result[0].fs_path, "script_name": script, "job_id": id_},
+                        kwargs={"config": type_enforced_input, "fs_path": script_check_result[0].fs_path, "script_name": script, "job_id": id_},
                         id=str(id_),
                         name=name,
                         replace_existing=True

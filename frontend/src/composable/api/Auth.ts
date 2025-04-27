@@ -1,7 +1,7 @@
 import { AUTH_ENDPOINT } from '@/main'
 import router from '@/router'
 import { queryGql, reportError, type GQLResponse } from './QueryHandler'
-import { useStatusMessage } from '../core/AppState'
+import { useStatusMessage, loadingBarIsLoading } from '../core/AppState'
 
 export interface AuthResponse {
   access_token: string
@@ -38,7 +38,7 @@ export const getSessionFromJWT = () => {
 }
 
 export function writeAuthCookie(type: string, token: string, allowInsecure: boolean = false) {
-  document.cookie = `oauth2=${type} ${token};${allowInsecure ? '' : 'secure;'}path=/;samesite=strict`
+  document.cookie = `oauth2=${type} ${token};${allowInsecure ? '' : 'secure;'}path=/;samesite=strict;Max-Age=63158400`
   if (allowInsecure) {
     useStatusMessage().newStatusMessage(
       'You are using a insecure connection. Please use HTTPS.',
@@ -136,6 +136,7 @@ export const requestToken = async (
   password: string,
   name: string | undefined = undefined,
 ) => {
+  loadingBarIsLoading.value = true
   const formData = new FormData()
   formData.append('username', username)
   formData.append('password', password)
@@ -162,6 +163,9 @@ export const requestToken = async (
         resp_or_err = new Error(resp_or_err.statusText ? resp_or_err.statusText : 'Unknown error')
       }
       throw resp_or_err
+    })
+    .finally(() => {
+      loadingBarIsLoading.value = false
     })
 }
 

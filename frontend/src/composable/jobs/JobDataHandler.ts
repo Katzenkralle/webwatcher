@@ -14,7 +14,7 @@ import {
 
 import { reportError } from '@/composable/api/QueryHandler'
 import type { IterationContext } from '../filter/FilterGroups'
-import { useLoadingAnimation, useStatusMessage } from '../core/AppState'
+import { useStatusMessage } from '../core/AppState'
 import { useFilterIterationContext } from '@/composable/filter/FilterGroups'
 
 /*
@@ -103,7 +103,6 @@ export const useJobDataHandler = (
   const highlightSubstring = ref<Record<number, Record<string, HighlightSubstring[]>>>({})
 
   const lazyFetch = async (startAt: number | undefined = undefined, all: boolean = false, force: boolean = false) => {
-    useLoadingAnimation().setState(true)
     startAt = startAt || Object.keys(localJobData.value).length
     if (force || Object.keys(localJobData.value).length < startAt + fetchAmount.value && !allFetched.value) {
       localJobData.value = {
@@ -128,7 +127,6 @@ export const useJobDataHandler = (
       useStatusMessage().newStatusMessage('All data fetched', 'success')
       allFetched.value = true
     }
-    useLoadingAnimation().setState(false)
   }
 
   const retriveRowsById = async (options: {
@@ -374,7 +372,6 @@ export const useJobDataHandler = (
   const saveToFile = async (mode: 'all' | 'visable', constrainColumn: string[] = []) => {
     // When supported by firefox, replace with File System API
     try {
-      useLoadingAnimation().setState(true)
       let data
       if (mode === 'all') {
         data = localJobData.value
@@ -406,8 +403,6 @@ export const useJobDataHandler = (
     } catch {
       useStatusMessage().newStatusMessage('Failed to save data to file', 'danger')
       throw new Error('Failed to save data to file')
-    } finally {
-      useLoadingAnimation().setState(false)
     }
   }
 

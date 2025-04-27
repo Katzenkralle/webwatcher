@@ -1,5 +1,5 @@
 import { queryGql, reportError, recordListToRecord } from '@/composable/api/QueryHandler'
-import { useLoadingAnimation, useStatusMessage } from '@/composable/core/AppState'
+import { useStatusMessage } from '@/composable/core/AppState'
 import { ref } from 'vue'
 
 export const globalScriptData = ref<Record<string, ScriptMeta>>({})
@@ -41,7 +41,6 @@ const setScriptMetaData = (data: Record<string, any>[]) => {
 }
 
 export async function deleteScript(name: string) {
-  useLoadingAnimation().setState(true)
   const mutation = `
     mutation removeScript ($name: String!) {
         deleteScript(name: $name) {
@@ -64,13 +63,9 @@ export async function deleteScript(name: string) {
     .catch((e) => {
       useStatusMessage().newStatusMessage(e, 'danger')
     })
-    .finally(() => {
-      useLoadingAnimation().setState(false)
-    })
 }
 
 export async function removeTemporaryScripts() {
-  useLoadingAnimation().setState(true)
   const mutation = `
     mutation removeTemporaryScripts {
         removeTemporaryScripts {
@@ -90,9 +85,6 @@ export async function removeTemporaryScripts() {
     })
     .catch((e) => {
       reportError(e)
-    })
-    .finally(() => {
-      useLoadingAnimation().setState(false)
     })
 }
 
@@ -194,7 +186,6 @@ export async function submitScript(
   discription: string,
   id: string | undefined,
 ): Promise<void> {
-  useLoadingAnimation().setState(true)
   const mutation = `mutation submitScript($name: String!, $discription: String!, $id: String) {
         uploadScriptData(
             id_: $id,
@@ -238,9 +229,6 @@ export async function submitScript(
       .catch((e) => {
         reportError(e)
         reject()
-      })
-      .finally(() => {
-        useLoadingAnimation().setState(false)
       })
   })
 }

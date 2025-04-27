@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, type Ref } from 'vue'
+import { ref, computed, watch, type Ref } from 'vue'
 
 const loadingAnimationCounter = ref(-1)
 const DEFAULT_DURATION = 2
@@ -9,11 +9,40 @@ const props = defineProps<{
 }>()
 
 const duration = computed(() => props.duration ?? DEFAULT_DURATION)
+const loadingState = ref(false)
+let lastChangeAt = Infinity
+let timeoutIdTrue: number|null = null
+
+watch(
+  () => props.isLoading.value,
+  (newValue) => {
+    // Clear any existing timer
+    const diff = lastChangeAt + (duration.value * 0.8 * 1000) - Date.now()
+    if (diff > 0 || !newValue ) {
+      if (timeoutIdTrue === null) {
+          timeoutIdTrue = setTimeout(() => {
+            loadingState.value = true
+            lastChangeAt = Date.now()
+            timeoutIdTrue = null
+            setTimeout(() => {
+              loadingState.value = false
+            }, 10)
+        }, diff )
+      }
+    }
+    else {
+      loadingState.value = newValue
+      lastChangeAt = Date.now()
+    }
+  },
+  { immediate: true }
+)
+
 </script>
 <template>
   <div id="appStatusBar" class="w-full h-1 bg-panel-d">
     <Transition name="loading">
-      <div v-if="props.isLoading.value" class="relative w-screen h-1 overflow-hidden">
+      <div v-if="loadingState" class="relative w-screen h-1 overflow-hidden">
         <div
           class="animation-bar"
           @animationiteration="

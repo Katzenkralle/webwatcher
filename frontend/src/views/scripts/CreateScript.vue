@@ -10,7 +10,7 @@ import Textarea from 'primevue/textarea'
 import { ref, watch, reactive, computed, onMounted } from 'vue'
 import router from '@/router'
 
-import { useLoadingAnimation, useStatusMessage } from '@/composable/core/AppState'
+import { useStatusMessage } from '@/composable/core/AppState'
 import {
   validateFile,
   getAllScripts,
@@ -79,7 +79,6 @@ const computedScript = computed((): undefined | ScriptMeta => {
 })
 
 const onFileSelect = (file_event: FileUploadSelectEvent) => {
-  useLoadingAnimation().setState(true)
   fileStatus.value.severity = 'warn'
   fileStatus.value.validationMsg = 'Validating File...'
   fileStatus.value.availableParameters = {}
@@ -90,7 +89,6 @@ const onFileSelect = (file_event: FileUploadSelectEvent) => {
       } else {
         fileStatus.value = { severity: 'error', ...response }
       }
-      useLoadingAnimation().setState(false)
     },
   )
 }

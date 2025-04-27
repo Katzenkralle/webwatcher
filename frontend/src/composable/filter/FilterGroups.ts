@@ -84,7 +84,6 @@ const evaluateNumber = (
       e instanceof ReferenceError ||
       (e instanceof TypeError && e.message.includes('Invalid number'))
     ) {
-      console.error(e + ' evaluating to true')
       return [true, e]
     }
     throw e
@@ -166,7 +165,6 @@ const groupEvaluator = (group: Group, jobEntrys: flattendJobEnty[]): flattendJob
               return shouldNegate(evaluateType(groupOrCondition.condition, entry))
           }
         } catch {
-          // console.debug("Error during evaluation:" + e);
           return false
         }
       }

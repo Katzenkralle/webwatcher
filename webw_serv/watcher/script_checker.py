@@ -2,6 +2,7 @@ import importlib
 
 from typing_extensions import Type
 
+from webw_serv.configurator.config import Config as Configurator
 from webw_serv import Watcher, CONFIG
 from webw_serv.watcher.errors import ScriptFormatException, ScriptException
 from  webw_serv.CONFIG import PY_MODULE_FROM_UNIX_PATH
@@ -45,6 +46,9 @@ def run_once_get_schema(module_name: str, config: dict[str, str]) ->  dict[str, 
         base_module_name = module_name
     base_module_name = CONFIG.MODULE_PREFIX + base_module_name
     try:
+        if Configurator().app.dont_pass_none_to_script:
+            # Remove None values from the config
+            config = {k: v for k, v in config.items() if v is not None}
         module = importlib.import_module(base_module_name, CONFIG.PACKAGE_NAME)
         # We checked subclasses when uploading the script
         instance = module.ScriptMain(config=config)
@@ -57,37 +61,6 @@ def run_once_get_schema(module_name: str, config: dict[str, str]) ->  dict[str, 
         return ScriptException(e)
 
 
-def value_to_type(value: str | int | bool | float) -> Type[str | int | bool | float]:
-    """
-    Convert a value to its type.
-
-    :param value: The value to convert.
-    :type value: str | int | bool | float
-    :return: The type of the value.
-    :rtype: Type[str | int | bool | float]
-    """
-    if isinstance(value, str):
-        return str
-    elif isinstance(value, int):
-        return int
-    elif isinstance(value, bool):
-        return bool
-    elif isinstance(value, float):
-        return float
-    else:
-        raise ValueError(f"Unsupported type: {type(value)}")
-
 
 def abc_implemented(cls) -> bool:
     return not bool(cls.__abstractmethods__)
-
-def are_keys_legal(data: dict[str, Type[str | int | bool]]) -> bool:
-    """
-    Check if the keys in the data dictionary are legal according to the CONFIG.ILLEGAL_KEYS.
-
-    :param data: The dictionary to check.
-    :type data: dict[str, Type[str | int | bool]]
-    :return: True if all keys are legal, False otherwise.
-    :rtype: bool
-    """
-    return not any(key in CONFIG.ILLEGAL_KEYS for key in data.keys())

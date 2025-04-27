@@ -24,8 +24,14 @@ def dict_to_db_parameter(params: dict[str, Any]) -> list[DbParameter]:
 def enforce_types(params: dict[str, str] | list[DbParameter], 
                   expected_types: dict[str, Type[str | int | bool]] |  list[DbParameter],
                   strict: bool = False) -> DbParameter | dict[str, Any]:
+    """
+    Enforces the types of parameters to match the expected types.
+    If the parameter is not found in the expected types, it will be ignored unless strict is True.
+    Strict mode also enforces all parameters to be not None.
+    """
+
     if len(params) == 0:
-        return []
+        return {}
     values = db_parameter_to_dict(params)
     types = db_parameter_to_dict(expected_types)
     
@@ -33,6 +39,9 @@ def enforce_types(params: dict[str, str] | list[DbParameter],
     for key, value in values.items():
         if strict and key not in types:
             raise ValueError(f"Key '{key}' not found in expected types.")
+        if not strict and value is None:
+            result_dict[key] = None
+            continue
         expected_type = types.get(key, type(value))
 
         # Normalize expected_type to a string

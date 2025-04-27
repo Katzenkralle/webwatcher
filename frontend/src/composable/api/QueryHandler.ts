@@ -1,5 +1,5 @@
 import { requireLogin } from './Auth'
-import { useStatusMessage } from '../core/AppState'
+import { useStatusMessage,  loadingBarIsLoading } from '../core/AppState'
 
 export interface GQLResponse {
   data: { [key: string]: any }
@@ -11,7 +11,11 @@ export const GQL_ENDPOINT = '/gql'
 export function queryGql(
   query: string,
   variables: Record<string, any> | undefined = undefined,
+  useLoadingBar: boolean = true,
 ): Promise<GQLResponse> {
+  if (useLoadingBar) {
+    loadingBarIsLoading.value = true
+  }
   return fetch(GQL_ENDPOINT, {
     method: 'POST',
     headers: {
@@ -51,6 +55,11 @@ export function queryGql(
         providedTypes: [{ type: 'gqlAPIError', field: '' }],
         errors: error,
       } as GQLResponse
+    })
+    .finally(() => {
+      if (useLoadingBar) {
+        loadingBarIsLoading.value = false
+      }
     })
 }
 

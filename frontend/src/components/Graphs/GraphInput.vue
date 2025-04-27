@@ -29,7 +29,6 @@ const graphConstructor = computed(() => {
 })
 
 const resetInput = () => {
-  console.log('resetInput')
   graphConstructor.value.reset()
 }
 
