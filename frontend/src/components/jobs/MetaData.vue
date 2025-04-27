@@ -36,26 +36,29 @@ const aData = defineComponent({
       </span>
       <SmallSeperator class="mx-auto" />
       <div class="info-columnn-container">
-        <p>{{ props.metaData.description }}</p>
-
+        <div class="flex flex-col">
+          <aData class="text-lg">Discription</aData>
+          <p class="[word-wrap:break-word]">{{ props.metaData.description }}</p>
+          <p class="mt-auto">Using: <aData>{{ props.metaData.script }}</aData></p> 
+        </div>
         <div>
           <ul class="list-disc list-inside">
             <li>
-              Last Executed at: <aData>{{ props.metaData.executedLast }}</aData>
+              Last Executed at: <aData>{{ props.metaData.executedLast ?? 'never' }}</aData>
             </li>
             <li>
               Corn: <aData>{{ props.metaData.executeTimer }}</aData>
             </li>
             <template v-if="props.metaData.forbidDynamicSchema">
               <li>
-                Dynamic Data:
-                <a class="text-error">Forbidden</a>
+                Static Schema:
+                <a class="text-error">Enabled</a>
               </li>
             </template>
             <template v-else>
               <li>
                 Dynamic Schema:
-                <a class="text-success">Allowed</a>
+                <a class="text-success">Disabled</a>
               </li>
             </template>
             <li>

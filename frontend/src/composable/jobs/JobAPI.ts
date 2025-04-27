@@ -1,7 +1,7 @@
 import { queryGql, reportError } from '@/composable/api/QueryHandler'
 
 export interface jobEnty {
-  timestamp: number
+  timestamp: string
   runtime: number
   errorMsg: string
   scriptFailure: boolean
@@ -13,7 +13,7 @@ export interface jobEntryInput extends jobEnty {
 }
 
 export const DUMMY_JOB_ENTRY: jobEnty = {
-  timestamp: 0,
+  timestamp: "sometime",
   runtime: 0,
   errorMsg: 'CATS_AND_DOGS',
   scriptFailure: false,

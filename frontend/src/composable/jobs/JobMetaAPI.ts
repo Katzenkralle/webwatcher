@@ -9,7 +9,7 @@ export interface JobMeta {
     description: string
     enabled: boolean
     executeTimer: string
-    executedLast: number
+    executedLast: string
     forbidDynamicSchema: boolean
     expectedReturnSchema: Record<string, string>
     parameters: Record<string, string> // KV of parameter name and value
