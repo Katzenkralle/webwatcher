@@ -1,4 +1,4 @@
-import { ref, computed, type Ref, type ComputedRef, watch } from 'vue'
+import { ref, computed, type Ref, type ComputedRef, watch, watchEffect } from 'vue'
 import {
   useJobData,
   DUMMY_JOB_ENTRY,
@@ -315,10 +315,10 @@ export const useJobDataHandler = (
   })
 
   const computeDisplayedData = ref<flattendJobEnty[]>([])
-  watch(() => computedFilterdJobData.value, (flattendJobEntys) => {
+  watchEffect(() => {
+    console.debug("Recomputing displayed data")
     highlightSubstring.value = []
-    console.log("Recomputing displayed data")
-
+    let flattendJobEntys: flattendJobEnty[] = computedFilterdJobData.value
     if (sortByString && sortByString.value.key) {
       const result = sortByStr(
         computedFilterdJobData.value,
