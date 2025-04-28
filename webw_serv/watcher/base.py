@@ -30,7 +30,7 @@ class Watcher(ABC):
         This method will be called regularly by the scheduler.
         
         :return: A list of entries that have been changed.
-        :rtype: dict[str, Any]
+        :rtype: dict[str, Type[str | int | bool | float]]
         """
         pass
 
@@ -41,7 +41,7 @@ class Watcher(ABC):
         This method will be called when a job is created or updated.
 
         :return: A dictionary of the schema, where the key is the field name and the value is the type.
-        :rtype: dict[str, str] | None
+        :rtype: dict[str, Type[str | int | bool | float]] | None
         """
         pass
 
@@ -55,6 +55,6 @@ class Watcher(ABC):
         This method will be called when the script is uploaded.
 
         :return: A dictionary of the schema, where the key is the field name and the value is the type.
-        :rtype: dict[str, str] | None
+        :rtype: dict[str, Type[str | int | bool | float]] | None
         """
         return None
