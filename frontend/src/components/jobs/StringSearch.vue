@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { FloatLabel, InputGroup, InputText, Button, MultiSelect, Popover, Checkbox } from 'primevue'
 import SmallSeperator from '../reusables/SmallSeperator.vue'
 
@@ -23,24 +23,43 @@ const allColumnsOptions = computed(() =>
     return { label: col.key }
   }),
 )
+
+const localKey = ref('')
+const localPopupState = {
+  caseInsensitive: props.mutSortByString.caseInsensitive,
+  ignoreColumns: props.mutSortByString.ignoreColumns,
+}  
+
+watch(
+  () => props.mutSortByString.key,
+  (newVal) => {
+    localKey.value = newVal
+  },
+  { immediate: true },
+)
+
 </script>
 
 <template>
   <InputGroup class="max-w-80">
     <InputText
-      v-model="props.mutSortByString.key"
+      v-model="localKey"
       placeholder="Search..."
       size="small"
       class="h-14"
-      @value-change="(e) => emit('update:key', e)"
+      @change="() => emit('update:key', localKey)"
     />
     <Button icon="pi pi-sliders-v" @click="(e) => sortByStringColumnSelectPopover?.toggle(e)" />
-    <Popover ref="sortByStringColumnSelectPopover">
+    <Popover ref="sortByStringColumnSelectPopover"
+    @hide="() => {
+        emit('update:ignoreColumns', localPopupState.ignoreColumns)
+        emit('update:caseInsensitive', localPopupState.caseInsensitive)
+      }">
       <div class="flex flex-col">
         <p class="mb-2">Collumns not to search:</p>
         <FloatLabel variant="in">
           <MultiSelect
-            v-model="props.mutSortByString.ignoreColumns"
+            v-model="localPopupState.ignoreColumns"
             :options="allColumnsOptions"
             option-label="label"
             option-value="label"
@@ -49,7 +68,6 @@ const allColumnsOptions = computed(() =>
             size="small"
             input-id="sortByStringIgnoreColumns"
             class="w-64 h-14"
-            @update:model-value="(e) => emit('update:ignoreColumns', e)"
           />
           <label for="sortByStringIgnoreColumns">Excluded</label>
         </FloatLabel>
@@ -57,10 +75,9 @@ const allColumnsOptions = computed(() =>
         <SmallSeperator class="my-2 mx-auto" />
         <div class="flex flex-row justify-between w-3/4">
           <Checkbox
-            v-model="props.mutSortByString.caseInsensitive"
+            v-model="localPopupState.caseInsensitive"
             input-id="sortByStringCaseInsensitive"
             binary
-            @update:model-value="() => emit('update:caseInsensitive')"
           />
           <label for="sortByStringCaseInsensitive">Case-Insensitive</label>
         </div>

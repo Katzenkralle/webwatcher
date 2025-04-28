@@ -60,7 +60,7 @@ const userConfig = computed(() => {
   return jobUserDisplayConfig(currentJobId.value)
 })
 
-let hiddenColsRemoteState = false
+let hiddenColsServerValue: undefined|string[] = undefined
 watch(
   [userConfig, jobHandler.jobDataHandler.computeDisplayedData],
   ([newHandler, displayData]) => {
@@ -70,10 +70,13 @@ watch(
       .then((res) => {
         if (res) {
           jobHandler.jobDataHandler.hiddenColumns.value = res
+          hiddenColsServerValue = res
         }
       })
       .finally(() => {
-        hiddenColsRemoteState = true
+        if (hiddenColsServerValue === undefined){
+          hiddenColsServerValue = []
+        }
       })
   },
   { immediate: true },
@@ -81,10 +84,18 @@ watch(
 watch(
   () => jobHandler.jobDataHandler.hiddenColumns.value,
   (newVal) => {
-    if (!hiddenColsRemoteState) return
-    userConfig.value.comitConfig({
+    if (hiddenColsServerValue === undefined) return
+    
+    // Only sync when elements differ
+    const sortedServer = [...hiddenColsServerValue].sort();
+    const sortedNew = [...newVal].sort();
+    
+    if (JSON.stringify(sortedServer) !== JSON.stringify(sortedNew)) {
+      userConfig.value.comitConfig({
       hiddenCols: JSON.stringify(newVal),
-    })
+      });
+      hiddenColsServerValue = newVal
+    } 
   },
 )
 
@@ -180,7 +191,9 @@ const graphCoardinator = ref()
                   :mut-sort-by-string="jobHandler?.sortByString.value"
                   :all-columns="jobHandler.jobDataHandler.computeLayoutUnfiltered.value"
                   class="shrink-0"
-                  @update:key="() => jobHandler?.unsetPrimevueSort()"
+                  @update:key="(e) => {jobHandler?.unsetPrimevueSort(); jobHandler.sortByString.value.key = e}"
+                  @update:case-insensitive="(e) => {jobHandler.sortByString.value.caseInsensitive = e}"
+                  @update:ignore-columns=" (e) => {jobHandler.sortByString.value.ignoreColumns = e}"
                 />
               </div>
             </AccordionContent>

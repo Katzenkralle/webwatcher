@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import { FloatLabel, MultiSelect, ToggleSwitch } from 'primevue'
 import SmallSeperator from '../reusables/SmallSeperator.vue'
@@ -13,10 +13,18 @@ const props = defineProps<{
   internalColumns: string[]
 }>()
 
+const newValue = ref<string[]>(props.hiddenColumns)
+
+watch(
+  () => props.hiddenColumns,
+  (newVal) => {
+    newValue.value = newVal
+  },
+  { immediate: true },
+)
+
 const amountVisableInternalColumns = computed(() =>
-  props.visableColumns
-    .map((col) => (props.internalColumns.includes(col.key) ? 1 : 0))
-    .reduce((partialSum: number, a: number) => partialSum + a, 0),
+  props.internalColumns.filter((col) => !newValue.value.includes(col)).length,
 )
 
 const allColumnsOptions = computed(() =>
@@ -29,7 +37,7 @@ const allColumnsOptions = computed(() =>
 <template>
   <FloatLabel class="w-full md:w-80" variant="in">
     <MultiSelect
-      :model-value="props.hiddenColumns"
+      :model-value="newValue"
       :options="allColumnsOptions"
       option-label="label"
       option-value="label"
@@ -37,7 +45,8 @@ const allColumnsOptions = computed(() =>
       overlay-class="hiddenColumnsMultiselect"
       input-id="hiddenColumnsMultiselect"
       class="min-w-64 h-14"
-      @update:model-value="(e: string[]) => emit('update:hiddenColumns', e)"
+      @update:model-value="(e: string[]) =>  newValue = e"
+      @before-hide="()  => emit('update:hiddenColumns', newValue)"
     >
       <template #header>
         <div class="flex flex-col items-center">
@@ -48,11 +57,11 @@ const allColumnsOptions = computed(() =>
               :model-value="amountVisableInternalColumns < 1"
               @update:model-value="
                 (e) => {
-                  let updatedColumns: string[] = hiddenColumns.filter(
+                  let updatedColumns: string[] = newValue.filter(
                     (col) => !internalColumns.includes(col),
                   )
                   if (e) updatedColumns = [...updatedColumns, ...props.internalColumns]
-                  emit('update:hiddenColumns', updatedColumns)
+                  newValue = updatedColumns
                 }
               "
             />
