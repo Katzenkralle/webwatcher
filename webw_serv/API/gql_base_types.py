@@ -30,6 +30,7 @@ class B64Str(str):
 class PaginationInput:
     max: int
     start_element: int
+    newest_first: Optional[bool] = True
 
 @strawberry.type
 class Parameter(DbParameter):

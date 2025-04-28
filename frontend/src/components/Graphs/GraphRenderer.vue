@@ -83,9 +83,9 @@ const getRowRange = async (baseRange: number[]): Promise<number[]> => {
     ? props.computedDisplayData.value.map((row) => row.id)
     : baseRange
   if (props.graphData.options?.pullXNewRows) {
-    data.sort((a, b) => b - a)
-    data = data.slice(0, props.graphData.options.pullXNewRows).reverse()
+    data = data.slice(0, props.graphData.options.pullXNewRows)
   }
+  data = data.sort((a, b) => a - b)
   return data
 }
 
@@ -139,7 +139,8 @@ const getDataColBased = async (lable: string[], dataLocation: number[]): Promise
   const usedRows = await getRowRange(dataLocation)
   return {
     datasets: usedRows.map((rowId) => {
-      if (!props.computedDisplayData.value[rowId]) {
+      const  indexOfRow = props.computedDisplayData.value.findIndex((row) => row.id === rowId)
+      if (indexOfRow === -1) {
         //  A row could not be found
         return {
           label: String(rowId),
@@ -147,9 +148,9 @@ const getDataColBased = async (lable: string[], dataLocation: number[]): Promise
         }
       }
       return {
-        label: String(props.computedDisplayData.value[rowId][props.graphData.colUsedAsLabel]),
+        label: String(props.computedDisplayData.value[indexOfRow][props.graphData.colUsedAsLabel]),
         data: lable.map((lable) => {
-          return adjustForReturnType(props.computedDisplayData.value[rowId][lable])
+          return adjustForReturnType(props.computedDisplayData.value[indexOfRow][lable])
         }),
       }
     }),

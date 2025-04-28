@@ -74,6 +74,7 @@ export const useJobData = (jobId: number) => {
         ? {
             max: range[1],
             startElement: range[0],
+            newestFirst: true,
           }
         : undefined,
       specificRows: specificRows,

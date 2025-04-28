@@ -273,6 +273,7 @@ class Query:
                 options = JobEntrySearchModeOptionsRange(
                     start=range_.start_element,
                     n_elements=range_.max,
+                    newest_first=range_.newest_first,
                 )
             elif specific_rows is not None:
                 options = JobEntrySearchModeOptionsSpecific(
