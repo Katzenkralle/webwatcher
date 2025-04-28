@@ -62,8 +62,9 @@ const userConfig = computed(() => {
 
 let hiddenColsRemoteState = false
 watch(
-  userConfig,
-  (newHandler) => {
+  [userConfig, jobHandler.jobDataHandler.computeDisplayedData],
+  ([newHandler, displayData]) => {
+    if (displayData.length === 0) return
     newHandler
       .getRemoteStateHiddenCols()
       .then((res) => {
@@ -101,7 +102,7 @@ const graphCoardinator = ref()
         </div>
         <Accordion
           class="w-full mb-2"
-          :value="['0']"
+          :value="['0', '4']"
           multiple
           unstyled
           @tab-close="

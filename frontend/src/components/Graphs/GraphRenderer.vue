@@ -4,6 +4,7 @@ import { type GraphDataSeries } from '@/composable/graphs/GraphDataHandler'
 import { computed, ref, watch, type ComputedRef } from 'vue'
 import { type flattendJobEnty, useJobDataHandler } from '@/composable/jobs/JobDataHandler'
 import { useStatusMessage } from '@/composable/core/AppState'
+import { getCssColors } from '@/composable/core/helpers'
 
 const props = defineProps<{
   graphData: GraphDataSeries
@@ -22,6 +23,44 @@ interface ChartData {
   labels: string[]
   datasets: ChartDatasets[]
 }
+
+const chartOptions = {
+    scales: {
+    x: {
+      ticks: {
+        color: getCssColors().text,
+      },
+    },
+    y: {
+      ticks: {
+        color: getCssColors().text,
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      labels: {
+        color: getCssColors().text,
+      },
+    },
+    tooltip: {
+        titleColor: getCssColors().text,
+        bodyColor: getCssColors().text,
+        backgroundColor: getCssColors().panel,
+        borderColor: getCssColors().info,
+        borderWidth: 2,
+        titleFont: {
+        size: 14,   // Title text size (in px)
+        weight: 'bold'
+        },
+        bodyFont: {
+          size: 12,   // Body text size (in px)
+        }
+      }
+  },
+    
+}
+
 const getRowRange = async (baseRange: number[]): Promise<number[]> => {
   await props
     .fetchSpecificData({
@@ -67,6 +106,7 @@ const adjustForReturnType = (data: number | string | boolean) => {
 
 const getDataRowBased = async (lable: string[], dataLocation: number[]): Promise<ChartData> => {
   const usedDataLocations: number[] = []
+  const usedDataLables: string[] = []
   return {
     datasets: await Promise.all(
       lable.map(async (lable) => {
@@ -78,18 +118,20 @@ const getDataRowBased = async (lable: string[], dataLocation: number[]): Promise
           if (row) {
             if (!usedDataLocations.includes(row.id)) {
               usedDataLocations.push(row.id)
+              usedDataLables.push(
+                row[props.graphData.colUsedAsLabel] ?? String(row.id),
+              )
             }
             dataPoints.push(adjustForReturnType(row[lable]))
           }
         }
-
         return {
           label: lable,
           data: dataPoints,
         }
       }),
     ),
-    labels: usedDataLocations.map((entry) => String(entry)),
+    labels: usedDataLables,
   }
 }
 
@@ -105,13 +147,14 @@ const getDataColBased = async (lable: string[], dataLocation: number[]): Promise
         }
       }
       return {
-        label: String(rowId),
+        label: String(props.computedDisplayData.value[rowId][props.graphData.colUsedAsLabel]),
         data: lable.map((lable) => {
           return adjustForReturnType(props.computedDisplayData.value[rowId][lable])
         }),
       }
     }),
     labels: lable,
+
   }
 }
 
@@ -163,8 +206,9 @@ watch(
 
 <template>
   <Chart
-    class="max-h-150 w-full flex justify-center items-center"
+    class="max-h-150 min-h-100 w-full flex justify-center items-center text-text"
     :type="props.graphData.displayType as string"
     :data="chartData"
+    :options="chartOptions"
   />
 </template>

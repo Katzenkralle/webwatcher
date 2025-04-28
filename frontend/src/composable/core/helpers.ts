@@ -7,6 +7,7 @@ export function getCssColors(): {
   info: string
   special: string
   text: string
+  crust: string
 } {
   const styles = getComputedStyle(document.documentElement)
   return {
@@ -15,6 +16,7 @@ export function getCssColors(): {
     info: styles.getPropertyValue('--color-info'),
     special: styles.getPropertyValue('--color-special'),
     text: styles.getPropertyValue('--color-text'),
+    crust: styles.getPropertyValue('--color-crust'),
   }
 }
 

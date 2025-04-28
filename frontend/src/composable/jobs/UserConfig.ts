@@ -125,7 +125,7 @@ export const jobUserDisplayConfig = (id: number) => {
             baseHiddenCols.value = response.data.userJobConfig.hiddenColsConfig
               ? JSON.parse(response.data.userJobConfig.hiddenColsConfig)
               : undefined
-            break
+              break
           default:
             throw response
         }

@@ -29,7 +29,8 @@ export interface GraphDataSeries {
   options?: {
     pullAllRows: boolean
     pullXNewRows?: number
-  }
+  },
+  colUsedAsLabel: string
 }
 
 interface GraphType {
@@ -116,6 +117,7 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof useJobData
   const pullXNewRows = ref<number>(0) // 0 means all rows
   const availableGraphTypes = ref<string[]>(Object.keys(GraphConstraints))
   const selectedGraphType = ref<string | undefined>()
+  const colUsedAsLabel = ref<string>('id')
 
   watch(selectedGraphType, () => {
     if (!selectedGraphType.value) {
@@ -210,6 +212,7 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof useJobData
       invalid: true,
       selected: [],
     }
+    colUsedAsLabel.value = ''
     pullFutureRows.value = false
     pullXNewRows.value = 0
     selectedGraphType.value = undefined
@@ -238,6 +241,7 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof useJobData
         pullAllRows: pullFutureRows.value,
         pullXNewRows: pullXNewRows.value,
       },
+      colUsedAsLabel: colUsedAsLabel.value,
     }
     return rowBasedView.value
       ? {
@@ -255,6 +259,7 @@ export const useGraphConstructor = (jobDataHandler: ReturnType<typeof useJobData
   return {
     jobId: jobDataHandler.jobId,
     rowBasedView,
+    colUsedAsLabel,
     pullFutureRows,
     pullXNewRows,
     graphInput,

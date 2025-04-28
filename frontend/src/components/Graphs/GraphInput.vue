@@ -61,13 +61,15 @@ const lastSavedTitle = ref<string | undefined>(undefined)
         />
         <label>Select Graph Type</label>
       </FloatLabel>
-      <Button
-        icon="pi pi-refresh"
-        size="small"
-        class="aspect-square"
-        severity="danger"
-        @click="graphConstructor.reset()"
-      />
+      <FloatLabel variant="in">
+        <Select
+        class="w-60"
+        :options="jobData.computeLayoutUnfiltered.value"
+        :option-label="'key'"
+        :option-value="'key'"
+        v-model="graphConstructor.colUsedAsLabel.value"/>
+        <label>Row used as Label</label>
+      </FloatLabel>
     </div>
     <div class="options-grid mt-4">
       <div class="flex flex-row items-center min-h-16">
@@ -117,7 +119,7 @@ const lastSavedTitle = ref<string | undefined>(undefined)
         </div>
       </template>
     </div>
-    <SmallSeperator class="mx-auto my-4" :is-dashed="true" />
+    <SmallSeperator class="mx-auto mt-4 mb-2" :is-dashed="true" />
     <div class="min-h-128 flex flex-col items-center justify-center">
       <template v-if="!graphConstructor.curentGraph.value">
         <div v-if="graphConstructor.selectedGraphType.value" class="flex flex-col items-center">
@@ -157,7 +159,7 @@ const lastSavedTitle = ref<string | undefined>(undefined)
         </span>
       </template>
       <template v-else>
-        <div class="flex flex-row w-full justify-between items-center">
+        <div class="flex flex-wrap w-full justify-between items-center [&>*]:mt-2">
           <InputGroup v-if="props.userConfig" class="max-w-80">
             <InputText
               v-model="title"
