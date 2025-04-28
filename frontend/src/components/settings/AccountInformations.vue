@@ -43,8 +43,8 @@ onMounted(() => {
           button-label="Remove Temporary Files"
           button-icon="pi pi-trash"
           button-class="p-button-warn"
-          confirm-message="This will clean up unused temporary files
-                    E.g. scripts that where uploaded but never implemented as watchers."
+          confirm-message="This will clean up unused temporary files and clean the db registries of any zombie data.
+                            E.g. scripts that where uploaded but never implemented as watchers."
           confirm-icon="pi pi-exclamation-triangle"
           @confirm="() => removeTemporaryScripts()"
         />

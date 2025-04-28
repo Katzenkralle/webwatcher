@@ -3,7 +3,7 @@ import strawberry
 from typing_extensions import Optional, Any
 from uuid import uuid4
 
-from webw_serv.db_handler import MariaDbHandler
+from webw_serv.db_handler import MariaDbHandler, MongoDbHandler
 from webw_serv.db_handler.maria_schemas import DbScriptInfo
 from webw_serv.watcher.script_checker import script_checker
 from webw_serv.utility.file_to_b64 import b64_to_file
@@ -25,8 +25,16 @@ class Mutation:
     @admin_guard()
     async def remove_temporary_scripts(
         self,
-        info: strawberry.Info) -> Message:
+        info: strawberry.Info,
+        fixDbRegistry: bool = True) -> Message:
         maria: MariaDbHandler = info.context["request"].state.maria
+        mongo: MongoDbHandler = info.context["request"].state.mongo
+        if fixDbRegistry:
+            try:
+                [jobs, _] = (await maria.get_all_job_info()).values()
+                await mongo.register_all_sql_jobs([job.id for job in jobs])
+            except Exception as e:
+                return Message(message=f"Failed to fix jobs registry; {e}", status=MessageType.DANGER)
         try:
             await maria.remove_temp_scripts()
             return Message(message="Temporary scripts removed successfully", status=MessageType.SUCCESS)

@@ -78,7 +78,22 @@ class MongoDbHandler:
         """
         Register all SQL jobs in the database
         """
+        # Get all registered jobs
+        registered_jobs = list(self.__db.job_regestry.find({}, {"job_id": 1, "_id": 0}))
+        for reg_job in registered_jobs:
+            # Remove zombie jobs from mongo
+            try:
+                if reg_job['job_id'] not in jobs:
+                    # Delete the job if it is not in the list
+                    logger.debug(f"MONGO: Deleting job {reg_job} from registry")
+                    self.__db.job_data.delete_many({"job_id": reg_job})
+                    self.__db.job_regestry.delete_one({"job_id": reg_job})
+            except Exception as e:
+                logger.error(f"MONGO: Error deleting zombie job {reg_job} from mongo registry: {e}")
+                continue
+
         for job in jobs:
+            # Register unregistered jobs in mongo
             try:
                 await self.register_job(job)
             except ValueError as e:
