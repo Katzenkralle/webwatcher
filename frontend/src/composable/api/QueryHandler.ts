@@ -14,7 +14,7 @@ export function queryGql(
   useLoadingBar: boolean = true,
 ): Promise<GQLResponse> {
   if (useLoadingBar) {
-    loadingBarIsLoading.value = true
+    loadingBarIsLoading.value.continuous.loading = true
   }
   return fetch(GQL_ENDPOINT, {
     method: 'POST',
@@ -58,7 +58,7 @@ export function queryGql(
     })
     .finally(() => {
       if (useLoadingBar) {
-        loadingBarIsLoading.value = false
+        loadingBarIsLoading.value.continuous.loading = false
       }
     })
 }

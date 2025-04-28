@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { loadingBarIsLoading } from '@/composable/core/AppState'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -70,10 +71,27 @@ const router = createRouter({
       component: () => import('@/views/core/NotFound.vue'),
     },
   ],
+
+  scrollBehavior(to, from, savedPosition) {
+    // always scroll to top
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve({ left: 0, top: 0, behavior: 'smooth' })
+      }, 100)
+    })
+  },
+
 })
 
+const visitedRoutes = new Set()
+
 router.beforeEach(async (to) => {
-  // Redirect to login if route requires auth and user is not logged in
+  if (!visitedRoutes.has(to.name)) {
+    // Show loading bar if route is not in cache
+    loadingBarIsLoading.value.onetime.loading = true
+    visitedRoutes.add(to.name)
+  }
+  // Redirect to login if route requires auth and user is not logged i
   if ((to.meta.requiresAuth || false) && !document.cookie.includes('oauth2=')) {
     return { name: 'login', query: { redirect: to.fullPath } }
   } else if (to.name === 'login' && document.cookie.includes('oauth2=')) {
@@ -81,6 +99,10 @@ router.beforeEach(async (to) => {
     return { name: 'home' }
   }
   return true
+})
+
+router.afterEach(async () => {
+  loadingBarIsLoading.value.onetime.loading = false
 })
 
 export default router

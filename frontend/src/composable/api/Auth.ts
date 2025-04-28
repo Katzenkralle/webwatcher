@@ -136,7 +136,7 @@ export const requestToken = async (
   password: string,
   name: string | undefined = undefined,
 ) => {
-  loadingBarIsLoading.value = true
+  loadingBarIsLoading.value.continuous.loading = true
   const formData = new FormData()
   formData.append('username', username)
   formData.append('password', password)
@@ -165,7 +165,7 @@ export const requestToken = async (
       throw resp_or_err
     })
     .finally(() => {
-      loadingBarIsLoading.value = false
+      loadingBarIsLoading.value.continuous.loading = false
     })
 }
 

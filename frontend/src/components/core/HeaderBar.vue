@@ -78,7 +78,7 @@ const extendedOptions = computed((): BarItem[] => {
 const computeOptions = computed((): BarItem[] => {
   return [
     {
-      image: new URL('@/assets/img/placeholder.png', import.meta.url).href,
+      image: new URL('@/assets/img/fav.webp', import.meta.url).href,
       route: '/',
       fixed: 'start',
     },
@@ -301,6 +301,6 @@ const ItemContainerVertical = defineComponent({
 <template>
   <header class="w-full flex flex-col z-10 sticky" :style="{ top: `calc(var(--spacing) * -13)` }">
     <ItemContainerHorizontal class="bg-panel w-full" :items="computeOptions" />
-    <LoadingBar :is-loading="ref(loadingBarIsLoading)" />
+    <LoadingBar :loading="ref(loadingBarIsLoading)" />
   </header>
 </template>

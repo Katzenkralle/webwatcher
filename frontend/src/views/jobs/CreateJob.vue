@@ -13,7 +13,7 @@ import Select from 'primevue/select'
 import Button from 'primevue/button'
 import Textarea from 'primevue/textarea'
 import InputText from 'primevue/inputtext'
-import InputSwitch from 'primevue/inputswitch'
+import InputSwitch from 'primevue/toggleswitch'
 import FloatLabel from 'primevue/floatlabel'
 import PopupImageSlideshow from '@/components/reusables/PopupImageSlideshow.vue'
 

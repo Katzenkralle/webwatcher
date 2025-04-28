@@ -8,7 +8,24 @@ export interface StatusMessage {
   icon: string
 }
 
-export const loadingBarIsLoading: Ref<boolean> = ref(false)
+export interface Loading {
+  continuous: {
+    loading: boolean
+    duration?: number
+  }
+  onetime: {
+    loading: boolean
+    duration?: number
+  }
+}
+
+export const loadingBarIsLoading: Ref<Loading> = ref(
+  {
+    continuous: { loading: false },
+    onetime: { loading: false },
+  } as Loading,
+)
+
 
 const statusMsg: Ref<Record<number, StatusMessage>> = ref({})
 const msgCounter: Ref<number> = ref(-1)
