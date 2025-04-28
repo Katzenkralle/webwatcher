@@ -12,6 +12,7 @@ import { reportError } from '@/composable/api/QueryHandler'
 import type { IterationContext } from '../filter/FilterGroups'
 import { useStatusMessage } from '../core/AppState'
 import { useFilterIterationContext } from '@/composable/filter/FilterGroups'
+import { all } from 'mathjs'
 
 /*
 global: refers to local data accessible from all components
@@ -98,6 +99,8 @@ export const useJobDataHandler = (
   const allFetched = ref(false)
   const highlightSubstring = ref<Record<number, Record<string, HighlightSubstring[]>>>({})
 
+  let isFetching: boolean = false
+
   const lazyFetch = async (
     startAt: number | undefined = undefined,
     all: boolean = false,
@@ -108,6 +111,7 @@ export const useJobDataHandler = (
       force ||
       (Object.keys(localJobData.value).length < startAt + fetchAmount.value && !allFetched.value)
     ) {
+      isFetching = true
       localJobData.value = {
         ...localJobData.value,
         ...(await apiHandler
@@ -123,6 +127,9 @@ export const useJobDataHandler = (
             reportError(e)
             allFetched.value = true
             return {}
+          })
+          .finally(() => {
+            isFetching = false
           })),
       }
     }
@@ -131,6 +138,20 @@ export const useJobDataHandler = (
       allFetched.value = true
     }
   }
+
+  /*
+  const lazyFetch = async (...args: [
+    startAt?: number | undefined,
+    all?: boolean,
+    force?: boolean
+  ]) => {
+    if (asyncFetchRef) {
+      return asyncFetchRef
+    }
+    asyncFetchRef = lazyFetchExecutor(...args)
+    return asyncFetchRef
+  }
+   */
 
   const retriveRowsById = async (options: {
     id?: number[]
@@ -157,10 +178,9 @@ export const useJobDataHandler = (
       }
       return 0
     })()
-    if (rowsToFetch === 0) {
-      return rowsToFetch
-    }
-    return apiHandler
+
+    const fetchFromRemote = async () => {
+      return apiHandler
       .fetchData(undefined, options.id, options.newestNRows)
       .then((data) => {
         const currentKeys = Object.keys(localJobData.value)
@@ -196,6 +216,30 @@ export const useJobDataHandler = (
         reportError(e)
         return rowsToFetch
       })
+      }
+
+    if (rowsToFetch === 0 || allFetched.value) {
+        return 0
+    }
+    
+    // Wait until the current fetch operation completes
+    return new Promise<number>((resolve) => {
+      const checkFetching = () => {
+        if (!isFetching) {
+          if (allFetched.value) {
+            resolve(0)
+          } else { 
+            fetchFromRemote().then((data) => {
+              resolve(data)
+            })
+          }
+        } else {
+          setTimeout(checkFetching, 100);
+        }
+      };
+      checkFetching();
+    });
+    
   }
 
   const addOrEditEntry = async (entry: jobEntryInput) => {
@@ -285,7 +329,8 @@ export const useJobDataHandler = (
   })
 
   const computedFilterdJobData = computed(() => {
-    let flattendJobEntys: flattendJobEnty[] = Object.keys(localJobData.value).map((key: string) => {
+    let flattendJobEntys: flattendJobEnty[] = Object.keys(localJobData.value)
+      .map((key: string) => {
       const index = parseInt(key)
       const row = localJobData.value[index]
       return {
@@ -294,12 +339,13 @@ export const useJobDataHandler = (
         ...row.context,
         context: undefined,
       }
-    })
+      })
+      .sort((a, b) => b.id - a.id) // Sort by id in descending order
     if (filters) {
       flattendJobEntys = filters.applyFiltersOnData(flattendJobEntys)
-      if (!allFetched.value && flattendJobEntys.length < fetchAmount.value) {
-        lazyFetch(flattendJobEntys.length)
-      }
+    }
+    if (!allFetched.value && flattendJobEntys.length < fetchAmount.value) {
+      lazyFetch(flattendJobEntys.length)
     }
     return flattendJobEntys
   })

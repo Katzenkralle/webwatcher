@@ -15,6 +15,7 @@ class JobEntrySearchModeOptionsNewest:
 class JobEntrySearchModeOptionsRange:
     start: int
     n_elements: int
+    newest_first: bool
 
 @dataclass
 class JobEntrySearchModeOptionsSpecific:
@@ -183,7 +184,10 @@ class MongoDbHandler:
 
     async def __get_job_entries_range(self, job_id: int, options: JobEntrySearchModeOptionsRange):
         # Get the job entries
-        entrys = self.__db.job_data.find({"job_id": job_id}, {"_id": 0, "job_id": 0}).skip(options.start).limit(options.n_elements)
+        if options.newest_first:
+            entrys = self.__db.job_data.find({"job_id": job_id}, {"_id": 0, "job_id": 0}).sort("call_id", pymongo.DESCENDING).skip(options.start).limit(options.n_elements)
+        else:
+            entrys = self.__db.job_data.find({"job_id": job_id}, {"_id": 0, "job_id": 0}).skip(options.start).limit(options.n_elements)
         return list(entrys)
 
     async def __get_job_entries_newest(self, job_id: int, options: JobEntrySearchModeOptionsNewest):

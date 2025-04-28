@@ -9,7 +9,7 @@ from webw_serv.watcher.script_checker import script_checker
 from webw_serv.utility.file_to_b64 import b64_to_file
 from webw_serv import CONFIG
 
-from ..gql_base_types import PaginationInput, JsonStr, MessageType, Message
+from ..gql_base_types import JsonStr, MessageType, Message
 from ..endpoints.auth import admin_guard, user_guard
 from ..gql_base_types import ScriptValidationResult, Parameter, B64Str
 from ..gql_types import script_content_result, jobs_metadata_result, jobs_settings_result, job_entrys_result, \
