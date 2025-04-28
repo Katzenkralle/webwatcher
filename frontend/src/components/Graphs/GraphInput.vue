@@ -68,7 +68,7 @@ const lastSavedTitle = ref<string | undefined>(undefined)
         :option-label="'key'"
         :option-value="'key'"
         v-model="graphConstructor.colUsedAsLabel.value"/>
-        <label>Row used as Label</label>
+        <label>Column used as Label</label>
       </FloatLabel>
     </div>
     <div class="options-grid mt-4">
