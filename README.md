@@ -11,6 +11,7 @@ There, you can also analyze, filter, download, and search the collected data pre
 For the most tested experience, we recommend running the webserver in Docker using the provided [Compose file](./compose.yaml).  
 This configuration already includes both required databases (MongoDB and MariaDB), as well as correctly exposed ports to access the API from outside the container.  
 The compose file also creates volumes to ensure no data is lost when recreating containers.
+**Note**: Depending on your host system the container might fail to start if expected files such as: `/etc/timezone` are not present on the host. In such cases, simply remove them from the file.
 
 ### Setup Process  
 _(Assuming you are on a Linux host)_  
