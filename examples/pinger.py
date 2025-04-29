@@ -1,19 +1,16 @@
 from pythonping import ping
 
 from webw_serv import Watcher
-
-def get_latency(host):
-    response = ping(host, count=1, timeout=2)
-    if response.success():
-        latency = response.rtt_avg_ms
-        print(f"Latenz zu {host}: {latency:.2f} ms")
-    else:
-        print(f"{host} konnte nicht erreicht werden.")
-
-
 from typing_extensions import Any, Type
 
+
+
 class ScriptMain(Watcher):
+    """
+    A simple ping watcher that checks the latency to a given host.
+
+    NOTE: This watcher requires the conteinaer to have 'CAP_NET_RAW' capabilities
+    """
     supports_static_schema = True
 
     def __init__(self, config: dict[str, Any]):

@@ -11,6 +11,7 @@ There, you can also analyze, filter, download, and search the collected data pre
 For the most tested experience, we recommend running the webserver in Docker using the provided [Compose file](./compose.yaml).  
 This configuration already includes both required databases (MongoDB and MariaDB), as well as correctly exposed ports to access the API from outside the container.  
 The compose file also creates volumes to ensure no data is lost when recreating containers.
+
 **Note**: Depending on your host system the container might fail to start if expected files such as: `/etc/timezone` are not present on the host. In such cases, simply remove them from the file.
 
 ### Setup Process  
@@ -116,6 +117,8 @@ For information on how to write your own watchers, please refer to the help page
 Basically, you only need to implement the interface described in [`./webw_serv/watcher/base.py`](./webw_serv/watcher/base.py).
 
 If you need to install additional dependencies, you can bind `/pre_start.sh` to a Bash script on the host, as shown in [this document](./docs/backend_conf.md).
+
+> In [Examples](./examples/), you can find some watchers written by us but not included in the final build of the file. Therefore, they come with no guarantee of functioning as expected.
 
 ## Running in Development Mode  
 1. Clone or pull this repo  
