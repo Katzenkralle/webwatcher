@@ -14,7 +14,6 @@ import SmallSeperator from '@/components/reusables/SmallSeperator.vue'
 import { globalTableMetaData } from '@/composable/jobs/JobMetaAPI'
 import ConfirmableButton from '@/components/reusables/ConfirmableButton.vue'
 import { FilterMatchMode } from '@primevue/core/api'
-import { getUser } from '@/composable/core/User'
 import router from '@/router'
 
 const scriptFilter = ref({
@@ -22,14 +21,6 @@ const scriptFilter = ref({
 })
 const isFiltered = ref(false)
 
-const user = ref()
-
-onMounted(() => {
-  getAllScripts()
-  getUser().then((data) => {
-    user.value = data
-  })
-})
 // Convert object to an array with script names included
 const formattedGlobalScriptData = computed(() =>
   Object.entries(globalScriptData.value).map(([name, meta]) => ({
@@ -62,7 +53,6 @@ const formattedGlobalScriptData = computed(() =>
             <Button
               label="Add Script"
               icon="pi pi-plus"
-              :disabled="!user || !user.isAdmin"
               @click="router.push('/script/upload/')"
             />
             <Button icon="pi pi-refresh" @click="() => refreshMeta()" />
