@@ -2,8 +2,8 @@
 import {
   useJobUiCreator,
   type flattendJobEnty,
-  type HighlightSubstring,
 } from '@/composable/jobs/JobDataHandler'
+import type { HighlightSubstring } from '@/composable/jobs/SortByString'
 import { useStatusMessage } from '@/composable/core/AppState'
 
 import PrimeDataTable from 'primevue/datatable'

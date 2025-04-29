@@ -1,14 +1,14 @@
 <script setup lang="tsx">
 import Chart from 'primevue/chart'
 import { type GraphDataSeries } from '@/composable/graphs/GraphDataHandler'
-import { computed, ref, watch, type ComputedRef } from 'vue'
+import { computed, ref, watch, type ComputedRef, type Ref } from 'vue'
 import { type flattendJobEnty, useJobDataHandler } from '@/composable/jobs/JobDataHandler'
 import { useStatusMessage } from '@/composable/core/AppState'
 import { getCssColors } from '@/composable/core/helpers'
 
 const props = defineProps<{
   graphData: GraphDataSeries
-  computedDisplayData: ComputedRef<flattendJobEnty[]>
+  computedDisplayData: ComputedRef<flattendJobEnty[]>|Ref<flattendJobEnty[]>
   fetchSpecificData: ReturnType<typeof useJobDataHandler>['retriveRowsById']
 }>()
 
