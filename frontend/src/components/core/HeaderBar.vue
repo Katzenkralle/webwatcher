@@ -163,27 +163,22 @@ const ItemRenderer = defineComponent({
           h(
             'div',
             {
-              class: `${hasItems.value ? 'min-w-25' : ''} min-h-10 h-full py-1 px-2 rounded-lg gap-2 text-lg \
+              class: `${hasItems.value ? 'min-w-25' : ''} cursor-pointer min-h-10 h-full py-1 px-2 rounded-lg gap-2 text-lg \
                 ${isCurrentRoute.value ? 'bg-info/20' : ''} hover:bg-panel-h \
                 ${props.item.style === 'highlighted' ? 'font-bold' : ''}`,
+                onClick: () => {
+                  if (props.item.route) {
+                    router.push(props.item.route)
+                  } else {
+                    props.item.comand?.()
+                  }
+                },
             },
             [
-              props.item.route
-                ? h(
-                    RouterLink,
-                    {
-                      to: props.item.route || '#',
-                      class: populationContainerClass + ` ${props.item.passThroughClass || ''}`,
-                    },
-                    {
-                      default: () => getPopulation(),
-                    },
-                  )
-                : h(
+               h(
                     'span',
                     {
                       class: populationContainerClass + ` ${props.item.passThroughClass || ''}`,
-                      onClick: () => props.item.comand?.(),
                     },
                     {
                       default: () => getPopulation(),
