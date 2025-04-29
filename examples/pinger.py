@@ -10,6 +10,7 @@ class ScriptMain(Watcher):
     A simple ping watcher that checks the latency to a given host.
 
     NOTE: This watcher requires the conteinaer to have 'CAP_NET_RAW' capabilities
+    NOTE: This watcher requires the 'pythonping' package to be installed
     """
     supports_static_schema = True
 

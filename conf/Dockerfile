@@ -3,9 +3,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install sys utils, dependencies and nginx
 RUN apt-get update && \
-    apt-get install -yq curl gnupg nginx npm python3 python3-pip libmariadb-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -yq curl gnupg nginx npm python3 python3-pip libmariadb-dev 
 
 # Copy files
 COPY entrypoint.sh /entrypoint.sh
@@ -16,7 +14,7 @@ COPY . /webwatcher
 
 # Install app dependencies
 RUN pip3 install -r /webwatcher/webw_serv/requirements.txt --break-system-packages
-RUN npm install --prefix /webwatcher/frontend
+RUN npm install --prefix /webwatcher/frontend || true
 
 # Building
 # || true to allow failure
