@@ -13,7 +13,7 @@ dnspython==2.7.0
 fastapi==0.115.12
 frozenlist==1.6.0
 graphql-core==3.2.6
-gyp-next==0.16.2
+gyp-next==0.20.0
 h11==0.16.0
 idna==3.10
 mariadb==1.1.12

@@ -13,7 +13,7 @@ RUN mkdir /webwatcher
 COPY . /webwatcher
 
 # Install app dependencies
-RUN pip3 install -r /webwatcher/webw_serv/requirements.txt --break-system-packages
+RUN pip3 install -r /webwatcher/webw_serv/requirements.txt --break-system-packages --ignore-installed
 RUN npm install --prefix /webwatcher/frontend || true
 
 # Building
